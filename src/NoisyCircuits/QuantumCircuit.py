@@ -53,8 +53,68 @@ class QuantumCircuit:
             raise ValueError("kraus_implementation must be either 'Stinespring' or 'QMWF'")
         self.num_qubits = num_qubits
         self.num_shots = num_shots
-        self.kraus_implementation = kraus_implementation
+        if kraus_implementation == "Stinespring":
+            self.kraus_implementation = self._stinespring_dilation_implementation
+        else:
+            self.kraus_implementation = self._quantum_monte_carlo_implementation
         self.gate_model = BuildModel(noise_model).build_qubit_gate_model()
+    
+    def _qmwf_step(self,
+                   state:np.ndarray,
+                   kraus_ops:list,
+                   probs:list)->np.ndarray:
+        """
+        Performs a single step of the Quantum Monte-Carlo Wavefunction method.
+
+        Args:
+            state (np.ndarray): Current state of the quantum circuit.
+            kraus_ops (list): List of Kraus Operators.
+            probs (list): List of probabilities for each Kraus operator.
+
+        Returns:
+            np.ndarray: Updated state after applying the selected Kraus operator.
+        """
+        choice = np.random.choice(range(len(kraus_ops)), p=probs)
+        psi = np.dot(kraus_ops[choice], state)
+        return psi / np.linalg.norm(psi)
+    
+    def _get_kraus_probs(self,
+                         kraus_ops:list,
+                         state:np.ndarray)->list:
+        """
+        Computes the probabilities of each Kraus operator given the current state.
+
+        Args:
+            kraus_ops (list): List of Kraus Operators.
+            state (np.ndarray): Current state of the quantum circuit.
+
+        Returns:
+            list: Probabilities of each Kraus operator.
+        """
+        probs = [np.dot(np.dot(op.conj().T, state.conj()), np.dot(op, state)) for op in kraus_ops]
+        return probs
+
+    def _quantum_monte_carlo_implementation(self, 
+                                            state:np.ndarray,
+                                            kraus_ops:list,
+                                            N:int=1000)->np.ndarray:
+        """
+        Implements the Quantum Monte-Carlo Wavefunction method for simulating the Kraus Noise for the given gate.
+
+        Args:
+            state (np.ndarray): Current State of the quantum circuit.
+            kraus_ops (list): List of Kraus Operators.
+            N (int, optional): Number of Monte-Carlo Steps to perform. Defaults to 1000.
+
+        Returns:
+            np.ndarray: Updated state after applying the selected Kraus operator.
+        """
+        psi_out = np.zeros_like(state, dtype=complex)
+        probs = self._get_kraus_probs(kraus_ops, state)
+        for _ in range(N):
+            psi_out += self._qmwf_step(state, kraus_ops, probs)
+        psi_out = psi_out / N
+        return psi_out / np.linalg.norm(psi_out)
 
     def RZ(self,
            theta:int|float,
@@ -227,3 +287,102 @@ class QuantumCircuit:
         self.RZ(theta=-np.pi/2, qubit=qubit1)
         self.SX(qubit=qubit1)
         self.ECR(control=qubit1, target=qubit2)
+
+    def CRX(self,
+            theta:int|float,
+            control:int,
+            target:int):
+        """
+        Implements the CRX (Controlled-RX) gate.
+
+        Args:
+            theta (int | float): The rotation angle.
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        self.RZ(theta=-np.pi/2, qubit=control)
+        self.RZ(theta=-np.pi/2, qubit=target)
+        self.SX(qubit=target)
+        self.RZ(theta=(np.pi - theta)/2, qubit=target)
+        self.SX(qubit=target)
+        self.ECR(control=control, target=target)
+        self.X(qubit=control)
+        self.RZ(theta=np.pi - theta/2, qubit=target)
+        self.RZ(theta=-np.pi/2, qubit=control)
+        self.SX(qubit=target)
+        self.RZ(theta=-np.pi, qubit=target)
+        self.ECR(control=control, target=target)
+        self.X(qubit=control)
+        self.RZ(np.pi/2, qubit=target)
+        self.SX(qubit=target)
+        self.RZ(np.pi/2, qubit=target)
+        self.SX(qubit=control)
+        self.RZ(theta=np.pi, qubit=control)
+        self.SX(qubit=control)
+        self.RZ(np.pi, qubit=control)
+
+    def CRY(self,
+            theta:int|float,
+            control:int,
+            target:int):
+        """
+        Implements the CRY (Controlled-RY) gate.
+
+        Args:
+            theta (int | float): The rotation angle.
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        self.RZ(theta=-np.pi/2, qubit=control)
+        self.RZ(theta=-np.pi, qubit=target)
+        self.SX(qubit=target)
+        self.RZ(theta=np.pi - theta/2, qubit=target)
+        self.ECR(control=control, target=target)
+        self.X(qubit=control)
+        self.RZ(theta=-np.pi, qubit=target)
+        self.RZ(theta=-np.pi/2, qubit=control)
+        self.SX(qubit=target)
+        self.RZ(theta=-np.pi + theta/2, qubit=target)
+        self.ECR(control=control, target=target)
+
+    def CRZ(self,
+            theta:int|float,
+            control:int,
+            target:int):
+        """
+        Implements the CRZ (Controlled-RZ) gate.
+
+        Args:
+            theta (int | float): The rotation angle.
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        self.RZ(theta=-np.pi/2, qubit=control)
+        self.RZ(theta=-np.pi + theta/2, qubit=target)
+        self.SX(qubit=target)
+        self.RZ(theta=-np.pi, qubit=target)
+        self.ECR(control=control, target=target)
+        self.X(qubit=control)
+        self.RZ(theta=np.pi - theta/2, qubit=target)
+        self.SX(qubit=target)
+        self.RZ(theta=-np.pi, qubit=target)
+        self.ECR(control=control, target=target)
+        self.RZ(theta=-np.pi/2, qubit=control)
+
+    def get_state(self)-> np.ndarray:
+        """
+        Returns the current state of the quantum circuit. And resets the circuit.
+
+        Returns:
+            np.ndarray: The current state of the quantum circuit.
+        """
+        return qml.state()
+
+    def get_probs(self)->np.ndarray:
+        """
+        Returns the probabilities of the current state of the quantum circuit.
+
+        Returns:
+            np.ndarray: The probabilities of the current state of the quantum circuit.
+        """
+        return qml.probs(wires=range(self.num_qubits))
