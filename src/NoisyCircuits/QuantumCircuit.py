@@ -1,4 +1,5 @@
 import pennylane as qml
+from pennylane.devices.default_qubit import DefaultQubit
 from pennylane import numpy as np
 from utils.BuildQubitGateModel import BuildModel
 
@@ -58,6 +59,11 @@ class QuantumCircuit:
         else:
             self.kraus_implementation = self._quantum_monte_carlo_implementation
         self.gate_model = BuildModel(noise_model).build_qubit_gate_model()
+        self.tape_instructions = []
+        dev = DefaultQubit(wires=self.num_qubits)
+        self.executor, _ = dev.preprocess()
+        self.ancilla_idx = self.num_qubits + 1
+
     
     def _qmwf_step(self,
                    state:np.ndarray,
@@ -115,6 +121,44 @@ class QuantumCircuit:
             psi_out += self._qmwf_step(state, kraus_ops, probs)
         psi_out = psi_out / N
         return psi_out / np.linalg.norm(psi_out)
+    
+    def _stinespring_dilation_implementation(self,
+                                             state:np.ndarray,
+                                             kraus_ops:list)->np.ndarray:
+        raise NotImplementedError()
+    
+    def _prepare_ancilla(self,
+                         rot_angle:int|float):
+        """
+        Prepares the ancilla qubit for probabilistic noise application.
+
+        Args:
+            rot_angle (int | float): Angle of rotation for the ancilla qubit corresponding to the probability of the noise instruction.
+        """
+        self.tape_instructions.append(qml.RY(phi=rot_angle, wires=self.ancilla_idx))
+
+    def _apply_probabilistic_noise(self,
+                                   instruction_name:list,
+                                   qubit:int):
+        """
+        Applies the required probabilistic noise instruction to the ancilla qubit and the target qubit.
+
+        Args:
+            instruction_name (list): List of noise instructions to apply.
+            qubit (int): Target qubit to which the noise is applied.
+        """
+        for name in instruction_name:
+            self.tape_instructions.append(name(wires=[self.ancilla_idx, qubit]))
+        
+    def _reset_ancilla(self,
+                       rot_angle:int|float):
+        """
+        Resets the ancilla qubit to its initial state after applying the noise instructions.
+
+        Args:
+            rot_angle (int | float): Angle of rotation for the ancilla qubit.
+        """
+        self.tape_instructions.append(qml.measure(self.ancilla_idx, reset=True))
 
     def RZ(self,
            theta:int|float,
@@ -126,7 +170,7 @@ class QuantumCircuit:
             theta (int | float): The angle of rotation.
             qubit (int): The target qubit.
         """
-        qml.RZ(phi=theta, wires=qubit)
+        self.tape_instructions.append(qml.RZ(phi=theta, wires=qubit))
     
     def SX(self,
            qubit:int):
@@ -136,7 +180,7 @@ class QuantumCircuit:
         Args:
             qubit (int): The target qubit.
         """
-        qml.SX(wires=qubit)
+        self.tape_instructions.append(qml.SX(wires=qubit))
     
     def X(self,
           qubit:int):
@@ -146,7 +190,7 @@ class QuantumCircuit:
         Args:
             qubit (int): The target qubit.
         """
-        qml.X(wires=qubit)
+        self.tape_instructions.append(qml.X(wires=qubit))
 
     def ECR(self,
             control:int,
@@ -158,7 +202,7 @@ class QuantumCircuit:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        qml.ECR(wires=[control, target])
+        self.tape_instructions.append(qml.ECR(wires=[control, target]))
     
     def RY(self, 
            theta:int|float,
