@@ -3,7 +3,7 @@ from pennylane.devices.default_qubit import DefaultQubit
 from pennylane import numpy as np
 from utils.BuildQubitGateModel import BuildModel
 
-
+#TODO: Re-write the noise model injection.
 class QuantumCircuit:
     """
     This class allows a user to create a quantum circuit with error model from IBM machines with the Eagle R3 chipset using Pennylane where selected

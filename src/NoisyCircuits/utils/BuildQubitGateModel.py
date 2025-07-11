@@ -33,23 +33,22 @@ def _extract_kraus(instrs):
     """
     for inst in instrs:
         if inst["name"] == "kraus":
-            return [
+            ops_list = [
                 np.array([[complex(*e) for e in row] for row in matrix])
                 for matrix in inst["params"]
             ]
+            ops_list = [op.astype(np.complex128) for op in ops_list]
+            return ops_list
     return None
 
 class BuildModel:
     def __init__(self,
                  noise_model:dict,
-                 num_qubits:int,
-                 ancillary_qubits:int,
-                 additional_ancilla:int):
+                 num_qubits:int):
         self.noise_model = noise_model
         self.num_qubits = num_qubits
-        self.ancilla = ancillary_qubits
-        self.ancilla_2 = additional_ancilla
         self.use_qubits = list(range(num_qubits))
+        self.max_ancilla = 0
 
     def _ensure_ctpt(kraus_ops:list)->bool:
         mat = np.zeros(kraus_ops[0].shape, dtype=complex, requires_grad=False)
@@ -151,7 +150,6 @@ class BuildModel:
                     })
         return dict(ecr_errors)
     
-    #TODO: Test this function
     def build_kraus_unitary(self, kraus_ops:list)->np.ndarray:
         """
         Builds a unitary operator from the given Kraus operators.
@@ -163,18 +161,20 @@ class BuildModel:
             np.ndarray: Unitary operator constructed from the Kraus operators.
         """
         self._ensure_ctpt(kraus_ops)
-        num_dim = 2 ** math.ceil(np.log2(len(kraus_ops[0])))
-        V = np.zeros((num_dim, 2), dtype=complex)
-        env_basis = np.eye(num_dim)[:len(kraus_ops)]
-        for k,op in enumerate(kraus_ops):
-            for i in range(2):
-                sys_in = np.zeros(2, dtype=complex)
-                sys_in[i] = 1.0
-                vec = op @ sys_in
-                V[:,i] += np.kron(vec, env_basis[k])
-        U, _ = np.linalg.qr(V, mode="complete")
-        assert U.conj().T @ U == np.eye(U.shape[0]), "Failed to build unitary from Kraus operators."
-        return U
+        dim_sys = 2
+        num_kraus = len(kraus_ops)
+        dim_env = 2 ** (math.ceil(np.log2(num_kraus)))
+        V = np.vstack(kraus_ops)
+        target_rows = dim_sys * dim_env
+        current_rows = V.shape[0]
+        pad_rows = target_rows - current_rows
+        if pad_rows > 0:
+            V_padded = np.vstack([V, np.zeros((pad_rows, dim_sys), dtype=np.complex128)])
+        else:
+            V_padded = V
+        Q, _ = np.linalg.qr(V_padded, mode="complete")
+        U_springstine = Q
+        return U_springstine
     
     def post_process_single_qubit_errors(self,
                                          single_qubit_errors:dict)->dict:
@@ -188,66 +188,65 @@ class BuildModel:
         Returns:
             dict: Dictionary of post-processed single-qubit errors.
         """
-        reset_op = lambda gamma: np.array([
-                            [np.sqrt(1-gamma), 0, 0, 0],
-                            [np.sqrt(gamma), 0, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, np.sqrt(gamma), 0, np.sqrt(1-gamma)]
-                        ], dtype=complex)
-        error_channels = {
-            "x" : qml.CNOT,
-            "y" : qml.CY,
-            "z" : qml.CZ,
-            "id" : None,
+        single_qubit_errors_processed = {}
+        instruction_map = {
+            "id" : np.array([[1, 0], [0, 1]]),
+            "x" : np.array([[0, 1], [1, 0]]),
+            "y" : np.array([[0, -1j], [1j, 0]]),
+            "z" : np.array([[1, 0], [0, -1]]),
+            "K0" : np.array([[1, 0], [0, 0]]),
+            "K1" : np.array([[0, 1], [0, 0]])
         }
-        single_qubit_error_processed = {}
         for qubit in single_qubit_errors.keys():
-            for op in single_qubit_errors[qubit].keys():
-                operator_dict = {}
-                instruction_list = single_qubit_errors[qubit][op]["instructions"]
-                probabilities = single_qubit_errors[qubit][op]["probabilities"]
-                kraus = single_qubit_errors[qubit][op]["kraus"]
-                if kraus is not None:
-                    kraus_unitary = self.build_kraus_unitary(kraus)
-                else:
-                    kraus_unitary = None
-                probability_angles = []
-                for prob in probabilities:
-                    angle = 2 * np.arcsin(np.sqrt(prob))
-                    probability_angles.append(angle)
-                error_instructions = []
-                for k,instr in enumerate(instruction_list):
-                    instr_string = instr.split("-")
-                    if "kraus" in instr_string:
-                        instr_string.remove("kraus")
-                    if len(instr_string) == 1:
-                        current_instruction = instr_string[0]
-                        if current_instruction is not "reset":
-                            error_instructions.append(qml.RY(probability_angles[k], wires=self.ancilla))
-                            error_instructions.append(error_channels[current_instruction](self.ancilla, qubit))
-                            error_instructions.append(qml.measure(self.ancilla, reset=True))
-                        if current_instruction == "reset":
-                            error_instructions.append(qml.QubitUnitary(reset_op(probabilities[k]), wires=[self.ancilla, qubit]))
-                            error_instructions.append(qml.measure(self.ancilla, reset=True))
-                    else:
-                        error_instructions.append(qml.RY(probability_angles[k], wires=self.ancilla))
-                        for entry in instr_string:
-                            if entry is not "reset":
-                                error_instructions.append(error_channels[entry](self.ancilla, qubit))
+            qubit_errors = {}
+            for gate in single_qubit_errors[qubit].keys():
+                instructions = single_qubit_errors[qubit][gate]["instructions"]
+                probabilities = single_qubit_errors[qubit][gate]["probabilities"]
+                kraus_ops = single_qubit_errors[qubit][gate]["kraus"]
+                operators = []
+                ops = None
+                use_ops = None
+                for instr, prob in zip(instructions, probabilities):
+                    instruction = instr.split("-")
+                    op = np.eye(2, dtype=np.complex128)
+                    for name in instruction:
+                        if name not in ["reset", "kraus"]:
+                            op = np.dot(instruction_map[name], op)
+                        elif name == "reset":
+                            op1 = np.dot(instruction_map["K0"], op)
+                            op2 = np.dot(instruction_map["K1"], op)
+                            ops = [op1, op2]
+                        elif name == "kraus":
+                            if ops is not None:
+                                use_ops = []
+                                for kop in kraus_ops:
+                                    for op in ops:
+                                        use_op = np.dot(kop, op)
+                                        use_ops.append(use_op)
                             else:
-                                error_instructions.append(qml.QubitUnitary(reset_op(probabilities[k]), wires=[self.ancilla, qubit]))
-                        error_instructions.append(qml.measure(self.ancilla, reset=True))
-                operator_dict["error_instructions"] = error_instructions
-                if kraus_unitary is not None:
-                    operator_dict["kraus_unitary"] = [
-                                                        qml.QubitUnitary(kraus_unitary, wires=[self.ancilla, self.ancilla_2, qubit]),
-                                                        qml.measure([self.ancilla, self.ancilla_2, qubit], reset=True)
-                                                    ]
-                else:
-                    operator_dict["kraus_unitary"] = None
-                single_qubit_error_processed[qubit][op] = operator_dict
-        return single_qubit_error_processed
+                                use_ops = []
+                                for kop in kraus_ops:
+                                    use_op = np.dot(kop, op)
+                                    use_ops.append(use_op)
+                        if use_ops is not None:
+                            for op in use_ops:
+                                operators.append(op * prob)
+                        else:
+                            operators.append(op * prob)
+                unitary_noise_gate = self.build_kraus_unitary(operators)
+                num_ancilla_needed = math.ceil(np.log2(len(operators)))
+                self.max_ancilla = max(self.max_ancilla, num_ancilla_needed)
+                qubit_errors[gate] = {
+                    "unitary" : unitary_noise_gate,
+                    "num_ancilla" : num_ancilla_needed,
+                    "instructions" : instructions,
+                    "probabilities" : probabilities,
+                    "kraus" : kraus_ops
+                }
+            single_qubit_errors_processed[qubit] = qubit_errors
+        return single_qubit_errors_processed
 
+    # TODO: Complete the implementation for single/double instructions with/without Kraus operators.
     def post_process_ecr_errors(self,
                                 ecr_error:dict,
                                 threshold:float=None)->dict:
@@ -264,73 +263,25 @@ class BuildModel:
             dict: Dictionary of post-processed ECR errors.
         """
         ecr_error_processed = {}
-        pauli_param_map = {
-            "I" : None,
-            "X" : qml.X,
-            "Y" : qml.Y,
-            "Z" : qml.Z
+        instruction_map = {
+            "id" : np.array([[1,0], [0,1]]),
+            "x" : np.array([[0,1], [1,0]]),
+            "y" : np.array([[0,-1j], [1j,0]]),
+            "z" : np.array([[1,0], [0,-1]]),
+            "K0" : np.array([[1,0], [0,0]]),
+            "K1" : np.array([[0,1], [0,0]])
         }
-        error_channels = {
-            "id" : None,
-            "x" : qml.CNOT,
-            "y" : qml.CY,
-            "z" : qml.CZ
-        }
-        reset_op = lambda gamma: np.array([
-                            [np.sqrt(1-gamma), 0, 0, 0],
-                            [np.sqrt(gamma), 0, 0, 0],
-                            [0, 0, 1, 0],
-                            [0, np.sqrt(gamma), 0, np.sqrt(1-gamma)]
-                        ], dtype=complex)
-        for (q0, q1), error_list in ecr_error.items():
-            if threshold is not None:
-                filtered_errors = [e for e in error_list if e["probability"] >= threshold]
-                total_probability = sum(e["probability"] for e in filtered_errors)
-                for e in filtered_errors:
-                    e["probability"] /= total_probability
-            else:
-                filtered_errors = error_list
-            error_instructions = []
-            kraus_unitary = []
-            for instr in filtered_errors[0]["instructions"]:
-                if instr["name"] == "kraus":
-                    qubit = instr["qubits"][0]
-                    kraus_ops = _extract_kraus(instr["params"])
-                    unitary_op = self.build_kraus_unitary(kraus_ops)
-                    kraus_unitary.append(
-                        qml.QubitUnitary(unitary_op, wires=[self.ancilla, self.ancilla_2, qubit]),
-                        qml.measure([self.ancilla, self.ancilla_2], reset=True)
-                    )
-            for error in filtered_errors:
-                for instr in error["instructions"]:
-                    rotation_angle = 2 * np.arcsin(np.sqrt(error["probability"]))
-                    if instr["name"] == "pauli":
-                        param_gate_1, param_gate_2 = instr["params"]
-                        qubit_0, qubit_1 = instr["qubits"]
-                        error_instructions.append(
-                            qml.RY(rotation_angle, wires=self.ancilla),
-                            pauli_param_map[param_gate_1](qubit_0),
-                            qml.measure(self.ancilla, reset=True),
-                            qml.RY(rotation_angle, wires=self.ancilla),
-                            pauli_param_map[param_gate_2](qubit_1),
-                            qml.measure(self.ancilla, reset=True)
-                        )
-                    else:
-                        qubit = instr["qubits"][0]
-                        if instr["name"] == "reset":
-                            error_instructions.append(qml.QubitUnitary(reset_op(error["probability"]), wires=[self.ancilla, qubit]),
-                                                      qml.measure(self.ancilla, reset=True))
-                        elif instr["name"] not in ["kraus", "reset"]:
-                            error_instructions.append(qml.RY(rotation_angle, wires=self.ancilla),
-                                                      error_channels[instr["name"]](self.ancilla, qubit),
-                                                      qml.measure(self.ancilla, reset=True))
-                        else:
-                            continue
-                ecr_error_processed[(q0, q1)] = {
-                    "error_instructions": error_instructions,
-                    "kraus_unitary": kraus_unitary
-                }
-        return ecr_error_processed
+        for qubit_pair in ecr_error.keys():
+            for item in ecr_error[qubit_pair]:
+                qubit_1 = qubit_pair[0]
+                qubit_2 = qubit_pair[1]
+                instructions = item["instructions"]
+                probabilities = item["probability"]
+                for error in instructions:
+                    if error["name"] == "pauli":
+                        pass
+                    elif error["name"] == "kraus":
+                        pass
                                     
 
     def build_qubit_gate_model(self, 
