@@ -44,11 +44,13 @@ def _extract_kraus(instrs):
 class BuildModel:
     def __init__(self,
                  noise_model:dict,
-                 num_qubits:int):
+                 num_qubits:int,
+                 threshold:float=None):
         self.noise_model = noise_model
         self.num_qubits = num_qubits
         self.use_qubits = list(range(num_qubits))
         self.max_ancilla = 0
+        self.threshold = threshold
 
     def _ensure_ctpt(kraus_ops:list)->bool:
         mat = np.zeros(kraus_ops[0].shape, dtype=complex, requires_grad=False)
@@ -176,6 +178,20 @@ class BuildModel:
         U_springstine = Q
         return U_springstine
     
+    def _drop_errors(self,
+                     probabilities:list,
+                     instructions:list,
+                     threshold:float)->tuple[list, list]:
+        probs = np.array(probabilities)
+        instrs = np.array(instructions)
+        mask = probs >= threshold
+        filtered_probs = probs[mask]
+        filtered_instrs = instrs[mask]
+        filtered_probs /= np.sum(filtered_probs)
+        filtered_instrs = list(map(str, filtered_instrs))
+        filtered_probs = list(map(float, filtered_probs))
+        return filtered_probs, filtered_instrs
+    
     def post_process_single_qubit_errors(self,
                                          single_qubit_errors:dict)->dict:
         """
@@ -203,6 +219,10 @@ class BuildModel:
                 instructions = single_qubit_errors[qubit][gate]["instructions"]
                 probabilities = single_qubit_errors[qubit][gate]["probabilities"]
                 kraus_ops = single_qubit_errors[qubit][gate]["kraus"]
+                if self.threshold is not None:
+                    probabilities, instructions = self._drop_errors(
+                                                        probabilities, instructions, self.threshold
+                                                        )
                 operators = []
                 ops = None
                 use_ops = None
