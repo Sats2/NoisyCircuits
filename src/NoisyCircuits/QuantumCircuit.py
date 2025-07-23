@@ -1,9 +1,9 @@
 import pennylane as qml
-from pennylane.devices.default_qubit import DefaultQubit
 from pennylane import numpy as np
 from utils.BuildQubitGateModel import BuildModel
+from joblib import Parallel, delayed
 
-#TODO: Re-write the noise model injection.
+
 class QuantumCircuit:
     """
     This class allows a user to create a quantum circuit with error model from IBM machines with the Eagle R3 chipset using Pennylane where selected
@@ -13,152 +13,187 @@ class QuantumCircuit:
     def __init__(self,
                  num_qubits:int,
                  noise_model:dict,
-                 num_shots:int,
-                 kraus_implementation:str="Stinespring")->None:
+                 num_trajectories:int,
+                 num_cores:int=2,
+                 threshold:float=1e-12)->None:
         """
-        Initializes the QuantumCircuit with the number of qubits, noise model, number of shots, and kraus implementation.
-
-        The allowed values for the kraus implementation are "Stinespring" and "QMWF".
-        "Stinespring" uses the Stinespring Dilation theorem to represent the kraus operators.
-        "QMWF" uses the Quantum Monte-Carlo Wavefunction method to represent the kraus operators.
-        Note that the Stinespring implementation becomes an expensive operation for simulating a large number of qubits and is not recommended for large circuits.
+        Initializes the QuantumCircuit with the specified number of qubits, noise model, number of trajectories for Monte-Carlo simulation, and threshold for noise application.
 
         Args:
             num_qubits (int): The number of qubits in the circuit.
             noise_model (dict): The noise model to be used for the circuit.
-            num_shots (int): Number of shots for the circuit execution.
-            kraus_implementation (str, optional): The Kraus implementation to be used. Defaults to "Stinespring".
+            num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.
+            num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.
+            threshold (float, optional): The threshold for noise application. Defaults to 1e-12.
 
         Raises:
-            TypeError: Raised if the number of qubits is not an integer
-            TypeError: Raised if the noise model is not a dictionary
-            TypeError: Raised if the number of shots is not an integer
-            TypeError: Raised if the kraus implementation is not a string
-            ValueError: Raised if the number of qubits is not a positive integer
-            ValueError: Raised if the number of shots is not a positive integer
-            ValueError: Raised if the kraus implementation is not one of the allowed values.
+            TypeError: If num_qubits is not an integer.
+            ValueError: If num_qubits is less than 1.
+            TypeError: If the noise_model is not a dictionary.
+            TypeError: If num_trajectories is not an integer.
+            ValueError: If num_trajectories is less than 1.
+            TypeError: If threshold is not a float.
+            ValueError: If threshold is not between 0 and 1 (exclusive).
+            TypeError: If num_cores is not an integer.
+            ValueError: If num_cores is less than 1.
         """
         if not isinstance(num_qubits, int):
-            raise TypeError("num_qubits must be an integer")
-        if not isinstance(noise_model, dict):
-            raise TypeError("noise_model must be a dictionary")
-        if not isinstance(num_shots, int):
-            raise TypeError("num_shots must be an integer")
-        if not isinstance(kraus_implementation, str):
-            raise TypeError("kraus_implementation must be a string")
+            raise TypeError("Number of qubits must be an integer.")
         if num_qubits <= 0:
-            raise ValueError("num_qubits must be a positive integer")
-        if num_shots <= 0:
-            raise ValueError("num_shots must be a positive integer")
-        if kraus_implementation not in ["Stinespring", "QMWF"]:
-            raise ValueError("kraus_implementation must be either 'Stinespring' or 'QMWF'")
+            raise ValueError("Number of qubits must be a positive integer.")
+        if not isinstance(noise_model, dict):
+            raise TypeError("Noise model must be a dictionary.")
+        if not isinstance(num_trajectories, int):
+            raise TypeError("Number of trajectories must be an integer.")
+        if num_trajectories < 1:
+            raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
+        if not isinstance(threshold, float):
+            raise TypeError("Threshold must be a float.")
+        if 0 >= threshold or threshold >= 1:
+            raise ValueError("Threshold must be a float between 0 and 1 (exclusive).")
+        if not isinstance(num_cores, int):
+            raise TypeError("Number of cores must be an integer.")
+        if num_cores < 1:
+            raise ValueError("Number of cores must be a positive integer greater than or equal to 1.")
         self.num_qubits = num_qubits
-        self.num_shots = num_shots
-        if kraus_implementation == "Stinespring":
-            self.kraus_implementation = self._stinespring_dilation_implementation
-        else:
-            self.kraus_implementation = self._quantum_monte_carlo_implementation
-        self.gate_model = BuildModel(noise_model).build_qubit_gate_model()
-        self.tape_instructions = []
-        dev = DefaultQubit(wires=self.num_qubits)
-        self.executor, _ = dev.preprocess()
-        self.ancilla_idx = self.num_qubits + 1
+        self.noise_model = noise_model
+        self.num_trajectories = num_trajectories
+        self.threshold = threshold
+        self.instruction_list = []
+        self.qubit_to_instruction_list = []
+        single_error, multi_error, measure_error, connectivity = BuildModel(
+            noise_model=self.noise_model,
+            num_qubits=self.num_qubits,
+            threshold=self.threshold
+        ).build_qubit_gate_model()
+        self.single_qubit_instructions = single_error
+        self.ecr_error_instruction = multi_error
+        self.measurement_error = measure_error
+        self.connectivity = connectivity
+        # Track logical to physical qubit mapping for routing
+        self.logical_to_physical = {i: i for i in range(num_qubits)}
+        self.physical_to_logical = {i: i for i in range(num_qubits)}
 
-    
-    def _qmwf_step(self,
-                   state:np.ndarray,
-                   kraus_ops:list,
-                   probs:list)->np.ndarray:
+    def _find_shortest_path(self, start: int, end: int) -> list:
         """
-        Performs a single step of the Quantum Monte-Carlo Wavefunction method.
-
-        Args:
-            state (np.ndarray): Current state of the quantum circuit.
-            kraus_ops (list): List of Kraus Operators.
-            probs (list): List of probabilities for each Kraus operator.
-
-        Returns:
-            np.ndarray: Updated state after applying the selected Kraus operator.
-        """
-        choice = np.random.choice(range(len(kraus_ops)), p=probs)
-        psi = np.dot(kraus_ops[choice], state)
-        return psi / np.linalg.norm(psi)
-    
-    def _get_kraus_probs(self,
-                         kraus_ops:list,
-                         state:np.ndarray)->list:
-        """
-        Computes the probabilities of each Kraus operator given the current state.
-
-        Args:
-            kraus_ops (list): List of Kraus Operators.
-            state (np.ndarray): Current state of the quantum circuit.
-
-        Returns:
-            list: Probabilities of each Kraus operator.
-        """
-        probs = [np.dot(np.dot(op.conj().T, state.conj()), np.dot(op, state)) for op in kraus_ops]
-        return probs
-
-    def _quantum_monte_carlo_implementation(self, 
-                                            state:np.ndarray,
-                                            kraus_ops:list,
-                                            N:int=1000)->np.ndarray:
-        """
-        Implements the Quantum Monte-Carlo Wavefunction method for simulating the Kraus Noise for the given gate.
-
-        Args:
-            state (np.ndarray): Current State of the quantum circuit.
-            kraus_ops (list): List of Kraus Operators.
-            N (int, optional): Number of Monte-Carlo Steps to perform. Defaults to 1000.
-
-        Returns:
-            np.ndarray: Updated state after applying the selected Kraus operator.
-        """
-        psi_out = np.zeros_like(state, dtype=complex)
-        probs = self._get_kraus_probs(kraus_ops, state)
-        for _ in range(N):
-            psi_out += self._qmwf_step(state, kraus_ops, probs)
-        psi_out = psi_out / N
-        return psi_out / np.linalg.norm(psi_out)
-    
-    def _stinespring_dilation_implementation(self,
-                                             state:np.ndarray,
-                                             kraus_ops:list)->np.ndarray:
-        raise NotImplementedError()
-    
-    def _prepare_ancilla(self,
-                         rot_angle:int|float):
-        """
-        Prepares the ancilla qubit for probabilistic noise application.
-
-        Args:
-            rot_angle (int | float): Angle of rotation for the ancilla qubit corresponding to the probability of the noise instruction.
-        """
-        self.tape_instructions.append(qml.RY(phi=rot_angle, wires=self.ancilla_idx))
-
-    def _apply_probabilistic_noise(self,
-                                   instruction_name:list,
-                                   qubit:int):
-        """
-        Applies the required probabilistic noise instruction to the ancilla qubit and the target qubit.
-
-        Args:
-            instruction_name (list): List of noise instructions to apply.
-            qubit (int): Target qubit to which the noise is applied.
-        """
-        for name in instruction_name:
-            self.tape_instructions.append(name(wires=[self.ancilla_idx, qubit]))
+        Find the shortest path between two qubits using BFS.
         
-    def _reset_ancilla(self,
-                       rot_angle:int|float):
-        """
-        Resets the ancilla qubit to its initial state after applying the noise instructions.
-
         Args:
-            rot_angle (int | float): Angle of rotation for the ancilla qubit.
+            start (int): Starting qubit
+            end (int): Target qubit
+            
+        Returns:
+            list: Path from start to end qubit
         """
-        self.tape_instructions.append(qml.measure(self.ancilla_idx, reset=True))
+        if start == end:
+            return [start]
+            
+        # Build adjacency list from connectivity
+        graph = {i: [] for i in range(self.num_qubits)}
+        for edge in self.connectivity:
+            graph[edge[0]].append(edge[1])
+            graph[edge[1]].append(edge[0])
+        
+        # BFS to find shortest path
+        from collections import deque
+        queue = deque([(start, [start])])
+        visited = {start}
+        
+        while queue:
+            current, path = queue.popleft()
+            
+            for neighbor in graph[current]:
+                if neighbor == end:
+                    return path + [neighbor]
+                    
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append((neighbor, path + [neighbor]))
+        
+        raise ValueError(f"No path found between qubits {start} and {end}")
+
+    def _generate_swap_sequence(self, logical_control: int, logical_target: int) -> tuple:
+        """
+        Generate SWAP sequence to bring qubits close enough for interaction.
+        
+        Args:
+            logical_control (int): Logical control qubit
+            logical_target (int): Logical target qubit
+            
+        Returns:
+            tuple: (forward_swaps, reverse_swaps, final_control_pos, final_target_pos)
+        """
+        # Get current physical positions
+        control_pos = self.logical_to_physical[logical_control]
+        target_pos = self.logical_to_physical[logical_target]
+        
+        # Check if they're already connected
+        if (control_pos, target_pos) in self.connectivity or (target_pos, control_pos) in self.connectivity:
+            return [], [], control_pos, target_pos
+        
+        # Find shortest path between control and target
+        path = self._find_shortest_path(control_pos, target_pos)
+        
+        # Generate swaps to move target qubit towards control
+        forward_swaps = []
+        current_target_pos = target_pos
+        
+        # Move target qubit step by step towards control
+        for i in range(len(path) - 2, 0, -1):  # Move from target towards control
+            swap_pos = path[i]
+            if current_target_pos != swap_pos:
+                forward_swaps.append((current_target_pos, swap_pos))
+                # Update qubit mappings
+                self._update_mapping_after_swap(current_target_pos, swap_pos)
+                current_target_pos = swap_pos
+        
+        final_control_pos = self.logical_to_physical[logical_control]
+        final_target_pos = self.logical_to_physical[logical_target]
+        
+        # Generate reverse swaps (in reverse order)
+        reverse_swaps = forward_swaps[::-1]
+        
+        return forward_swaps, reverse_swaps, final_control_pos, final_target_pos
+
+    def _update_mapping_after_swap(self, qubit1: int, qubit2: int):
+        """
+        Update logical-physical mapping after a SWAP operation.
+        
+        Args:
+            qubit1 (int): First qubit in SWAP
+            qubit2 (int): Second qubit in SWAP
+        """
+        # Get logical qubits at these physical positions
+        logical1 = self.physical_to_logical[qubit1]
+        logical2 = self.physical_to_logical[qubit2]
+        
+        # Swap the mappings
+        self.logical_to_physical[logical1] = qubit2
+        self.logical_to_physical[logical2] = qubit1
+        self.physical_to_logical[qubit1] = logical2
+        self.physical_to_logical[qubit2] = logical1
+
+    def _apply_swap_decomposition(self, qubit1: int, qubit2: int):
+        """
+        Apply the SWAP gate decomposition and update qubit mapping.
+        
+        Args:
+            qubit1 (int): First qubit in SWAP
+            qubit2 (int): Second qubit in SWAP
+        """
+        # Apply the SWAP decomposition
+        self.RZ(theta=-np.pi/2, qubit=qubit1)
+        self.SX(qubit=qubit2)
+        self.ECR(control=qubit1, target=qubit2)
+        self.SX(qubit=qubit1)
+        self.RZ(theta=-np.pi/2, qubit=qubit2)
+        self.ECR(control=qubit2, target=qubit1)
+        self.RZ(theta=-np.pi/2, qubit=qubit1)
+        self.SX(qubit=qubit2)
+        self.ECR(control=qubit1, target=qubit2)
+        
+        # Update the qubit mapping
+        self._update_mapping_after_swap(qubit1, qubit2)
 
     def RZ(self,
            theta:int|float,
@@ -170,8 +205,9 @@ class QuantumCircuit:
             theta (int | float): The angle of rotation.
             qubit (int): The target qubit.
         """
-        self.tape_instructions.append(qml.RZ(phi=theta, wires=qubit))
-    
+        self.instruction_list.append(qml.RZ(phi=theta, wires=qubit))
+        self.qubit_to_instruction_list.append(("rz", qubit))
+
     def SX(self,
            qubit:int):
         """
@@ -180,7 +216,8 @@ class QuantumCircuit:
         Args:
             qubit (int): The target qubit.
         """
-        self.tape_instructions.append(qml.SX(wires=qubit))
+        self.instruction_list.append(qml.SX(wires=qubit))
+        self.qubit_to_instruction_list.append(("sx", qubit))
     
     def X(self,
           qubit:int):
@@ -190,7 +227,8 @@ class QuantumCircuit:
         Args:
             qubit (int): The target qubit.
         """
-        self.tape_instructions.append(qml.X(wires=qubit))
+        self.instruction_list.append(qml.X(wires=qubit))
+        self.qubit_to_instruction_list.append(("x", qubit))
 
     def ECR(self,
             control:int,
@@ -202,9 +240,10 @@ class QuantumCircuit:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.tape_instructions.append(qml.ECR(wires=[control, target]))
-    
-    def RY(self, 
+        self.instruction_list.append(qml.ECR(wires=[control, target]))
+        self.qubit_to_instruction_list.append(("ecr", (control, target)))
+
+    def RY(self,
            theta:int|float,
            qubit:int):
         """
@@ -218,6 +257,27 @@ class QuantumCircuit:
         self.SX(qubit=qubit)
         self.RZ(theta=-theta, qubit=qubit)
         self.SX(qubit=qubit)
+
+    def Y(self,
+           qubit:int):
+        """
+        Implements the Y gate using the decomposition into SX and RZ gates.
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        self.RY(theta=np.pi, qubit=qubit)
+    
+    def Z(self,
+          qubit:int):
+        """
+        Implements the exact Pauli Z gate.
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        self.H(qubit=qubit)
+        self.RY(theta=np.pi/2, qubit=qubit)
 
     def RX(self,
            theta:int|float,
@@ -252,166 +312,246 @@ class QuantumCircuit:
            control:int,
            target:int):
         """
-        Implements the CZ (Controlled-Z) gate.
+        Implements the CZ (Controlled-Z) gate with automatic routing.
 
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.SX(qubit=target)
-        self.RZ(theta=np.pi/2, qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(theta=np.pi/2, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=np.pi/2, qubit=target)
-        self.RX(theta=-np.pi/2, qubit=control)
-        self.SX(qubit=control)
+        # Generate SWAP sequence for routing
+        forward_swaps, reverse_swaps, phys_control, phys_target = self._generate_swap_sequence(control, target)
+        
+        # Apply forward SWAPs to bring qubits together
+        for swap in forward_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
+        
+        # Apply the CZ gate on physical qubits
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.RX(theta=-np.pi/2, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        
+        # Apply reverse SWAPs to restore original positions
+        for swap in reverse_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
 
     def CY(self,
            control:int,
            target:int):
         """
-        Implements the CY (Controlled-Y) gate.
+        Implements the CY (Controlled-Y) gate with automatic routing.
 
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.RZ(theta=np.pi/2, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(theta=np.pi/2, qubit=target)
-        self.RZ(theta=np.pi, qubit=control)
-        self.SX(qubit=control)
-        self.RZ(theta=np.pi, qubit=control)
-        self.SX(qubit=control)
+        # Generate SWAP sequence for routing
+        forward_swaps, reverse_swaps, phys_control, phys_target = self._generate_swap_sequence(control, target)
+        
+        # Apply forward SWAPs to bring qubits together
+        for swap in forward_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
+        
+        # Apply the CY gate on physical qubits
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.RZ(theta=np.pi, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        self.RZ(theta=np.pi, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        
+        # Apply reverse SWAPs to restore original positions
+        for swap in reverse_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
 
     def CX(self,
            control:int,
            target:int):
         """
-        Implements the CX (Controlled-X) gate.
+        Implements the CX (Controlled-X) gate with automatic routing.
 
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(theta=-np.pi, qubit=control)
-        self.SX(qubit=control)
-        self.RZ(theta=np.pi, qubit=control)
-        self.SX(qubit=control)
+        # Generate SWAP sequence for routing
+        forward_swaps, reverse_swaps, phys_control, phys_target = self._generate_swap_sequence(control, target)
+        
+        # Apply forward SWAPs to bring qubits together
+        for swap in forward_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
+        
+        # Apply the CX gate on physical qubits
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=-np.pi, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        self.RZ(theta=np.pi, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        
+        # Apply reverse SWAPs to restore original positions
+        for swap in reverse_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
 
     def SWAP(self,
              qubit1:int,
              qubit2:int):
         """
-        Implements the SWAP gate.
+        Implements the SWAP gate with automatic routing.
 
         Args:
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=qubit1)
-        self.SX(qubit=qubit2)
-        self.ECR(control=qubit1, target=qubit2)
-        self.SX(qubit=qubit1)
-        self.RZ(theta=-np.pi/2, qubit=qubit2)
-        self.ECR(control=qubit2, target=qubit1)
-        self.RZ(theta=-np.pi/2, qubit=qubit1)
-        self.SX(qubit=qubit1)
-        self.ECR(control=qubit1, target=qubit2)
+        # Check if qubits are directly connected
+        physical1 = self.logical_to_physical[qubit1]
+        physical2 = self.logical_to_physical[qubit2]
+        
+        if (physical1, physical2) in self.connectivity or (physical2, physical1) in self.connectivity:
+            # Direct SWAP possible
+            self._apply_swap_decomposition(physical1, physical2)
+        else:
+            # Need routing for SWAP - this creates a chain of SWAPs
+            path = self._find_shortest_path(physical1, physical2)
+            
+            # Create a series of adjacent SWAPs to move qubit1 to qubit2's position
+            current_pos = physical1
+            for i in range(1, len(path)):
+                next_pos = path[i]
+                self._apply_swap_decomposition(current_pos, next_pos)
+                current_pos = next_pos
 
     def CRX(self,
             theta:int|float,
             control:int,
             target:int):
         """
-        Implements the CRX (Controlled-RX) gate.
+        Implements the CRX (Controlled-RX) gate with automatic routing.
 
         Args:
             theta (int | float): The rotation angle.
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.RZ(theta=-np.pi/2, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=(np.pi - theta)/2, qubit=target)
-        self.SX(qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(theta=np.pi - theta/2, qubit=target)
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.SX(qubit=target)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(np.pi/2, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(np.pi/2, qubit=target)
-        self.SX(qubit=control)
-        self.RZ(theta=np.pi, qubit=control)
-        self.SX(qubit=control)
-        self.RZ(np.pi, qubit=control)
+        # Generate SWAP sequence for routing
+        forward_swaps, reverse_swaps, phys_control, phys_target = self._generate_swap_sequence(control, target)
+        
+        # Apply forward SWAPs to bring qubits together
+        for swap in forward_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
+        
+        # Apply the CRX gate on physical qubits
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=(np.pi - theta)/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=np.pi - theta/2, qubit=phys_target)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_control)
+        self.RZ(theta=np.pi, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        self.RZ(np.pi, qubit=phys_control)
+        
+        # Apply reverse SWAPs to restore original positions
+        for swap in reverse_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
 
     def CRY(self,
             theta:int|float,
             control:int,
             target:int):
         """
-        Implements the CRY (Controlled-RY) gate.
+        Implements the CRY (Controlled-RY) gate with automatic routing.
 
         Args:
             theta (int | float): The rotation angle.
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=np.pi - theta/2, qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.SX(qubit=target)
-        self.RZ(theta=-np.pi + theta/2, qubit=target)
-        self.ECR(control=control, target=target)
+        # Generate SWAP sequence for routing
+        forward_swaps, reverse_swaps, phys_control, phys_target = self._generate_swap_sequence(control, target)
+        
+        # Apply forward SWAPs to bring qubits together
+        for swap in forward_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
+        
+        # Apply the CRY gate on physical qubits
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=np.pi - theta/2, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=-np.pi + theta/2, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        
+        # Apply reverse SWAPs to restore original positions
+        for swap in reverse_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
 
     def CRZ(self,
             theta:int|float,
             control:int,
             target:int):
         """
-        Implements the CRZ (Controlled-RZ) gate.
+        Implements the CRZ (Controlled-RZ) gate with automatic routing.
 
         Args:
             theta (int | float): The rotation angle.
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.RZ(theta=-np.pi/2, qubit=control)
-        self.RZ(theta=-np.pi + theta/2, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.ECR(control=control, target=target)
-        self.X(qubit=control)
-        self.RZ(theta=np.pi - theta/2, qubit=target)
-        self.SX(qubit=target)
-        self.RZ(theta=-np.pi, qubit=target)
-        self.ECR(control=control, target=target)
-        self.RZ(theta=-np.pi/2, qubit=control)
+        # Generate SWAP sequence for routing
+        forward_swaps, reverse_swaps, phys_control, phys_target = self._generate_swap_sequence(control, target)
+        
+        # Apply forward SWAPs to bring qubits together
+        for swap in forward_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
+        
+        # Apply the CRZ gate on physical qubits
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi + theta/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=np.pi - theta/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=-np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        
+        # Apply reverse SWAPs to restore original positions
+        for swap in reverse_swaps:
+            self._apply_swap_decomposition(swap[0], swap[1])
 
     def get_state(self)-> np.ndarray:
         """
@@ -430,3 +570,81 @@ class QuantumCircuit:
             np.ndarray: The probabilities of the current state of the quantum circuit.
         """
         return qml.probs(wires=range(self.num_qubits))
+
+    def get_qubit_mapping(self) -> dict:
+        """
+        Returns the current logical to physical qubit mapping.
+        
+        Returns:
+            dict: Mapping from logical to physical qubits.
+        """
+        return self.logical_to_physical.copy()
+
+    def reset_qubit_mapping(self):
+        """
+        Resets the qubit mapping to the initial state.
+        """
+        self.logical_to_physical = {i: i for i in range(self.num_qubits)}
+        self.physical_to_logical = {i: i for i in range(self.num_qubits)}
+
+    def execute(self)->np.ndarray:
+        """
+        Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
+
+        Returns:
+            np.ndarray: The probabilities of the output states.
+        """
+        dev = qml.device("lightning.qubit", wires=self.num_qubits)
+
+        @qml.qnode(dev)
+        def apply_gate(state, gate):
+            qml.StatePrep(state, wires=range(self.num_qubits))
+            qml.apply(gate)
+            return qml.state()
+        
+        def apply_single_noisy_gate(state, gate, qubit, gate_id):
+            psi = state.copy()
+            state_mod = apply_gate(psi, gate)
+            if np.isnan(state_mod).any():
+                psi = psi + np.random.normal(0, 1e-8, size=state.shape)
+                state_mod = apply_gate(psi, gate)
+            kraus_probs = [np.vdot(np.dot(op, state_mod), np.dot(op,state_mod)) for op in self.single_qubit_instructions[qubit][gate_id]["kraus_operators"]]
+            kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
+            chosen_op = np.random.choice(range(len(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"])), p=kraus_probs)
+            state_after = np.dot(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"][chosen_op], state_mod) / np.sqrt(kraus_probs[chosen_op])
+            return state_after
+
+        def apply_noisy_ecr_gate(state, gate, qubit_pair):
+            psi = state.copy()
+            state_after = apply_gate(psi, gate)
+            if np.isnan(state_after).any():
+                psi = psi + np.random.normal(0, 1e-8, size=state.shape)
+                state_after = apply_gate(psi, gate)
+            kraus_probs = [np.vdot(np.dot(op, state_after), np.vdot(op, state_after)) for op in self.ecr_error_instruction[qubit_pair]["operators"]]
+            kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
+            chosen_op = np.random.choice(range(len(self.ecr_error_instruction[qubit_pair]["operators"])), p=kraus_probs)
+            state_after = np.dot(self.ecr_error_instruction[qubit_pair]["operators"][chosen_op], state_after) / np.sqrt(kraus_probs[chosen_op])
+            return state_after
+
+        def compute_trajectory(traj_id):
+            init_state = np.zeros(2**self.num_qubits)
+            init_state[0] = 1.0
+            state = init_state.copy()
+            for gate, instruction in zip(self.instruction_list, self.qubit_to_instruction_list):
+                gate_instruction = instruction[0]
+                qubit_added = instruction[1]
+                if isinstance(qubit_added, int):
+                    if gate_instruction not in self.single_qubit_instructions[qubit_added].keys():
+                        state = apply_gate(state.copy(), gate)
+                    else:
+                        state = apply_single_noisy_gate(state.copy(), gate, qubit_added, gate_instruction)
+                else:
+                    state = apply_noisy_ecr_gate(state.copy(), gate, qubit_added)
+            return state
+        
+        all_states = Parallel(n_jobs=self.num_cores)(delayed(compute_trajectory)(traj_id) for traj_id in range(self.num_trajectories))
+        probs = np.zeros(2**self.num_qubits)
+        for state in all_states:
+            probs += np.abs(state**2).real
+        probs /= self.num_trajectories
+        return probs
