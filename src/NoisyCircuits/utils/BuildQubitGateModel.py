@@ -1,8 +1,8 @@
-import numpy as np
+from pennylane import numpy as np
 from collections import defaultdict
 import math
 
-def _map_instruction_qubits(instrs, gate_qubits):
+def _map_instruction_qubits(instrs, gate_qubits)->list:
     """
     Maps the qubits in the instructions to the specified gate qubits.
 
@@ -20,7 +20,7 @@ def _map_instruction_qubits(instrs, gate_qubits):
         mapped.append(mapped_inst)
     return mapped
 
-def _extract_kraus(instrs):
+def _extract_kraus(instrs)->list:
     """
     Extracts the Kraus operators from the instructions.
 
@@ -49,7 +49,7 @@ class BuildModel:
         Initializes the BuildModel with a noise model, number of qubits, and an optional threshold.
 
         Args:
-            noise_model (dict): The noise model to use.
+            noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
             num_qubits (int): The number of qubits in the model.
             threshold (float, optional): The threshold for noise. Defaults to None.
         
@@ -183,7 +183,8 @@ class BuildModel:
                     })
         return dict(ecr_errors)
     
-    def build_full_matrix(P:np.ndarray,
+    def build_full_matrix(self,
+                          P:np.ndarray,
                           n:int, 
                           system:int)->np.ndarray:
         """
@@ -452,6 +453,8 @@ class BuildModel:
                     unique_kraus_operators = {q: ops for q, ops in zip(unique_kraus_per_qubit.keys(), unique_kraus_per_qubit)}
                     probabilities = np.array(probabilities)
                     probabilities /= np.sum(probabilities)
+                else:
+                    unique_kraus_operators = None
                 processed_errors[qpair] = {
                     "instructions": instructions,
                     "probabilities": probabilities,
@@ -571,6 +574,31 @@ class BuildModel:
                 }
         return ecr_error_operators
 
+    def _create_connectivity_map(self, ecr_error_instructions:dict, use_qubits:list)->dict:
+        """
+        Creates a connectivity map from ECR error instructions showing which qubits are connected.
+
+        Args:
+            ecr_error_instructions (dict): Dictionary of ECR error instructions with qubit pairs as keys.
+            use_qubits (list): List of qubits being used in the system.
+        
+        Returns:
+            dict: Connectivity map showing which qubits are connected to each other.
+        """
+        connectivity_map = {qubit: [] for qubit in use_qubits}
+        
+        # Extract connectivity from ECR error instruction keys (qubit pairs)
+        for qubit_pair in ecr_error_instructions.keys():
+            if isinstance(qubit_pair, tuple) and len(qubit_pair) == 2:
+                q0, q1 = qubit_pair
+                if q0 in use_qubits and q1 in use_qubits:
+                    if q1 not in connectivity_map[q0]:
+                        connectivity_map[q0].append(q1)
+                    if q0 not in connectivity_map[q1]:
+                        connectivity_map[q1].append(q0)
+        
+        return connectivity_map
+
     def extract_measurement_errors(self,
                                     data:list,
                                     extract_qubits:list[int])->dict:
@@ -588,7 +616,7 @@ class BuildModel:
         for entry in data:
             if entry.get("type") != "roerror":
                 continue
-            operations = entry.get("gat_qubits", [])
+            operations = entry.get("operations", [])  # Fixed typo: was "gat_qubits"
             target_ops = ["measure"]
             if target_ops and not any(op in target_ops for op in operations):
                 continue
@@ -602,12 +630,19 @@ class BuildModel:
                         "matrix": matrix
                     }
         measurement_errors = {}
+        print("Available qubits in roerror_map:", list(roerror_map.keys()))
+        print("Requested qubits:", extract_qubits)
         for qubit in extract_qubits:
-            matrix = np.zeros((2,2))
-            matrix[0,0] = roerror_map[qubit]["matrix"][0]
-            matrix[0,1] = roerror_map[qubit]["matrix"][1]
-            matrix[1,0] = roerror_map[qubit]["matrix"][1]
-            matrix[1,1] = roerror_map[qubit]["matrix"][0]
+            if qubit not in roerror_map:
+                print(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
+                # Use identity matrix (no error) if measurement error data is not available
+                matrix = np.eye(2)
+            else:
+                matrix = np.zeros((2,2))
+                matrix[0,0] = roerror_map[qubit]["matrix"][0]
+                matrix[0,1] = roerror_map[qubit]["matrix"][1]
+                matrix[1,0] = roerror_map[qubit]["matrix"][1]
+                matrix[1,1] = roerror_map[qubit]["matrix"][0]
             measurement_errors[qubit] = matrix
         return measurement_errors
 
@@ -632,9 +667,18 @@ class BuildModel:
             self.noise_model["errors"],
             self.use_qubits
         )
+        print("Completed Extraction of ECR Errors.\nStarting post-processing on Single Qubit Errors.")
         single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors)
+        print("Completed post-processing on Single Qubit Errors.")
         ecr_error_post_processed = self.post_process_ecr_errors(ecr_errors, threshold)
+        print("Building Noise Operators for ECR Errors.")
         ecr_error_instructions = self.get_ecr_noise_operators(ecr_error_post_processed)
+        print("Completed building Noise Operators for ECR Errors.\nExtracting Measurement Errors.")
         measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
                                                               self.use_qubits)
-        return single_qubit_error_instructions, ecr_error_instructions, measurement_errors
+        print("Completed Extraction of Measurement Errors.")
+        print("Preparing Qubit Connectivity Map for Requested Qubits")
+        connectivity_map = self._create_connectivity_map(ecr_error_instructions, self.use_qubits)
+        print("Qubit Connectivity Map Prepared.")
+        print("Returning Single Qubit Error Instructions, ECR Error Instructions, Measurement Errors and Connectivity Map.")
+        return single_qubit_error_instructions, ecr_error_instructions, measurement_errors, connectivity_map
