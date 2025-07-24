@@ -8,3 +8,5 @@ dependencies:
   - pip:
     - pennylane
     - qiskit
+    - qiskit-aer
+    - qiskit-ibm-runtime
