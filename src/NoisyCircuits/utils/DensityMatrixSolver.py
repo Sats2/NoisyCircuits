@@ -53,9 +53,13 @@ class DensityMatrixSolver:
         self.instruction_list = instruction_list
         self.qubit_instruction_list = qubit_instruction_list
 
-    def solve(self)->np.ndarray:
+    def solve(self,
+              qubits:list)->np.ndarray:
         """
         Solves the quantum circuit using density matrices and returns the probabilities of measuring each qubit in the computational basis.
+
+        Args:
+            qubits (list): List of qubits to be measured.
 
         Returns:
             np.ndarray: Probabilities of measuring each qubit in the computational basis.
@@ -75,8 +79,9 @@ class DensityMatrixSolver:
                         qml.QubitChannel(self.single_qubit_noise[qubit_added][gate_instruction]["kraus_operators"], wires=range(self.num_qubits))
                 else:
                     qml.apply(gate)
+                    qubit_added = tuple(sorted(qubit_added))
                     qml.QubitChannel(self.ecr_noise[qubit_added]["operators"], wires=range(self.num_qubits))
-            return qml.probs(wires=range(self.num_qubits))
+            return qml.probs(wires=qubits)
         
         probs = run_circuit()
         return probs

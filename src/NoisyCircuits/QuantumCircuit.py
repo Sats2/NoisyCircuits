@@ -1,3 +1,8 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+
 import pennylane as qml
 from pennylane import numpy as np
 from utils.BuildQubitGateModel import BuildModel
@@ -572,26 +577,76 @@ class QuantumCircuit:
         self.logical_to_physical = {i: i for i in range(self.num_qubits)}
         self.physical_to_logical = {i: i for i in range(self.num_qubits)}
 
+    def refresh(self):
+        """
+        Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.
+        """
+        self.instruction_list = []
+        self.qubit_to_instruction_list = []
+
     def execute(self,
-                qubits:list[int])->np.ndarray:
+                qubits:list[int],
+                num_trajectories:int)->np.ndarray:
         """
         Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
 
         Args:
             qubits (list[int]): The list of qubits to be measured.
+            num_trajectories (int): The number of trajectories for the Monte-Carlo simulation (can be modified). Defaults to None and uses the class attribute.
+                                    If specified, it overrides the class attribute for this execution.
+        
+        Raises:
+            TypeError: If qubits is not a list.
+            TypeError: If num_trajectories is not an integer.
+            ValueError: If num_trajectories is less than 1.
+            ValueError: If qubits contains invalid qubit indices.
 
         Returns:
             np.ndarray: The probabilities of the output states.
         """
         dev = qml.device("lightning.qubit", wires=self.num_qubits)
+        if not isinstance(qubits, list):
+            raise TypeError("Qubits must be a list of integers.")
+        if not all(isinstance(q, int) for q in qubits):
+            raise TypeError("All qubits must be integers.")
+        if not all(0 <= q < self.num_qubits for q in qubits):
+            raise ValueError(f"Qubits must be in the range [0, {self.num_qubits - 1}].")
+        if num_trajectories is not None:
+            if not isinstance(num_trajectories, int):
+                raise TypeError("Number of trajectories must be an integer.")
+            if num_trajectories < 1:
+                raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
+            self.num_trajectories = num_trajectories
 
         @qml.qnode(dev)
         def apply_gate(state, gate):
+            """
+            Applies a quantum gate to the given state.
+
+            Args:
+                state (np.ndarray): The input state vector.
+                gate (qml.operation): The quantum gate to be applied.
+
+            Returns:
+                np.ndarray: Updated state after applying the gate.
+            """
             qml.StatePrep(state, wires=range(self.num_qubits))
             qml.apply(gate)
             return qml.state()
         
         def apply_single_noisy_gate(state, gate, qubit, gate_id):
+            """
+            Applies the noise operation for the given gate using the MCWF method.
+
+            Args:
+                state (np.ndarray): Input state of the system.
+                gate (qml.operation): The quantum gate to be applied.
+                qubit (int): Target Qubit for the noisy gate.
+                gate_id (str): Name of the gate.
+
+            Returns:
+                np.ndarray: Updated state after applying the gate.
+            """
             psi = state.copy()
             state_mod = apply_gate(psi, gate)
             if np.isnan(state_mod).any():
@@ -599,12 +654,22 @@ class QuantumCircuit:
                 state_mod = apply_gate(psi, gate)
             kraus_probs = [np.vdot(np.dot(op, state_mod), np.dot(op,state_mod)) for op in self.single_qubit_instructions[qubit][gate_id]["kraus_operators"]]
             kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
-            print(kraus_probs)
             chosen_op = np.random.choice(range(len(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"])), p=kraus_probs)
             state_after = np.dot(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"][chosen_op], state_mod) / np.sqrt(kraus_probs[chosen_op])
             return state_after
 
         def apply_noisy_ecr_gate(state, gate, qubit_pair):
+            """
+            Applies the noise operation for the given gate using the MCWF method.
+
+            Args:
+                state (np.ndarray): Input state of the system.
+                gate (qml.operation): The quantum gate to be applied.
+                qubit_pair (tuple[int, int]): The pair of qubits affected by the gate.
+
+            Returns:
+                np.ndarray: Updated state after applying the gate.
+            """
             psi = state.copy()
             state_after = apply_gate(psi, gate)
             qubit_pair = tuple(sorted(qubit_pair))
@@ -613,17 +678,34 @@ class QuantumCircuit:
                 state_after = apply_gate(psi, gate)
             kraus_probs = [np.vdot(np.dot(op, state_after), np.dot(op, state_after)) for op in self.ecr_error_instruction[qubit_pair]["operators"]]
             kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
-            print(kraus_probs)
             chosen_op = np.random.choice(range(len(self.ecr_error_instruction[qubit_pair]["operators"])), p=kraus_probs)
             state_after = np.dot(self.ecr_error_instruction[qubit_pair]["operators"][chosen_op], state_after) / np.sqrt(kraus_probs[chosen_op])
             return state_after
         
         @qml.qnode(dev)
         def get_probs(state):
+            """
+            Computes the probabilities of the output states after preparing the quantum state.
+
+            Args:
+                state (np.ndarray): Input state of the system.
+
+            Returns:
+                np.ndarray: Probabilities of the output states.
+            """
             qml.StatePrep(state, wires=range(self.num_qubits))
             return qml.probs(wires=qubits)
 
         def compute_trajectory(traj_id):
+            """
+            Computes a single trajectory of the MCWF simulation.
+
+            Args:
+                traj_id (int): ID of the trajectory.
+
+            Returns:
+                np.ndarray: Probabilities of the output states.
+            """
             np.random.seed(32+traj_id)
             init_state = np.zeros(2**self.num_qubits)
             init_state[0] = 1.0
@@ -641,15 +723,25 @@ class QuantumCircuit:
             p = get_probs(state)
             return p
         
-        # all_probs = Parallel(n_jobs=self.num_cores)(delayed(compute_trajectory)(traj_id) for traj_id in range(self.num_trajectories))
-        all_probs = [compute_trajectory(traj_id) for traj_id in range(self.num_trajectories)]
-        probs = np.zeros(2**self.num_qubits)
+        all_probs = Parallel(n_jobs=self.num_cores)(delayed(compute_trajectory)(traj_id) for traj_id in range(self.num_trajectories))
+        # all_probs = [compute_trajectory(traj_id) for traj_id in range(self.num_trajectories)]
+        probs = np.zeros(2**len(qubits))
         for state in all_probs:
             probs += state
         probs /= self.num_trajectories
         return probs
     
-    def run_with_density_matrix(self):
+    def run_with_density_matrix(self, 
+                                qubits:list[int])->np.ndarray:
+        """
+        Runs the quantum circuit with the density matrix solver.
+
+        Args:
+            qubits (list[int]): List of qubits to be simulated.
+
+        Returns:
+            np.ndarray: Probabilities of the output states.
+        """
         density_matrix_solver = DensityMatrixSolver(
             num_qubits=self.num_qubits,
             single_qubit_noise=self.single_qubit_instructions,
@@ -658,11 +750,21 @@ class QuantumCircuit:
             instruction_list=self.instruction_list,
             qubit_instruction_list=self.qubit_to_instruction_list
         )
-        return density_matrix_solver.solve()
+        return density_matrix_solver.solve(qubits=qubits)
     
-    def run_pure_state(self):
+    def run_pure_state(self, 
+                       qubits:list[int])->np.ndarray:
+        """
+        Runs the quantum circuit with the pure state solver.
+
+        Args:
+            qubits (list[int]): List of qubits to be simulated.
+
+        Returns:
+            np.ndarray: Probabilities of the output states.
+        """
         pure_state_solver = PureStateSolver(
             num_qubits=self.num_qubits,
             instruction_list=self.instruction_list
             )
-        return pure_state_solver.solve()
+        return pure_state_solver.solve(qubits=qubits)

@@ -359,13 +359,17 @@ class BuildModel:
                                 for kop in kraus_ops:
                                     use_op = np.dot(kop, op)
                                     use_ops.append(use_op)
-                        if use_ops is not None:
-                            for op in use_ops:
-                                operators.append(np.sqrt(prob) * op)
-                        else:
+                    if use_ops is not None:
+                        for op in use_ops:
                             operators.append(np.sqrt(prob) * op)
+                    else:
+                        operators.append(np.sqrt(prob) * op)
                 if not self._ensure_ctpt(operators):
                     print(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
+                    mat = np.zeros((2,2), dtype=complex)
+                    for op in operators:
+                        mat += np.dot(op.conj().T, op)
+                    print(mat)
                 kraus_operators = self.extend_kraus_to_system(operators, qubit)
                 if not self._ensure_ctpt(kraus_operators):
                     print(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
@@ -574,12 +578,12 @@ class BuildModel:
                             for kraus_op in kraus_operations_for_q1:
                                 k_op = np.kron(q0_ops, kraus_op)
                                 error_operators.append(np.sqrt(prob) * k_op)
-                error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
-                if not self._ensure_ctpt(error_operators_full_system):
-                    print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
-                ecr_error_operators[qpair] = {
-                    "operators": error_operators_full_system
-                }
+            error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
+            if not self._ensure_ctpt(error_operators_full_system):
+                print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
+            ecr_error_operators[qpair] = {
+                "operators": error_operators_full_system
+            }
         return ecr_error_operators
 
     def _create_connectivity_map(self, ecr_error_instructions:dict, use_qubits:list)->dict:
