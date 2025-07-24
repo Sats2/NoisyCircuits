@@ -1,6 +1,8 @@
 import pennylane as qml
 from pennylane import numpy as np
 from utils.BuildQubitGateModel import BuildModel
+from utils.DensityMatrixSolver import DensityMatrixSolver
+from utils.PureStateSolver import PureStateSolver
 from joblib import Parallel, delayed
 
 
@@ -59,6 +61,7 @@ class QuantumCircuit:
         self.noise_model = noise_model
         self.num_trajectories = num_trajectories
         self.threshold = threshold
+        self.num_cores = num_cores
         self.instruction_list = []
         self.qubit_to_instruction_list = []
         single_error, multi_error, measure_error, connectivity = BuildModel(
@@ -88,11 +91,11 @@ class QuantumCircuit:
         if start == end:
             return [start]
             
-        # Build adjacency list from connectivity
+        # Use connectivity map directly as it's already in adjacency list format
+        # Ensure all qubits are represented in the graph
         graph = {i: [] for i in range(self.num_qubits)}
-        for edge in self.connectivity:
-            graph[edge[0]].append(edge[1])
-            graph[edge[1]].append(edge[0])
+        for qubit, neighbors in self.connectivity.items():
+            graph[qubit] = neighbors
         
         # BFS to find shortest path
         from collections import deque
@@ -128,7 +131,7 @@ class QuantumCircuit:
         target_pos = self.logical_to_physical[logical_target]
         
         # Check if they're already connected
-        if (control_pos, target_pos) in self.connectivity or (target_pos, control_pos) in self.connectivity:
+        if target_pos in self.connectivity.get(control_pos, []) or control_pos in self.connectivity.get(target_pos, []):
             return [], [], control_pos, target_pos
         
         # Find shortest path between control and target
@@ -422,7 +425,7 @@ class QuantumCircuit:
         physical1 = self.logical_to_physical[qubit1]
         physical2 = self.logical_to_physical[qubit2]
         
-        if (physical1, physical2) in self.connectivity or (physical2, physical1) in self.connectivity:
+        if physical2 in self.connectivity.get(physical1, []) or physical1 in self.connectivity.get(physical2, []):
             # Direct SWAP possible
             self._apply_swap_decomposition(physical1, physical2)
         else:
@@ -553,24 +556,6 @@ class QuantumCircuit:
         for swap in reverse_swaps:
             self._apply_swap_decomposition(swap[0], swap[1])
 
-    def get_state(self)-> np.ndarray:
-        """
-        Returns the current state of the quantum circuit. And resets the circuit.
-
-        Returns:
-            np.ndarray: The current state of the quantum circuit.
-        """
-        return qml.state()
-
-    def get_probs(self)->np.ndarray:
-        """
-        Returns the probabilities of the current state of the quantum circuit.
-
-        Returns:
-            np.ndarray: The probabilities of the current state of the quantum circuit.
-        """
-        return qml.probs(wires=range(self.num_qubits))
-
     def get_qubit_mapping(self) -> dict:
         """
         Returns the current logical to physical qubit mapping.
@@ -587,9 +572,13 @@ class QuantumCircuit:
         self.logical_to_physical = {i: i for i in range(self.num_qubits)}
         self.physical_to_logical = {i: i for i in range(self.num_qubits)}
 
-    def execute(self)->np.ndarray:
+    def execute(self,
+                qubits:list[int])->np.ndarray:
         """
         Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
+
+        Args:
+            qubits (list[int]): The list of qubits to be measured.
 
         Returns:
             np.ndarray: The probabilities of the output states.
@@ -610,6 +599,7 @@ class QuantumCircuit:
                 state_mod = apply_gate(psi, gate)
             kraus_probs = [np.vdot(np.dot(op, state_mod), np.dot(op,state_mod)) for op in self.single_qubit_instructions[qubit][gate_id]["kraus_operators"]]
             kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
+            print(kraus_probs)
             chosen_op = np.random.choice(range(len(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"])), p=kraus_probs)
             state_after = np.dot(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"][chosen_op], state_mod) / np.sqrt(kraus_probs[chosen_op])
             return state_after
@@ -617,16 +607,24 @@ class QuantumCircuit:
         def apply_noisy_ecr_gate(state, gate, qubit_pair):
             psi = state.copy()
             state_after = apply_gate(psi, gate)
+            qubit_pair = tuple(sorted(qubit_pair))
             if np.isnan(state_after).any():
                 psi = psi + np.random.normal(0, 1e-8, size=state.shape)
                 state_after = apply_gate(psi, gate)
-            kraus_probs = [np.vdot(np.dot(op, state_after), np.vdot(op, state_after)) for op in self.ecr_error_instruction[qubit_pair]["operators"]]
+            kraus_probs = [np.vdot(np.dot(op, state_after), np.dot(op, state_after)) for op in self.ecr_error_instruction[qubit_pair]["operators"]]
             kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
+            print(kraus_probs)
             chosen_op = np.random.choice(range(len(self.ecr_error_instruction[qubit_pair]["operators"])), p=kraus_probs)
             state_after = np.dot(self.ecr_error_instruction[qubit_pair]["operators"][chosen_op], state_after) / np.sqrt(kraus_probs[chosen_op])
             return state_after
+        
+        @qml.qnode(dev)
+        def get_probs(state):
+            qml.StatePrep(state, wires=range(self.num_qubits))
+            return qml.probs(wires=qubits)
 
         def compute_trajectory(traj_id):
+            np.random.seed(32+traj_id)
             init_state = np.zeros(2**self.num_qubits)
             init_state[0] = 1.0
             state = init_state.copy()
@@ -640,11 +638,31 @@ class QuantumCircuit:
                         state = apply_single_noisy_gate(state.copy(), gate, qubit_added, gate_instruction)
                 else:
                     state = apply_noisy_ecr_gate(state.copy(), gate, qubit_added)
-            return state
+            p = get_probs(state)
+            return p
         
-        all_states = Parallel(n_jobs=self.num_cores)(delayed(compute_trajectory)(traj_id) for traj_id in range(self.num_trajectories))
+        # all_probs = Parallel(n_jobs=self.num_cores)(delayed(compute_trajectory)(traj_id) for traj_id in range(self.num_trajectories))
+        all_probs = [compute_trajectory(traj_id) for traj_id in range(self.num_trajectories)]
         probs = np.zeros(2**self.num_qubits)
-        for state in all_states:
-            probs += np.abs(state**2).real
+        for state in all_probs:
+            probs += state
         probs /= self.num_trajectories
         return probs
+    
+    def run_with_density_matrix(self):
+        density_matrix_solver = DensityMatrixSolver(
+            num_qubits=self.num_qubits,
+            single_qubit_noise=self.single_qubit_instructions,
+            ecr_noise=self.ecr_error_instruction,
+            measurement_noise=self.measurement_error,
+            instruction_list=self.instruction_list,
+            qubit_instruction_list=self.qubit_to_instruction_list
+        )
+        return density_matrix_solver.solve()
+    
+    def run_pure_state(self):
+        pure_state_solver = PureStateSolver(
+            num_qubits=self.num_qubits,
+            instruction_list=self.instruction_list
+            )
+        return pure_state_solver.solve()

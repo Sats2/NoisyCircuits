@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python==3.10.14
-  joblib
+  - joblib
   pip:
     - pennylane
     - numpy

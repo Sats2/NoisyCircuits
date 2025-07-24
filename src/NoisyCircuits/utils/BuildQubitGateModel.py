@@ -72,7 +72,8 @@ class BuildModel:
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
 
-    def _ensure_ctpt(kraus_ops:list)->bool:
+    def _ensure_ctpt(self,
+                    kraus_ops:list)->bool:
         """Ensures that the given Kraus operators form a CPTP map.
 
         Args:
@@ -87,9 +88,7 @@ class BuildModel:
         mat = np.zeros(kraus_ops[0].shape, dtype=complex, requires_grad=False)
         for op in kraus_ops:
             mat += np.dot(op.conj().T, op)
-        if not np.allclose(mat, np.eye(mat.shape[0], dtype=complex), atol=1e-3):
-            raise Warning("Kraus operators do not form a complete positivity trace-preserving (CPTP) map.")
-        return True
+        return np.allclose(mat, np.eye(mat.shape[0], dtype=complex), atol=1e-6)
     
     def extract_single_qubit_qerrors(self,
                                     data:list,
@@ -211,22 +210,20 @@ class BuildModel:
     
     def extend_kraus_to_system(self, 
                                kraus_ops:list, 
-                               qubit_idx:int,
-                               probabilities:list)->list:
+                               qubit_idx:int)->list:
         """Extends Kraus operators to the full system.
 
         Args:
             kraus_ops (list): List of Kraus operators for the subsystem.
             qubit_idx (int): Index of the qubit to which the operators are applied.
-            probabilities (list): List of probabilities corresponding to the Kraus operators.
 
         Returns:
             list: List of extended Kraus operators for the full system.
         """
         system_qubits = self.num_qubits
         extended_kraus = []
-        for op, prob in zip(kraus_ops, probabilities):
-            extended_op = self.build_full_matrix(np.sqrt(prob)*op, qubit_idx, system_qubits)
+        for op in kraus_ops:
+            extended_op = self.build_full_matrix(op, qubit_idx, system_qubits)
             extended_kraus.append(extended_op)
         return extended_kraus
     
@@ -335,6 +332,8 @@ class BuildModel:
                     probabilities, instructions = self._drop_errors(
                                                         probabilities, instructions, self.threshold
                                                         )
+                    assert len(probabilities) == len(instructions), "Probabilities and instructions must have the same length after filtering."
+                    assert np.allclose(np.sum(probabilities), 1), "Filtered probabilities must sum to 1."
                 operators = []
                 ops = None
                 use_ops = None
@@ -362,10 +361,14 @@ class BuildModel:
                                     use_ops.append(use_op)
                         if use_ops is not None:
                             for op in use_ops:
-                                operators.append(op * np.sqrt(prob))
+                                operators.append(np.sqrt(prob) * op)
                         else:
-                            operators.append(op * np.sqrt(prob))
-                kraus_operators = self.extend_kraus_to_system(operators, qubit, probabilities)
+                            operators.append(np.sqrt(prob) * op)
+                if not self._ensure_ctpt(operators):
+                    print(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
+                kraus_operators = self.extend_kraus_to_system(operators, qubit)
+                if not self._ensure_ctpt(kraus_operators):
+                    print(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
                 qubit_errors[gate] = {
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
@@ -480,6 +483,9 @@ class BuildModel:
         for qpair, error_data in ecr_errors.items():
             full_instructions = error_data["instructions"]
             probabilities = error_data["probabilities"]
+            probabilities = np.array(probabilities)
+            probabilities /= np.sum(probabilities)
+            probabilities = probabilities.tolist()
             kraus_ops = error_data["kraus"]
             error_operators = []
             for instruction,prob in zip(full_instructions, probabilities):
@@ -569,6 +575,8 @@ class BuildModel:
                                 k_op = np.kron(q0_ops, kraus_op)
                                 error_operators.append(np.sqrt(prob) * k_op)
                 error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
+                if not self._ensure_ctpt(error_operators_full_system):
+                    print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
                 ecr_error_operators[qpair] = {
                     "operators": error_operators_full_system
                 }
@@ -670,7 +678,7 @@ class BuildModel:
         print("Completed Extraction of ECR Errors.\nStarting post-processing on Single Qubit Errors.")
         single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors)
         print("Completed post-processing on Single Qubit Errors.")
-        ecr_error_post_processed = self.post_process_ecr_errors(ecr_errors, threshold)
+        ecr_error_post_processed = self.post_process_ecr_errors(ecr_errors, self.threshold)
         print("Building Noise Operators for ECR Errors.")
         ecr_error_instructions = self.get_ecr_noise_operators(ecr_error_post_processed)
         print("Completed building Noise Operators for ECR Errors.\nExtracting Measurement Errors.")
