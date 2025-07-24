@@ -456,8 +456,8 @@ class BuildModel:
                 kraus_ops.append(None)
             if instructions:
                 if unique_kraus_per_qubit:
-                    unique_kraus_per_qubit = [_extract_kraus(inst) for inst in unique_kraus_per_qubit.values()]
-                    unique_kraus_operators = {q: ops for q, ops in zip(unique_kraus_per_qubit.keys(), unique_kraus_per_qubit)}
+                    unique_kraus_per_qubit_value = [self._extract_kraus_op(inst) for inst in unique_kraus_per_qubit.values()]
+                    unique_kraus_operators = {q: ops for q, ops in zip(unique_kraus_per_qubit.keys(), unique_kraus_per_qubit_value)}
                     probabilities = np.array(probabilities)
                     probabilities /= np.sum(probabilities)
                 else:
@@ -472,6 +472,15 @@ class BuildModel:
                   f"({filtered_count} filtered out)")
         print("ECR errors processed.")
         return processed_errors
+
+    def _extract_kraus_op(self,
+                          kraus_op_list:list)->list:
+        ops_list = [
+                np.array([[complex(*e) for e in row] for row in matrix])
+                for matrix in kraus_op_list
+            ]
+        ops_list = [op.astype(np.complex128) for op in ops_list]
+        return ops_list
         
     def get_ecr_noise_operators(self, ecr_errors:dict)->dict:
         ecr_error_operators = {}

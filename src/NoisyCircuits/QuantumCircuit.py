@@ -8,6 +8,7 @@ from pennylane import numpy as np
 from utils.BuildQubitGateModel import BuildModel
 from utils.DensityMatrixSolver import DensityMatrixSolver
 from utils.PureStateSolver import PureStateSolver
+import json
 from joblib import Parallel, delayed
 
 
@@ -22,6 +23,7 @@ class QuantumCircuit:
                  noise_model:dict,
                  num_trajectories:int,
                  num_cores:int=2,
+                 jsonize:bool=False,
                  threshold:float=1e-12)->None:
         """
         Initializes the QuantumCircuit with the specified number of qubits, noise model, number of trajectories for Monte-Carlo simulation, and threshold for noise application.
@@ -31,6 +33,7 @@ class QuantumCircuit:
             noise_model (dict): The noise model to be used for the circuit.
             num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.
             num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.
+            jsonize (bool, optional): If True, the circuit will be serialized to JSON format. Defaults to False.
             threshold (float, optional): The threshold for noise application. Defaults to 1e-12.
 
         Raises:
@@ -43,6 +46,7 @@ class QuantumCircuit:
             ValueError: If threshold is not between 0 and 1 (exclusive).
             TypeError: If num_cores is not an integer.
             ValueError: If num_cores is less than 1.
+            TypeError: If jsonize is not a boolean.
         """
         if not isinstance(num_qubits, int):
             raise TypeError("Number of qubits must be an integer.")
@@ -62,8 +66,12 @@ class QuantumCircuit:
             raise TypeError("Number of cores must be an integer.")
         if num_cores < 1:
             raise ValueError("Number of cores must be a positive integer greater than or equal to 1.")
+        if not isinstance(jsonize, bool):
+            raise TypeError("Jsonize must be a boolean.")
         self.num_qubits = num_qubits
         self.noise_model = noise_model
+        if jsonize:
+            self.noise_model = json.JSONDecoder().decode(json.dumps(noise_model))
         self.num_trajectories = num_trajectories
         self.threshold = threshold
         self.num_cores = num_cores
