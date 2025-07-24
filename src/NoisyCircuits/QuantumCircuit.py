@@ -591,6 +591,34 @@ class QuantumCircuit:
         """
         self.instruction_list = []
         self.qubit_to_instruction_list = []
+    
+    def generate_measurement_operator(self,
+                                      qubits:list[int])->np.ndarray:
+        """
+        Generates the measurement error operator for the specified qubits based on the noise model.
+
+        Args:
+            qubits (list[int]): List of qubit indices to include in the measurement error operator.
+
+        Returns:
+            np.ndarray: The measurement error operator as a NumPy array.
+        """
+        for q_num, qubit in enumerate(qubits):
+            if q_num == 0:
+                measure_op = self.measurement_error[qubit]
+            else:
+                measure_op = np.kron(measure_op, self.measurement_error[qubit])
+        return measure_op
+
+    def execute(self,
+                qubits:list[int],
+                num_trajectories:int)->np.ndarray:
+        """
+        Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
+
+        Args:
+            np.ndarray: _description_
+        """
 
     def execute(self,
                 qubits:list[int],
@@ -625,6 +653,9 @@ class QuantumCircuit:
             if num_trajectories < 1:
                 raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
             self.num_trajectories = num_trajectories
+        print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
+        measurement_error_operator =self.generate_measurement_operator(qubits)
+        print(f"Measurement Error Operator created.\nExecuting the circuit with {self.num_trajectories} trajectories.")
 
         @qml.qnode(dev)
         def apply_gate(state, gate):
@@ -737,6 +768,8 @@ class QuantumCircuit:
         for state in all_probs:
             probs += state
         probs /= self.num_trajectories
+        if measurement_error_operator is not None:
+            probs = np.dot(measurement_error_operator, probs)
         return probs
     
     def run_with_density_matrix(self, 
