@@ -5,9 +5,9 @@ os.environ["MKL_NUM_THREADS"] = "1"
 
 import pennylane as qml
 from pennylane import numpy as np
-from utils.BuildQubitGateModel import BuildModel
-from utils.DensityMatrixSolver import DensityMatrixSolver
-from utils.PureStateSolver import PureStateSolver
+from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
+from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
+from NoisyCircuits.utils.PureStateSolver import PureStateSolver
 import json
 from joblib import Parallel, delayed
 
@@ -783,6 +783,9 @@ class QuantumCircuit:
         Returns:
             np.ndarray: Probabilities of the output states.
         """
+        print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
+        measurement_error_operator = self.generate_measurement_operator(qubits)
+        print(f"Measurement Error Operator created. \nExecuting the circuit with density matrix solver.")
         density_matrix_solver = DensityMatrixSolver(
             num_qubits=self.num_qubits,
             single_qubit_noise=self.single_qubit_instructions,
@@ -791,7 +794,10 @@ class QuantumCircuit:
             instruction_list=self.instruction_list,
             qubit_instruction_list=self.qubit_to_instruction_list
         )
-        return density_matrix_solver.solve(qubits=qubits)
+        probs = density_matrix_solver.solve(qubits=qubits)
+        if measurement_error_operator is not None:
+            probs = np.dot(measurement_error_operator, probs)
+        return probs
     
     def run_pure_state(self, 
                        qubits:list[int])->np.ndarray:

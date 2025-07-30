@@ -5,6 +5,8 @@ dependencies:
   - python=3.10.14
   - joblib
   - pip
+  - matplotlib
+  - joblib
   - pip:
     - pennylane
     - qiskit
