@@ -503,8 +503,12 @@ class BuildModel:
             error_operators = []
             for instruction,prob in zip(full_instructions, probabilities):
                 qubits = instruction[-1]
-                major_inst = instruction[0]
-                minor_inst = instruction[1]
+                if len(instruction) > 2:
+                    major_inst = instruction[0]
+                    minor_inst = instruction[1]
+                else:
+                    major_inst = "II"
+                    minor_inst = instruction[0]
                 q0_ops = instruction_map[major_inst[0].lower()]
                 q1_ops = instruction_map[major_inst[1].lower()]
                 minor_ops = minor_inst.split("-")

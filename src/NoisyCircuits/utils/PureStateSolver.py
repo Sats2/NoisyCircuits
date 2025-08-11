@@ -33,10 +33,23 @@ class PureStateSolver:
         dev = qml.device("lightning.qubit", wires=self.num_qubits)
 
         @qml.qnode(dev)
-        def run_circuit():
-            for instruction in self.instruction_list:
-                qml.apply(instruction)
+        def run_circuit(qubits):
+            instruction_map = {
+                "x": lambda q: qml.X(q),
+                "sx": lambda q: qml.SX(q),
+                "rz": lambda t, q: qml.RZ(t, q),
+                "ecr": lambda q: qml.ECR(q),
+                "unitary": lambda p, q: qml.QubitUnitary(p, q),
+            }
+            for entry in self.instruction_list:
+                gate_instruction = entry[0]
+                qubit_added = entry[1]
+                params = entry[2]
+                if gate_instruction in ["rz", "unitary"]:
+                    instruction_map[gate_instruction](params, qubit_added)
+                else:
+                    instruction_map[gate_instruction](qubit_added)
             return qml.probs(wires=qubits)
         
-        probs = run_circuit()
+        probs = run_circuit(qubits)
         return probs

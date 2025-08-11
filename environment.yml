@@ -6,9 +6,9 @@ dependencies:
   - joblib
   - pip
   - matplotlib
-  - joblib
   - pip:
     - pennylane
     - qiskit
     - qiskit-aer
     - qiskit-ibm-runtime
+    - ray

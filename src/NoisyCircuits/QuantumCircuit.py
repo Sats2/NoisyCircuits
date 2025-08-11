@@ -3,13 +3,13 @@ os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 
-import pennylane as qml
 from pennylane import numpy as np
 from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
 from NoisyCircuits.utils.PureStateSolver import PureStateSolver
+from NoisyCircuits.utils.ParallelExecutor import RemoteExecutor
 import json
-from joblib import Parallel, delayed
+import ray
 
 
 class QuantumCircuit:
@@ -86,9 +86,17 @@ class QuantumCircuit:
         self.ecr_error_instruction = multi_error
         self.measurement_error = measure_error
         self.connectivity = connectivity
+        self.measurement_error_operator = None
         # Track logical to physical qubit mapping for routing
         self.logical_to_physical = {i: i for i in range(num_qubits)}
         self.physical_to_logical = {i: i for i in range(num_qubits)}
+        ray.init(num_cpus=self.num_cores, ignore_reinit_error=True, log_to_driver=False)
+        self.workers = [
+            RemoteExecutor.remote(
+                num_qubits=self.num_qubits,
+                single_qubit_noise=self.single_qubit_instructions,
+                ecr_dict=self.ecr_error_instruction
+            ) for _ in range(self.num_cores)]
 
     def _find_shortest_path(self, start: int, end: int) -> list:
         """
@@ -221,8 +229,7 @@ class QuantumCircuit:
             theta (int | float): The angle of rotation.
             qubit (int): The target qubit.
         """
-        self.instruction_list.append(qml.RZ(phi=theta, wires=qubit))
-        self.qubit_to_instruction_list.append(("rz", qubit))
+        self.instruction_list.append(["rz", [qubit], theta])
 
     def SX(self,
            qubit:int):
@@ -232,8 +239,7 @@ class QuantumCircuit:
         Args:
             qubit (int): The target qubit.
         """
-        self.instruction_list.append(qml.SX(wires=qubit))
-        self.qubit_to_instruction_list.append(("sx", qubit))
+        self.instruction_list.append(["sx", [qubit], None])
     
     def X(self,
           qubit:int):
@@ -243,8 +249,7 @@ class QuantumCircuit:
         Args:
             qubit (int): The target qubit.
         """
-        self.instruction_list.append(qml.X(wires=qubit))
-        self.qubit_to_instruction_list.append(("x", qubit))
+        self.instruction_list.append(["x", [qubit], None])
 
     def ECR(self,
             control:int,
@@ -256,8 +261,7 @@ class QuantumCircuit:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.instruction_list.append(qml.ECR(wires=[control, target]))
-        self.qubit_to_instruction_list.append(("ecr", (control, target)))
+        self.instruction_list.append(["ecr", [control, target], None])
 
     def RY(self,
            theta:int|float,
@@ -568,6 +572,22 @@ class QuantumCircuit:
         # Apply reverse SWAPs to restore original positions
         for swap in reverse_swaps:
             self._apply_swap_decomposition(swap[0], swap[1])
+    
+    def apply_unitary(self,
+                      unitary_matrix:np.ndarray,
+                      wires:list[int])->None:
+        """
+        Applies a unitary operation to the specified qubits.
+
+        Args:
+            unitary_matrix (np.ndarray): The unitary matrix to be applied.
+            wires (list[int]): The qubits to which the unitary operation is applied.
+        
+        Raises:
+            AssertionError: If the provided matrix is not unitary.
+        """
+        assert np.allclose(np.dot(unitary_matrix, unitary_matrix.conj().T), np.eye(unitary_matrix.shape[0])), "The provided matrix is not unitary."
+        self.instruction_list.append(["unitary", wires, unitary_matrix])
 
     def get_qubit_mapping(self) -> dict:
         """
@@ -609,27 +629,32 @@ class QuantumCircuit:
             else:
                 measure_op = np.kron(measure_op, self.measurement_error[qubit])
         return measure_op
+    
+    def instantiate_measurement(self,
+                            qubits:list[int])->None:
+        if not isinstance(qubits, (list, range)):
+            raise TypeError("Qubits must be a list of integers.")
+        if isinstance(qubits, range):
+            qubits = list(qubits)
+        if not all(isinstance(q, int) for q in qubits):
+            raise TypeError("All qubits must be integers.")
+        if not all(0 <= q < self.num_qubits for q in qubits):
+            raise ValueError(f"Qubits must be in the range [0, {self.num_qubits - 1}].")
+        print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
+        self.measurement_error_operator = self.generate_measurement_operator(qubits)
+        print(f"Measurement Error Operator created.\nExecuting the circuit with {self.num_trajectories} trajectories.")
 
     def execute(self,
                 qubits:list[int],
-                num_trajectories:int)->np.ndarray:
-        """
-        Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
-
-        Args:
-            np.ndarray: _description_
-        """
-
-    def execute(self,
-                qubits:list[int],
-                num_trajectories:int)->np.ndarray:
+                num_trajectories:int=None,
+                use_prev:bool=True)->np.ndarray:
         """
         Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
 
         Args:
             qubits (list[int]): The list of qubits to be measured.
             num_trajectories (int): The number of trajectories for the Monte-Carlo simulation (can be modified). Defaults to None and uses the class attribute.
-                                    If specified, it overrides the class attribute for this execution.
+                                    If specified, it overrides the class attribute for this execution. Defaults to None.
         
         Raises:
             TypeError: If qubits is not a list.
@@ -640,138 +665,17 @@ class QuantumCircuit:
         Returns:
             np.ndarray: The probabilities of the output states.
         """
-        dev = qml.device("lightning.qubit", wires=self.num_qubits)
-        if not isinstance(qubits, list):
-            raise TypeError("Qubits must be a list of integers.")
-        if not all(isinstance(q, int) for q in qubits):
-            raise TypeError("All qubits must be integers.")
-        if not all(0 <= q < self.num_qubits for q in qubits):
-            raise ValueError(f"Qubits must be in the range [0, {self.num_qubits - 1}].")
-        if num_trajectories is not None:
-            if not isinstance(num_trajectories, int):
-                raise TypeError("Number of trajectories must be an integer.")
-            if num_trajectories < 1:
-                raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
-            self.num_trajectories = num_trajectories
-        print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
-        measurement_error_operator =self.generate_measurement_operator(qubits)
-        print(f"Measurement Error Operator created.\nExecuting the circuit with {self.num_trajectories} trajectories.")
-
-        @qml.qnode(dev)
-        def apply_gate(state, gate):
-            """
-            Applies a quantum gate to the given state.
-
-            Args:
-                state (np.ndarray): The input state vector.
-                gate (qml.operation): The quantum gate to be applied.
-
-            Returns:
-                np.ndarray: Updated state after applying the gate.
-            """
-            qml.StatePrep(state, wires=range(self.num_qubits))
-            qml.apply(gate)
-            return qml.state()
-        
-        def apply_single_noisy_gate(state, gate, qubit, gate_id):
-            """
-            Applies the noise operation for the given gate using the MCWF method.
-
-            Args:
-                state (np.ndarray): Input state of the system.
-                gate (qml.operation): The quantum gate to be applied.
-                qubit (int): Target Qubit for the noisy gate.
-                gate_id (str): Name of the gate.
-
-            Returns:
-                np.ndarray: Updated state after applying the gate.
-            """
-            psi = state.copy()
-            state_mod = apply_gate(psi, gate)
-            if np.isnan(state_mod).any():
-                psi = psi + np.random.normal(0, 1e-8, size=state.shape)
-                state_mod = apply_gate(psi, gate)
-            kraus_probs = [np.vdot(np.dot(op, state_mod), np.dot(op,state_mod)) for op in self.single_qubit_instructions[qubit][gate_id]["kraus_operators"]]
-            kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
-            chosen_op = np.random.choice(range(len(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"])), p=kraus_probs)
-            state_after = np.dot(self.single_qubit_instructions[qubit][gate_id]["kraus_operators"][chosen_op], state_mod) / np.sqrt(kraus_probs[chosen_op])
-            return state_after
-
-        def apply_noisy_ecr_gate(state, gate, qubit_pair):
-            """
-            Applies the noise operation for the given gate using the MCWF method.
-
-            Args:
-                state (np.ndarray): Input state of the system.
-                gate (qml.operation): The quantum gate to be applied.
-                qubit_pair (tuple[int, int]): The pair of qubits affected by the gate.
-
-            Returns:
-                np.ndarray: Updated state after applying the gate.
-            """
-            psi = state.copy()
-            state_after = apply_gate(psi, gate)
-            qubit_pair = tuple(sorted(qubit_pair))
-            if np.isnan(state_after).any():
-                psi = psi + np.random.normal(0, 1e-8, size=state.shape)
-                state_after = apply_gate(psi, gate)
-            kraus_probs = [np.vdot(np.dot(op, state_after), np.dot(op, state_after)) for op in self.ecr_error_instruction[qubit_pair]["operators"]]
-            kraus_probs = np.abs(np.array(kraus_probs) / np.sum(kraus_probs))
-            chosen_op = np.random.choice(range(len(self.ecr_error_instruction[qubit_pair]["operators"])), p=kraus_probs)
-            state_after = np.dot(self.ecr_error_instruction[qubit_pair]["operators"][chosen_op], state_after) / np.sqrt(kraus_probs[chosen_op])
-            return state_after
-        
-        @qml.qnode(dev)
-        def get_probs(state):
-            """
-            Computes the probabilities of the output states after preparing the quantum state.
-
-            Args:
-                state (np.ndarray): Input state of the system.
-
-            Returns:
-                np.ndarray: Probabilities of the output states.
-            """
-            qml.StatePrep(state, wires=range(self.num_qubits))
-            return qml.probs(wires=qubits)
-
-        def compute_trajectory(traj_id):
-            """
-            Computes a single trajectory of the MCWF simulation.
-
-            Args:
-                traj_id (int): ID of the trajectory.
-
-            Returns:
-                np.ndarray: Probabilities of the output states.
-            """
-            np.random.seed(32+traj_id)
-            init_state = np.zeros(2**self.num_qubits)
-            init_state[0] = 1.0
-            state = init_state.copy()
-            for gate, instruction in zip(self.instruction_list, self.qubit_to_instruction_list):
-                gate_instruction = instruction[0]
-                qubit_added = instruction[1]
-                if isinstance(qubit_added, int):
-                    if gate_instruction not in self.single_qubit_instructions[qubit_added].keys():
-                        state = apply_gate(state.copy(), gate)
-                    else:
-                        state = apply_single_noisy_gate(state.copy(), gate, qubit_added, gate_instruction)
-                else:
-                    state = apply_noisy_ecr_gate(state.copy(), gate, qubit_added)
-            p = get_probs(state)
-            return p
-        
-        all_probs = Parallel(n_jobs=self.num_cores)(delayed(compute_trajectory)(traj_id) for traj_id in range(self.num_trajectories))
-        # all_probs = [compute_trajectory(traj_id) for traj_id in range(self.num_trajectories)]
-        probs = np.zeros(2**len(qubits))
-        for state in all_probs:
-            probs += state
-        probs /= self.num_trajectories
-        if measurement_error_operator is not None:
-            probs = np.dot(measurement_error_operator, probs)
+        if use_prev:
+            self.num_trajectories = num_trajectories if isinstance(num_trajectories, int) else self.num_trajectories
+        else:
+            self.instantiate_measurement(qubits)
+        futures = [self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list, qubits) for traj_id in range(self.num_trajectories)]
+        probs_raw = np.array(ray.get(futures))
+        probs = np.mean(probs_raw, axis=0)
+        if self.measurement_error_operator is not None:
+            probs = np.dot(self.measurement_error_operator, probs)
         return probs
-    
+
     def run_with_density_matrix(self, 
                                 qubits:list[int])->np.ndarray:
         """
@@ -784,8 +688,8 @@ class QuantumCircuit:
             np.ndarray: Probabilities of the output states.
         """
         print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
-        measurement_error_operator = self.generate_measurement_operator(qubits)
-        print(f"Measurement Error Operator created. \nExecuting the circuit with density matrix solver.")
+        measurement_error_operator =self.generate_measurement_operator(qubits)
+        print(f"Measurement Error Operator created.\nExecuting the circuit with Density Matrix.")
         density_matrix_solver = DensityMatrixSolver(
             num_qubits=self.num_qubits,
             single_qubit_noise=self.single_qubit_instructions,
@@ -798,7 +702,7 @@ class QuantumCircuit:
         if measurement_error_operator is not None:
             probs = np.dot(measurement_error_operator, probs)
         return probs
-    
+
     def run_pure_state(self, 
                        qubits:list[int])->np.ndarray:
         """
@@ -815,3 +719,6 @@ class QuantumCircuit:
             instruction_list=self.instruction_list
             )
         return pure_state_solver.solve(qubits=qubits)
+    
+    def shutdown(self):
+        ray.shutdown()

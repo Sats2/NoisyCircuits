@@ -68,19 +68,25 @@ class DensityMatrixSolver:
 
         @qml.qnode(dev_mixed)
         def run_circuit():
-            for gate, instruction in zip(self.instruction_list, self.qubit_instruction_list):
-                gate_instruction = instruction[0]
-                qubit_added = instruction[1]
-                if isinstance(qubit_added, int):
-                    if gate_instruction not in self.single_qubit_noise[qubit_added].keys():
-                        qml.apply(gate)
-                    else:
-                        qml.apply(gate)
-                        qml.QubitChannel(self.single_qubit_noise[qubit_added][gate_instruction]["kraus_operators"], wires=range(self.num_qubits))
+            instruction_map = {
+                "x": lambda q: qml.X(q),
+                "sx": lambda q: qml.SX(q),
+                "rz": lambda t, q: qml.RZ(t, q),
+                "ecr": lambda q: qml.ECR(q),
+                "unitary": lambda p, q: qml.QubitUnitary(p, q),
+            }
+            for entry in self.instruction_list:
+                gate_instruction = entry[0]
+                qubit_added = entry[1]
+                params = entry[2]
+                if gate_instruction in ["rz", "unitary"]:
+                    instruction_map[gate_instruction](params, qubit_added)
+                elif gate_instruction in ["ecr"]:
+                    instruction_map[gate_instruction](qubit_added)
+                    qml.QubitChannel(self.ecr_noise[tuple(qubit_added)]["operators"], wires=range(self.num_qubits))
                 else:
-                    qml.apply(gate)
-                    qubit_added = tuple(sorted(qubit_added))
-                    qml.QubitChannel(self.ecr_noise[qubit_added]["operators"], wires=range(self.num_qubits))
+                    instruction_map[gate_instruction](qubit_added)
+                    qml.QubitChannel(self.single_qubit_noise[qubit_added[0]][gate_instruction]["kraus_operators"], wires=range(self.num_qubits))
             return qml.probs(wires=qubits)
         
         probs = run_circuit()
