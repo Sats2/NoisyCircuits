@@ -4,7 +4,7 @@ This repository contains the code to create and simulate quantum circuits using 
 
 ## Installation
 
-Installation requires an environment manager. A minimalist environment manager can be ![conda](https://www.anaconda.com/docs/getting-started/miniconda/main) or ![micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html). 
+Installation requires an environment manager. A minimalist environment manager can be [conda](https://www.anaconda.com/docs/getting-started/miniconda/main) or [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html). 
 
 1. Clone this repository with:
 
