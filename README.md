@@ -77,34 +77,36 @@ Core dependencies are automatically installed:
 
 ```
 NoisyCircuits/
-├── src/NoisyCircuits/          # Main package source code
+├── src/NoisyCircuits/                    # Main package source code
 │   ├── __init__.py
-│   ├── QuantumCircuit.py       # Core quantum circuit class
-│   └── utils/                  # Utility modules
-│       ├── GetNoiseModel.py    # IBM backend integration
+│   ├── QuantumCircuit.py                 # Core quantum circuit class
+│   └── utils/                            # Utility modules
+│       ├── GetNoiseModel.py              # IBM backend integration
 │       ├── BuildQubitGateModel.py
 │       ├── DensityMatrixSolver.py
 │       ├── PureStateSolver.py
 │       └── ParallelExecutor.py
-├── test/                       # Test suite and examples
-│   ├── README.md              # Detailed test documentation
-│   ├── introduction.ipynb     # Getting started tutorial
-│   ├── method_verification.ipynb  # Validation against exact methods
-│   ├── quantum_neural_networks.ipynb  # ML application example
-│   └── design_study_single_feature.csv  # Sample dataset
-├── environment.yml            # Conda environment specification
-├── setup.py                  # Package installation configuration
-├── requirements.txt          # Python dependencies
-└── LICENSE                   # MIT License
+├── examples/                             # Example suite and examples
+│   ├── README.md                         # Detailed documentation
+│   ├── introduction.ipynb                # Getting started tutorial
+│   ├── quantum_neural_networks.ipynb     # ML application example
+│   └── design_study_single_feature.csv   # Sample dataset
+├── validation/                           # Validation suite
+│   ├── README.md                         # Detailed documentation
+│   ├── method_verification.ipynb         # Validation against exact methods
+│   ├── Results_Log_File.txt              # Results of the validation study compiled in a single log file
+├── environment.yml                       # Conda environment specification
+├── setup.py                              # Package installation configuration
+├── requirements.txt                      # Python dependencies
+└── LICENSE                               # MIT License
 ```
 
-## 🧪 Testing and Validation
+## 🧪 Eamples and Validation
 
-The `test/` directory contains comprehensive validation and example notebooks:
+The `validation/` and `examples/` directories contains comprehensive validation and example notebooks:
 
 ### Validation Framework
 - **Method Verification**: Statistical comparison between MCWF and exact density matrix simulation
-- **Hardware Integration**: Validation using real IBM Quantum backend data
 - **Performance Benchmarking**: Trajectory convergence and computational efficiency analysis
 
 ### Example Applications
@@ -112,25 +114,30 @@ The `test/` directory contains comprehensive validation and example notebooks:
 - **Algorithm Comparison**: Performance analysis under realistic noise conditions
 - **Educational Resources**: Step-by-step tutorials for quantum noise simulation
 
-**Quick Test**: Run the method verification notebook to validate your installation:
+**Quick Test**: Run the introduction notebook to validate your installation:
 ```bash
-jupyter notebook test/method_verification.ipynb
+jupyter notebook examples/introduction.ipynb
 ```
 
-For detailed information about the test suite, see [`test/README.md`](test/README.md).
+For detailed information about the example suite, see [`examples/README.md`](examples/README.md).
+
+## Method Verifiction
+
+1. **[Method Verification](validation/method_verification.ipynb)**: Validation and accuracy testing of the MCWF method for noisy quantum circuit simulations compared against the density matrix simulation.
+
+### Key Concepts
+- **Parallel Execution**: Scaling simulations across multiple CPU cores (tested for shared memory architecture)
+- **Statistical Validation**: Ensuring simulation accuracy through multiple metrics
 
 ## 📚 Examples
 
 ### Tutorials
-1. **[Introduction](test/introduction.ipynb)**: Basic usage and configuration
-2. **[Method Verification](test/method_verification.ipynb)**: Validation and accuracy testing  
-3. **[Quantum Neural Networks](test/quantum_neural_networks.ipynb)**: Machine learning applications
+1. **[Introduction](examples/introduction.ipynb)**: Basic usage and configuration
+2. **[Quantum Neural Networks](examples/quantum_neural_networks.ipynb)**: Machine learning applications
 
 ### Key Concepts
 - **Monte-Carlo Wave Function**: Efficient method for simulating open quantum systems
 - **Hardware Noise Models**: Using real device calibration data for realistic simulations
-- **Parallel Execution**: Scaling simulations across multiple CPU cores (tested for shared memory architecture)
-- **Statistical Validation**: Ensuring simulation accuracy through multiple metrics
 
 ## 🤝 Contributing
 
@@ -187,15 +194,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Author**: Sathyamurthy Hegde
 - **GitHub**: [@Sats2](https://github.com/Sats2)
-
-
-## 📊 Performance Metrics
-
-Based on validation testing:
-- **Accuracy**: >99.99% fidelity compared to exact density matrix simulation
-- **Scalability**: Efficient parallel execution across multiple CPU cores (used 50 cores out of a 96 core machine)
-- **Convergence**: Consistent results with as few as 100 Monte-Carlo trajectories
-- **Hardware Integration**: Seamless integration with IBM Eagle R3 chipset data
 
 ---
 
