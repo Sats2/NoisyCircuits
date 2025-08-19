@@ -119,7 +119,7 @@ jupyter notebook test/method_verification.ipynb
 
 For detailed information about the test suite, see [`test/README.md`](test/README.md).
 
-## 📚 Documentation and Examples
+## 📚 Examples
 
 ### Tutorials
 1. **[Introduction](test/introduction.ipynb)**: Basic usage and configuration
