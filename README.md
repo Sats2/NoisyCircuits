@@ -3,14 +3,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
-A Python package for creating and simulating noisy quantum circuits using realistic error models from IBM Eagle R3 quantum hardware. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
+A Python package for creating and simulating noisy quantum circuits using error models from IBM Eagle R3 quantum hardware calibration data. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
 
 ## 🎯 Overview
 
 NoisyCircuits enables researchers and developers to:
 
 - **Simulate realistic quantum noise** using calibration data from IBM Eagle R3 chipsets
-- **Perform efficient noisy simulations** with the Monte-Carlo Wave Function method
+- **Perform efficient noisy statevector simulations** with the Monte-Carlo Wave Function method
 - **Validate quantum algorithms** under realistic hardware conditions  
 - **Develop noise-aware quantum machine learning** applications
 - **Compare quantum algorithms** between ideal and noisy regimes
@@ -19,15 +19,17 @@ NoisyCircuits enables researchers and developers to:
 
 ✨ **Hardware-Calibrated Noise Models**: Direct integration with IBM Quantum backend calibration data  
 🚀 **Parallel Monte-Carlo Simulation**: Multi-core trajectory execution for scalable performance  
-🎛️ **Flexible Gate Set**: Support for IBM Eagle R3 basis gates (X, √X, Rz, ECR)  
-📊 **Validation Framework**: Built-in comparison with exact density matrix methods  
+🎛️ **Gate Set**: Support for IBM Eagle R3 basis gates (X, √X, Rz, ECR)  
+📊 **Validation Framework**: Built-in comparison with the density matrix method  
 🔬 **Research Applications**: Ready-to-use examples for quantum machine learning and algorithm development  
 
 ### Supported Quantum Gates
 
-- **Single-qubit gates**: X, √X, Rz(θ), Hadamard, Y, Z, S, T, and parameterized rotations
-- **Two-qubit gates**: ECR (Echoed Cross-Resonance), CNOT, CZ, and controlled operations
-- **Multi-qubit gates**: Toffoli and other controlled operations
+The supported gated are fully decomposed into the hardware basis gates and this decomposition is applied to the circuit.
+
+- **Single-qubit gates**: X, Y, Z, √X, Hadamard, Rx(θ), Ry(θ), Rz(θ)
+- **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP
+- **Unitary Operation**: Additionally, a unitary operator can be applied to the circuit. This unitary operator is not decomposed and is applied fully to the quantum circuit assuming a perfect implmenetation.
 
 ## 🛠️ Installation
 
@@ -127,7 +129,7 @@ For detailed information about the test suite, see [`test/README.md`](test/READM
 ### Key Concepts
 - **Monte-Carlo Wave Function**: Efficient method for simulating open quantum systems
 - **Hardware Noise Models**: Using real device calibration data for realistic simulations
-- **Parallel Execution**: Scaling simulations across multiple CPU cores
+- **Parallel Execution**: Scaling simulations across multiple CPU cores (tested for shared memory architecture)
 - **Statistical Validation**: Ensuring simulation accuracy through multiple metrics
 
 ## 🤝 Contributing
@@ -186,18 +188,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Author**: Sathyamurthy Hegde
 - **GitHub**: [@Sats2](https://github.com/Sats2)
 
-## 🙏 Acknowledgments
-
-- **IBM Quantum** for providing access to quantum hardware and calibration data
-- **PennyLane** team for the excellent quantum computing framework
-- **Qiskit** community for quantum software development tools
-- **Research Community** for feedback and contributions to quantum noise modeling
 
 ## 📊 Performance Metrics
 
 Based on validation testing:
 - **Accuracy**: >99.99% fidelity compared to exact density matrix simulation
-- **Scalability**: Efficient parallel execution across multiple CPU cores
+- **Scalability**: Efficient parallel execution across multiple CPU cores (used 50 cores out of a 96 core machine)
 - **Convergence**: Consistent results with as few as 100 Monte-Carlo trajectories
 - **Hardware Integration**: Seamless integration with IBM Eagle R3 chipset data
 
