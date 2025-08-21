@@ -8,6 +8,7 @@ from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
 from NoisyCircuits.utils.PureStateSolver import PureStateSolver
 from NoisyCircuits.utils.ParallelExecutor import RemoteExecutor
+import pennylane as qml
 import json
 import ray
 
@@ -77,11 +78,13 @@ class QuantumCircuit:
         self.num_cores = num_cores
         self.instruction_list = []
         self.qubit_to_instruction_list = []
-        single_error, multi_error, measure_error, connectivity = BuildModel(
+        model = BuildModel(
             noise_model=self.noise_model,
             num_qubits=self.num_qubits,
             threshold=self.threshold
-        ).build_qubit_gate_model()
+        )
+        single_error, multi_error, measure_error, connectivity = model.build_qubit_gate_model()
+        self.qubit_coupling_map = model.qubit_coupling_map
         self.single_qubit_instructions = single_error
         self.ecr_error_instruction = multi_error
         self.measurement_error = measure_error
@@ -261,7 +264,15 @@ class QuantumCircuit:
             control (int): The control qubit.
             target (int): The target qubit.
         """
-        self.instruction_list.append(["ecr", [control, target], None])
+        match_qubits = next((t for t in self.qubit_coupling_map if control in t and target in t), None)
+        if control == match_qubits[0] and target == match_qubits[1]:
+            self.instruction_list.append(["ecr", [control, target], None])
+        else:
+            self.RY(-np.pi/2, qubit=control)
+            self.RY(np.pi/2, qubit=target)
+            self.instruction_list.append(["ecr", [target, control], None])
+            self.H(qubit=control)
+            self.H(qubit=target)
 
     def RY(self,
            theta:int|float,
@@ -720,5 +731,49 @@ class QuantumCircuit:
             )
         return pure_state_solver.solve(qubits=qubits)
     
+    def draw_circuit(self,
+                     style:str="mpl")->None:
+        """
+        Draws the quantum circuit.
+
+        Args:
+            style (str, optional): The style of the circuit diagram. Defaults to "mpl".
+
+        Raises:
+            TypeError: If style is not a string.
+            ValueError: If style is not "text" or "mpl".
+
+        Returns:
+            None
+        """
+        if not isinstance(style, str):
+            raise TypeError("Style must be a string.")
+        if style not in ["text", "mpl"]:
+            raise ValueError("Style must be either 'text' or 'mpl'.")
+        
+        @qml.qnode(qml.device("default.qubit", wires=self.num_qubits))
+        def circuit():
+            instruction_map = {
+                "x": lambda q: qml.X(q),
+                "sx": lambda q: qml.SX(q),
+                "rz": lambda t, q: qml.RZ(t, q),
+                "ecr": lambda q: qml.ECR(q),
+                "unitary": lambda p, q: qml.QubitUnitary(p, q),
+            }
+            for entry in self.instruction_list:
+                gate_instruction = entry[0]
+                qubit_added = entry[1]
+                params = entry[2]
+                if gate_instruction in ["rz", "unitary"]:
+                    instruction_map[gate_instruction](params, qubit_added)
+                else:
+                    instruction_map[gate_instruction](qubit_added)
+            return qml.state()
+        
+        if style == "text":
+            print(qml.draw(circuit)())
+        else:
+            qml.draw_mpl(circuit)()
+
     def shutdown(self):
         ray.shutdown()

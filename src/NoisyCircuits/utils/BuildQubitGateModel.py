@@ -71,6 +71,7 @@ class BuildModel:
         self.num_qubits = num_qubits
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
+        self.qubit_coupling_map = []
 
     def _ensure_ctpt(self,
                     kraus_ops:list)->bool:
@@ -171,7 +172,8 @@ class BuildModel:
                 if len(gate_qubits) != 2 or not set(gate_qubits).issubset(allowed_qubits):
                     # Only include valid 2 qubit gate pairs within allowed qubits
                     continue
-                qpair = tuple(sorted(gate_qubits))
+                self.qubit_coupling_map.append(tuple(gate_qubits))
+                qpair = tuple(gate_qubits)
                 for prob, instrs in zip(probabilities, instructions_list):
                     mapped_instrs = _map_instruction_qubits(instrs, gate_qubits)
                     kraus = _extract_kraus(mapped_instrs)
@@ -302,7 +304,8 @@ class BuildModel:
         return filtered_probs, filtered_instrs
     
     def post_process_single_qubit_errors(self,
-                                         single_qubit_errors:dict)->dict:
+                                         single_qubit_errors:dict,
+                                         basis_gates:list)->dict:
         """
         Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without 
         further processing.
@@ -343,6 +346,7 @@ class BuildModel:
                     for name in instruction:
                         if name not in ["reset", "kraus"]:
                             op = np.dot(instruction_map[name], op)
+                            ops = [op]
                         elif name == "reset":
                             op1 = np.dot(instruction_map["K0"], op)
                             op2 = np.dot(instruction_map["K1"], op)
@@ -363,7 +367,8 @@ class BuildModel:
                         for op in use_ops:
                             operators.append(np.sqrt(prob) * op)
                     else:
-                        operators.append(np.sqrt(prob) * op)
+                        for op in ops:
+                            operators.append(np.sqrt(prob) * op)
                 if not self._ensure_ctpt(operators):
                     print(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
                     mat = np.zeros((2,2), dtype=complex)
@@ -379,6 +384,14 @@ class BuildModel:
                     "probabilities" : probabilities,
                     "kraus" : kraus_ops
                 }
+            for basis_gate in basis_gates:
+                if basis_gate not in qubit_errors.keys():
+                    qubit_errors[basis_gate] = {
+                        "kraus_operators" : np.eye(2**self.num_qubits, dtype=complex),
+                        "instructions" : ["id"],
+                        "probabilities" : [1.0],
+                        "kraus" : None
+                    }
             single_qubit_errors_processed[qubit] = qubit_errors
         return single_qubit_errors_processed
 
@@ -683,9 +696,10 @@ class BuildModel:
         Returns:
             tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.
         """
+        basis_gates = ["x", "sx", "rz"]
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],
-            ["x", "sx", "rz"],
+            basis_gates,
             self.use_qubits
         )
         ecr_errors = self.extract_ecr_errors(
@@ -693,7 +707,7 @@ class BuildModel:
             self.use_qubits
         )
         print("Completed Extraction of ECR Errors.\nStarting post-processing on Single Qubit Errors.")
-        single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors)
+        single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors, basis_gates)
         print("Completed post-processing on Single Qubit Errors.")
         ecr_error_post_processed = self.post_process_ecr_errors(ecr_errors, self.threshold)
         print("Building Noise Operators for ECR Errors.")
