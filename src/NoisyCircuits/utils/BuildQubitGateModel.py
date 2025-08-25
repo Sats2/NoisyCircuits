@@ -382,7 +382,8 @@ class BuildModel:
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
                     "probabilities" : probabilities,
-                    "kraus" : kraus_ops
+                    "kraus" : kraus_ops,
+                    "qubit_channel" : operators
                 }
             for basis_gate in basis_gates:
                 if basis_gate not in qubit_errors.keys():
@@ -390,7 +391,8 @@ class BuildModel:
                         "kraus_operators" : np.eye(2**self.num_qubits, dtype=complex),
                         "instructions" : ["id"],
                         "probabilities" : [1.0],
-                        "kraus" : None
+                        "kraus" : None,
+                        "qubit_channel" : [np.eye(2, dtype=complex), np.zeros((2,2), dtype=complex)]
                     }
             single_qubit_errors_processed[qubit] = qubit_errors
         return single_qubit_errors_processed
@@ -608,7 +610,8 @@ class BuildModel:
             if not self._ensure_ctpt(error_operators_full_system):
                 print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
             ecr_error_operators[qpair] = {
-                "operators": error_operators_full_system
+                "operators": error_operators_full_system,
+                "qubit_channel" : error_operators
             }
         return ecr_error_operators
 
