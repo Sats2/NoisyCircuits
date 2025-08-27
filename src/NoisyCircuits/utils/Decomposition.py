@@ -1,0 +1,386 @@
+from abc import ABC, abstractmethod
+import numpy as np
+
+
+class ShapeMismatchError(Exception):
+    """Exception raised for errors in the shape of input arrays."""
+    pass
+
+class NonSquareMatrixError(Exception):
+    """Exception raised for errors in the shape of input arrays."""
+    pass
+
+class NonUnitaryMatrixError(Exception):
+    """Exception raised for errors in the shape of input arrays."""
+    pass
+
+
+class Decomposition(ABC):
+    """
+    Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different 
+    QPUs with varying basis gates.
+    """
+    @abstractmethod
+    def RZ(self,
+           theta:int|float,
+           qubit:int):
+        r"""
+        Applies the RZ gate which is a rotation around the Z-axis by an angle of :math:`\theta`. Effectively applies the unitary:
+
+        .. math::
+
+            RZ(\theta) = \begin{pmatrix}
+            e^{-i\theta/2} & 0 \\
+            0 & e^{i\theta/2}
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The rotation angle.
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def SX(self,
+           qubit:int):
+        r"""
+        Applies the SX gate which is a square root of the X gate. Effectively applies the unitary:
+
+        .. math::
+
+            SX = \frac{1}{2}\begin{pmatrix}
+            1+i & 1-i \\
+            1-i & 1+i
+            \end{pmatrix}
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def X(self,
+          qubit:int):
+        r"""
+        Applies the X gate which is a Pauli-X gate. Effectively applies the unitary:
+
+        .. math::
+
+            X = \begin{pmatrix}
+            0 & 1 \\
+            1 & 0
+            \end{pmatrix}
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def ECR(self,
+            control:int,
+            target:int):
+        r"""Applies the ECR (Echoed Cross Resonance) gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+            ECR(q_0, q_1) = \frac{1}{\sqrt{2}}\begin{pmatrix}
+            0 & 0 & 1 & i \\
+            0 & 0 & i & 1 \\
+            1 & -i & 0 & 0 \\
+            -i & 1 & 0 & 0
+            \end{pmatrix}
+
+        Args:
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def RY(self,
+           theta:int|float,
+           qubit:int):
+        r"""
+        Applies the RY gate which is a rotation around the Y-axis by an angle of :math:`\theta`. Effectively applies the unitary:
+
+        .. math::
+
+            RY(\theta) = \begin{pmatrix}
+            \cos(\theta/2) & -\sin(\theta/2) \\
+            \sin(\theta/2) & \cos(\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The rotation angle.
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def RX(self,
+           theta:int|float,
+           qubit:int):
+        r"""
+        Applies the RX gate which is a rotation around the X-axis by an angle of :math:`\theta`. Effectively applies the unitary:
+
+        .. math::
+
+            RX(\theta) = \begin{pmatrix}
+            \cos(\theta/2) & -i\sin(\theta/2) \\
+            -i\sin(\theta/2) & \cos(\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The rotation angle.
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def Y(self,
+          qubit:int):
+        r"""
+        Applies the Y gate which is a Pauli-Y gate. Effectively applies the unitary:
+
+        .. math::
+
+            Y = \begin{pmatrix}
+            0 & -i \\
+            i & 0
+            \end{pmatrix}
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def Z(self,
+          qubit:int):
+        r"""
+        Applies the Z gate which is a Pauli-Z gate. Effectively applies the unitary:
+
+        .. math::
+
+            Z = \begin{pmatrix}
+            1 & 0 \\
+            0 & -1
+            \end{pmatrix}
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def H(self,
+          qubit:int):
+        r"""
+        Applies the H gate which is a Hadamard gate. Effectively applies the unitary:
+
+        .. math::
+
+            H = \frac{1}{\sqrt{2}}\begin{pmatrix}
+            1 & 1 \\
+            1 & -1
+            \end{pmatrix}
+
+        Args:
+            qubit (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def CX(self,
+           control:int,
+           target:int):
+        r"""
+        Applies the CX (CNOT) gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+
+            CX(q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 0 & 1 \\
+            0 & 0 & 1 & 0
+            \end{pmatrix}
+
+        Args:
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def CY(self,
+           control:int,
+           target:int):
+        r"""
+        Applies the CY gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+
+            CY(q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 0 & -i \\
+            0 & 0 & i & 0
+            \end{pmatrix}
+
+        Args:
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def CZ(self,
+           control:int,
+           target:int):
+        r"""
+        Applies the CZ gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+
+            CZ(q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
+            0 & 0 & 0 & -1
+            \end{pmatrix}
+
+        Args:
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def SWAP(self,
+             qubit1:int,
+             qubit2:int):
+        r"""
+        Applies the SWAP gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+
+            SWAP(q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & 0 & 1
+            \end{pmatrix}
+
+        Args:
+            qubit1 (int): The first qubit.
+            qubit2 (int): The second qubit.
+        """
+        pass
+
+    @abstractmethod
+    def CRX(self,
+            theta:int|float,
+            control:int,
+            target:int):
+        r"""
+        Applies the CRX (Controlled RX) gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+
+            CRX(\theta, q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \cos(\theta/2) & -i\sin(\theta/2) \\
+            0 & 0 & -i\sin(\theta/2) & \cos(\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The rotation angle.
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def CRZ(self,
+            theta:int|float,
+            control:int,
+            target:int):
+        r"""
+        Applies the CRZ (Controlled RZ) gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+            CRZ(\theta, q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \exp(-i\theta/2) & 0 \\
+            0 & 0 & 0 & \exp(i\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The rotation angle.
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def CRY(self,
+            theta:int|float,
+            control:int,
+            target:int):
+        r"""
+        Applies the CRY (Controlled RY) gate between two qubits. Effectively applies the unitary:
+
+        .. math::
+            CRY(\theta, q_0, q_1) = \begin{pmatrix}
+            1 & 0 & 0 & 0 \\
+            0 & 1 & 0 & 0 \\
+            0 & 0 & \cos(\theta/2) & \sin(\theta/2) \\
+            0 & 0 & \sin(\theta/2) & \cos(\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The rotation angle.
+            control (int): The control qubit.
+            target (int): The target qubit.
+        """
+        pass
+
+    @abstractmethod
+    def apply_swap_decomposition(self,
+              qubit1:int,
+              qubit2:int):
+        """
+        Applies the SWAP decomposition to the circuit for every SWAP call.
+
+        Args:
+            qubit1 (int): The first qubit.
+            qubit2 (int): The second qubit.
+        """
+        pass
+
+    @abstractmethod
+    def apply_unitary(self,
+                      unitary_matrix:np.ndarray,
+                      qubits:list[int]):
+        """
+        Applies a unitary operation to the specified qubits.
+
+        Args:
+            unitary_matrix (np.ndarray): The unitary matrix to apply.
+            qubits (list[int]): The list of qubits to which the unitary matrix will be applied.
+        
+        Raises:
+            NonSquareMatrixError: If the unitary matrix is not square.
+            ShapeMismatchError: If the shape of the unitary matrix does not match the state of the qubits for the provided number of qubits.
+            NonUnitaryMatrixError: If the matrix is not unitary. 
+        """
+        if not unitary_matrix.shape[0] == unitary_matrix.shape[1]:
+            raise NonSquareMatrixError("The provided matrix is not square.")
+        if not unitary_matrix.shape[0] == 2**len(qubits):
+            raise ShapeMismatchError("The shape of the unitary matrix does not match the state of the qubits.")
+        if not np.allclose(np.eye(unitary_matrix.shape[0]), unitary_matrix.conj().T @ unitary_matrix):
+            raise NonUnitaryMatrixError("The provided matrix is not unitary.")
+        return True

@@ -44,7 +44,8 @@ class BuildModel:
     def __init__(self,
                  noise_model:dict,
                  num_qubits:int,
-                 threshold:float=1e-12):
+                 threshold:float=1e-12,
+                 basis_gates:list[str]=None):
         """
         Initializes the BuildModel with a noise model, number of qubits, and an optional threshold.
 
@@ -52,10 +53,13 @@ class BuildModel:
             noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
             num_qubits (int): The number of qubits in the model.
             threshold (float, optional): The threshold for noise. Defaults to None.
+            basis_gates (list[str]): The basis gates for the noise model extraction.
         
         Raises:
             TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
             ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
+            ValueError: If basis_gates is not provided.
+            TypeError: If basis_gates is not list or a list of strings.
         """
         if not isinstance(noise_model, dict):
             raise TypeError("Noise model must be a dictionary.")
@@ -67,10 +71,17 @@ class BuildModel:
             raise TypeError("Threshold must be a float or int.")
         if threshold < 0 or threshold > 1:
             raise ValueError("Threshold must be between 0 and 1.")
+        if basis_gates is None:
+            raise ValueError("Basis gates must be provided.")
+        if not isinstance(basis_gates, list):
+            raise TypeError("Basis gates must be a list.")
+        if not all(isinstance(gate, str) for gate in basis_gates):
+            raise TypeError("All basis gates must be strings.")
         self.noise_model = noise_model
         self.num_qubits = num_qubits
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
+        self.basis_gates = basis_gates
 
     def _ensure_ctpt(self,
                     kraus_ops:list)->bool:
@@ -670,7 +681,8 @@ class BuildModel:
                 matrix[1,1] = roerror_map[qubit]["matrix"][0]
             measurement_errors[qubit] = matrix
         return measurement_errors
-
+    
+    #TODO: Extend the Noise Extraction from ECR to any Two Qubit Gates.
     def build_qubit_gate_model(self,
                                threshold:float=1e-12)->tuple[dict, dict, dict]:
         """
@@ -685,7 +697,7 @@ class BuildModel:
         """
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],
-            ["x", "sx", "rz"],
+            self.basis_gates[0],
             self.use_qubits
         )
         ecr_errors = self.extract_ecr_errors(
