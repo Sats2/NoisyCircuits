@@ -68,6 +68,7 @@ class DensityMatrixSolver:
 
         @qml.qnode(dev_mixed)
         def run_circuit():
+<<<<<<< HEAD
             instruction_map = {
                 "x": lambda q: qml.X(q),
                 "sx": lambda q: qml.SX(q),
@@ -75,6 +76,36 @@ class DensityMatrixSolver:
                 "ecr": lambda q: qml.ECR(q),
                 "unitary": lambda p, q: qml.QubitUnitary(p, q),
             }
+=======
+            # Define gate execution functions
+            gate_executors = {
+                "x": lambda params, qubits: qml.X(qubits),
+                "sx": lambda params, qubits: qml.SX(qubits),
+                "rz": lambda params, qubits: qml.RZ(params, qubits),
+                "ecr": lambda params, qubits: qml.ECR(qubits),
+                "unitary": lambda params, qubits: qml.QubitUnitary(params, qubits),
+            }
+            
+            # Define noise application functions
+            def apply_ecr_noise(qubits):
+                qml.QubitChannel(self.ecr_noise[tuple(qubits)]["qubit_channel"], wires=qubits)
+            
+            def apply_single_qubit_noise(gate, qubits):
+                qml.QubitChannel(self.single_qubit_noise[qubits[0]][gate]["qubit_channel"], wires=qubits)
+            
+            def no_noise(qubits):
+                pass  # No noise applied
+            
+            # Direct lookup mapping for noise handlers - no conditionals needed
+            noise_handlers = {
+                "x": lambda qubits: apply_single_qubit_noise("x", qubits),
+                "sx": lambda qubits: apply_single_qubit_noise("sx", qubits),
+                "rz": lambda qubits: apply_single_qubit_noise("rz", qubits),
+                "ecr": apply_ecr_noise,
+                "unitary": no_noise,
+            }
+            
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
             for entry in self.instruction_list:
                 gate_instruction = entry[0]
                 qubit_added = entry[1]

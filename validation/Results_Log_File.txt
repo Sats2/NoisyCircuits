@@ -1,6 +1,7 @@
 ===========================================================================
 Running Circuit with 2 qubits and depth 5
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9999828712525308
 Battacharyya Distance: 1.7128894167845143e-05
 Hellinger Distance: 0.004138689100335894
@@ -25,11 +26,38 @@ Battacharyya Coefficient: 0.9999807876943547
 Battacharyya Distance: 1.9212490203985512e-05
 Hellinger Distance: 0.0043831844183523025
 Jensen-Shannon Divergence: 1.9211668335099926e-05
+=======
+Battacharyya Coefficient: 0.9998497992998988
+Battacharyya Distance: 0.00015021198135599297
+Hellinger Distance: 0.012255639522313838
+Jensen-Shannon Divergence: 0.000150152670366568
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9999999975008058
+Battacharyya Distance: 2.4991941880580353e-09
+Hellinger Distance: 4.9991938279254866e-05
+Jensen-Shannon Divergence: 2.5991939376706815e-09
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9999636243760106
+Battacharyya Distance: 3.637628559844774e-05
+Hellinger Distance: 0.006031220771059132
+Jensen-Shannon Divergence: 3.6373003079038786e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999980684580465
+Battacharyya Distance: 1.931543818922216e-06
+Hellinger Distance: 0.001389799249238048
+Jensen-Shannon Divergence: 1.931637663779627e-06
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999999975008058
+Battacharyya Distance: 2.4991941880580353e-09
+Hellinger Distance: 4.9991938279254866e-05
+Jensen-Shannon Divergence: 2.5991939376706815e-09
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 2 qubits and depth 20
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9999912610405163
 Battacharyya Distance: 8.738997668651724e-06
 Hellinger Distance: 0.0029561731146402347
@@ -54,11 +82,38 @@ Battacharyya Coefficient: 0.9999987685903564
 Battacharyya Distance: 1.2314104017727332e-06
 Hellinger Distance: 0.0011096889833039627
 Jensen-Shannon Divergence: 1.2315073023266409e-06
+=======
+Battacharyya Coefficient: 0.9999721507073626
+Battacharyya Distance: 2.7849680436188683e-05
+Hellinger Distance: 0.005277242901121311
+Jensen-Shannon Divergence: 2.784876868932938e-05
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9999876832083645
+Battacharyya Distance: 1.2316867487792532e-05
+Hellinger Distance: 0.0035095286912659924
+Jensen-Shannon Divergence: 1.2316780582184673e-05
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.999983347132927
+Battacharyya Distance: 1.6653005733505137e-05
+Hellinger Distance: 0.004080792456628714
+Jensen-Shannon Divergence: 1.6652686305863705e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999981655923973
+Battacharyya Distance: 1.8344092852353835e-06
+Hellinger Distance: 0.001354403043882986
+Jensen-Shannon Divergence: 1.834505715958425e-06
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999991452428613
+Battacharyya Distance: 8.54757504040265e-07
+Hellinger Distance: 0.0009245307688740878
+Jensen-Shannon Divergence: 8.548565777326627e-07
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 2 qubits and depth 50
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9999977171946537
 Battacharyya Distance: 2.2828079519138475e-06
 Hellinger Distance: 0.0015108955448510904
@@ -83,11 +138,38 @@ Battacharyya Coefficient: 0.9999992382663647
 Battacharyya Distance: 7.617339253986397e-07
 Hellinger Distance: 0.0008727735320317809
 Jensen-Shannon Divergence: 7.618334647781661e-07
+=======
+Battacharyya Coefficient: 0.9999072393574086
+Battacharyya Distance: 9.276494512592919e-05
+Hellinger Distance: 0.00963123266214056
+Jensen-Shannon Divergence: 9.27560836969459e-05
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9999761091775516
+Battacharyya Distance: 2.3891107838602162e-05
+Hellinger Distance: 0.004887823897155672
+Jensen-Shannon Divergence: 2.389063494657312e-05
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9999626883536837
+Battacharyya Distance: 3.731234241305308e-05
+Hellinger Distance: 0.006108325983239502
+Jensen-Shannon Divergence: 3.7310684190624776e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999875382942476
+Battacharyya Distance: 1.2461783400120328e-05
+Hellinger Distance: 0.0035301141271763554
+Jensen-Shannon Divergence: 1.246170218699091e-05
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999974046950548
+Battacharyya Distance: 2.5953083129840545e-06
+Hellinger Distance: 0.0016109950178518385
+Jensen-Shannon Divergence: 2.5954001144443958e-06
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 3 qubits and depth 5
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9976490789865694
 Battacharyya Distance: 0.002353688766933766
 Hellinger Distance: 0.048486297171791655
@@ -112,11 +194,38 @@ Battacharyya Coefficient: 0.9998223646394561
 Battacharyya Distance: 0.00017765113957323185
 Hellinger Distance: 0.013327991617080195
 Jensen-Shannon Divergence: 0.00017695134323415175
+=======
+Battacharyya Coefficient: 0.999868010125609
+Battacharyya Distance: 0.00013199858582102941
+Hellinger Distance: 0.011488684623764513
+Jensen-Shannon Divergence: 0.000131922049552882
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9998680101256097
+Battacharyya Distance: 0.0001319985858203632
+Hellinger Distance: 0.011488684623744768
+Jensen-Shannon Divergence: 0.00013192204955238864
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.999991093518956
+Battacharyya Distance: 8.906520706950947e-06
+Hellinger Distance: 0.0029843728046755613
+Jensen-Shannon Divergence: 8.906293183758425e-06
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999998616205643
+Battacharyya Distance: 1.3837944526238696e-07
+Hellinger Distance: 0.00037199385511914144
+Jensen-Shannon Divergence: 1.3847939365938352e-07
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999996486590969
+Battacharyya Distance: 3.513409648688188e-07
+Hellinger Distance: 0.0005927401530614261
+Jensen-Shannon Divergence: 3.5144062531132317e-07
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 3 qubits and depth 20
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.999475551064192
 Battacharyya Distance: 0.0005245865072527558
 Hellinger Distance: 0.022900850111090325
@@ -141,11 +250,38 @@ Battacharyya Coefficient: 0.9999943557745674
 Battacharyya Distance: 5.644241361288661e-06
 Hellinger Distance: 0.0023757578651536497
 Jensen-Shannon Divergence: 5.6442929608829685e-06
+=======
+Battacharyya Coefficient: 0.9999643525552375
+Battacharyya Distance: 3.564808014773561e-05
+Hellinger Distance: 0.005970548111418775
+Jensen-Shannon Divergence: 3.564690036546601e-05
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9999659950880806
+Battacharyya Distance: 3.400549009952991e-05
+Hellinger Distance: 0.005831373072259252
+Jensen-Shannon Divergence: 3.400446069111543e-05
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9999823519520215
+Battacharyya Distance: 1.764820370717773e-05
+Hellinger Distance: 0.004200957982059088
+Jensen-Shannon Divergence: 1.7648063918893732e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999832140207792
+Battacharyya Distance: 1.67861201069605e-05
+Hellinger Distance: 0.004097069588136014
+Jensen-Shannon Divergence: 1.678595505951953e-05
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999853868117878
+Battacharyya Distance: 1.4613294985839795e-05
+Hellinger Distance: 0.0038227199997542447
+Jensen-Shannon Divergence: 1.4613188403289352e-05
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 3 qubits and depth 50
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9975807697802385
 Battacharyya Distance: 0.002422161285425658
 Hellinger Distance: 0.04918567087848317
@@ -170,11 +306,38 @@ Battacharyya Coefficient: 0.9999973101664752
 Battacharyya Distance: 2.6898371424135794e-06
 Hellinger Distance: 0.001640071197035606
 Jensen-Shannon Divergence: 2.689931602299413e-06
+=======
+Battacharyya Coefficient: 0.9996347677070856
+Battacharyya Distance: 0.00036529900647276023
+Hellinger Distance: 0.019111051590407442
+Jensen-Shannon Divergence: 0.00036502840583628834
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9996261759005189
+Battacharyya Distance: 0.0003738939891278991
+Hellinger Distance: 0.019334531270708145
+Jensen-Shannon Divergence: 0.000373618205298108
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9999200896499537
+Battacharyya Distance: 7.991354304841211e-05
+Hellinger Distance: 0.008939258919046577
+Jensen-Shannon Divergence: 7.990481043249513e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999614388456327
+Battacharyya Distance: 3.856189786771586e-05
+Hellinger Distance: 0.006209762824967517
+Jensen-Shannon Divergence: 3.856013492079414e-05
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999862759644522
+Battacharyya Distance: 1.3724129723217182e-05
+Hellinger Distance: 0.003704596539581458
+Jensen-Shannon Divergence: 1.3724019255565695e-05
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 4 qubits and depth 5
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9998549726101085
 Battacharyya Distance: 0.00014503790738033205
 Hellinger Distance: 0.01204273182848086
@@ -199,11 +362,38 @@ Battacharyya Coefficient: 0.9999986764824966
 Battacharyya Distance: 1.3235183792210716e-06
 Hellinger Distance: 0.0011504423080325407
 Jensen-Shannon Divergence: 1.3236167806903765e-06
+=======
+Battacharyya Coefficient: 0.9985013288163309
+Battacharyya Distance: 0.0014997953146029383
+Hellinger Distance: 0.03871267471585512
+Jensen-Shannon Divergence: 0.0014579387766756194
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9993246765538472
+Battacharyya Distance: 0.0006755515797463962
+Hellinger Distance: 0.02598698609186345
+Jensen-Shannon Divergence: 0.000674421338870856
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9998292891548903
+Battacharyya Distance: 0.00017072541786449476
+Hellinger Distance: 0.01306563603875196
+Jensen-Shannon Divergence: 0.0001705851507907535
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.99985051353083
+Battacharyya Distance: 0.00014949764338585502
+Hellinger Distance: 0.012226465930656523
+Jensen-Shannon Divergence: 0.0001493863483726583
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9998257198301906
+Battacharyya Distance: 0.00017429535836288904
+Hellinger Distance: 0.013201521495501595
+Jensen-Shannon Divergence: 0.00017413068473448693
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 4 qubits and depth 20
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9991012833588437
 Battacharyya Distance: 0.0008991207290819761
 Hellinger Distance: 0.02997860305550106
@@ -228,11 +418,38 @@ Battacharyya Coefficient: 0.9999801310825653
 Battacharyya Distance: 1.9869114824216865e-05
 Hellinger Distance: 0.004457456386909324
 Jensen-Shannon Divergence: 1.986872704103135e-05
+=======
+Battacharyya Coefficient: 0.9994857325223455
+Battacharyya Distance: 0.0005143997585275488
+Hellinger Distance: 0.022677466296539467
+Jensen-Shannon Divergence: 0.0005139046533557967
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.99923695577985
+Battacharyya Distance: 0.0007633354865665366
+Hellinger Distance: 0.027623255060298633
+Jensen-Shannon Divergence: 0.0007621775472747467
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9990068894511355
+Battacharyya Distance: 0.0009936040098802743
+Hellinger Distance: 0.031513656545079254
+Jensen-Shannon Divergence: 0.0009910012707618763
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9998022354056787
+Battacharyya Distance: 0.0001977841523173157
+Hellinger Distance: 0.01406288001432562
+Jensen-Shannon Divergence: 0.0001976838933446032
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9998680881843048
+Battacharyya Distance: 0.00013192051682391884
+Hellinger Distance: 0.011485286921705178
+Jensen-Shannon Divergence: 0.0001318574260424429
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 4 qubits and depth 50
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9999383534659447
 Battacharyya Distance: 6.164843428094656e-05
 Hellinger Distance: 0.00785153068265554
@@ -257,11 +474,38 @@ Battacharyya Coefficient: 0.9999903758511991
 Battacharyya Distance: 9.624195113319115e-06
 Hellinger Distance: 0.003102281225807324
 Jensen-Shannon Divergence: 9.624205806857608e-06
+=======
+Battacharyya Coefficient: 0.9998013593262713
+Battacharyya Distance: 0.00019866040540033743
+Hellinger Distance: 0.014093994241861892
+Jensen-Shannon Divergence: 0.00019861409078666552
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9999458326415009
+Battacharyya Distance: 5.4168825603400695e-05
+Hellinger Distance: 0.007359847719890087
+Jensen-Shannon Divergence: 5.416610522200721e-05
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9999667801088561
+Battacharyya Distance: 3.3220442936713834e-05
+Hellinger Distance: 0.005763669933744869
+Jensen-Shannon Divergence: 3.321955239482233e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9999898173068745
+Battacharyya Distance: 1.0182744969442739e-05
+Hellinger Distance: 0.0031910332318526857
+Jensen-Shannon Divergence: 1.0182746083216263e-05
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999903853748877
+Battacharyya Distance: 9.614671333090679e-06
+Hellinger Distance: 0.00310074588969393
+Jensen-Shannon Divergence: 9.614673221197026e-06
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 5 qubits and depth 5
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9886126705387672
 Battacharyya Distance: 0.011452661542849851
 Hellinger Distance: 0.10671143078992172
@@ -286,11 +530,38 @@ Battacharyya Coefficient: 0.999864700806035
 Battacharyya Distance: 0.00013530834772666135
 Hellinger Distance: 0.011631818170913973
 Jensen-Shannon Divergence: 0.00013514728014160676
+=======
+Battacharyya Coefficient: 0.9992958445663827
+Battacharyya Distance: 0.0007044034674977995
+Hellinger Distance: 0.02653592722328313
+Jensen-Shannon Divergence: 0.000703342440652186
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.9995756049491573
+Battacharyya Distance: 0.0004244851319098161
+Hellinger Distance: 0.020600850730602725
+Jensen-Shannon Divergence: 0.00042407356912497476
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.999500066844308
+Battacharyya Distance: 0.0005000581639376281
+Hellinger Distance: 0.022359185040490764
+Jensen-Shannon Divergence: 0.0004994312538626898
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.9996523340169688
+Battacharyya Distance: 0.0003477264328603375
+Hellinger Distance: 0.01864580336193949
+Jensen-Shannon Divergence: 0.00034729565568094694
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9998134468156015
+Battacharyya Distance: 0.0001865705876082846
+Hellinger Distance: 0.013658447363611154
+Jensen-Shannon Divergence: 0.00018646969323822773
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 5 qubits and depth 20
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.9965975249433181
 Battacharyya Distance: 0.0034082766385006374
 Hellinger Distance: 0.0583307385233585
@@ -315,11 +586,38 @@ Battacharyya Coefficient: 0.9999061136136687
 Battacharyya Distance: 9.389079393399054e-05
 Hellinger Distance: 0.009689498765648182
 Jensen-Shannon Divergence: 9.387070505590523e-05
+=======
+Battacharyya Coefficient: 0.9999538764694965
+Battacharyya Distance: 4.612459422622511e-05
+Hellinger Distance: 0.006791430664832721
+Jensen-Shannon Divergence: 4.612255604392466e-05
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.999936607231686
+Battacharyya Distance: 6.33947777204779e-05
+Hellinger Distance: 0.007961957566197634
+Jensen-Shannon Divergence: 6.339122470557964e-05
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.9999706142864118
+Battacharyya Distance: 2.9386145356777057e-05
+Hellinger Distance: 0.005420859116396366
+Jensen-Shannon Divergence: 2.9385470213766545e-05
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.999962326532624
+Battacharyya Distance: 3.7674177038938365e-05
+Hellinger Distance: 0.006137871564896429
+Jensen-Shannon Divergence: 3.767304207492155e-05
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.999970125034791
+Battacharyya Distance: 2.9875411474670374e-05
+Hellinger Distance: 0.005465799592304653
+Jensen-Shannon Divergence: 2.9874764748703043e-05
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 
 ===========================================================================
 Running Circuit with 5 qubits and depth 50
 Metrics for MCWF with 10 Trajectories:
+<<<<<<< HEAD
 Battacharyya Coefficient: 0.999338570843455
 Battacharyya Distance: 0.0006616479973133182
 Hellinger Distance: 0.025718265037598505
@@ -344,5 +642,31 @@ Battacharyya Coefficient: 0.9999820309463678
 Battacharyya Distance: 1.796921507753907e-05
 Hellinger Distance: 0.00423899205371028
 Jensen-Shannon Divergence: 1.796901854943377e-05
+=======
+Battacharyya Coefficient: 0.9995393144016205
+Battacharyya Distance: 0.00046079174659169293
+Hellinger Distance: 0.02146358773205751
+Jensen-Shannon Divergence: 0.00046059845065788096
+Metrics for MCWF with 100 Trajectories:
+Battacharyya Coefficient: 0.99831070840278
+Battacharyya Distance: 0.0016907200592227733
+Hellinger Distance: 0.04110099265434013
+Jensen-Shannon Divergence: 0.001684733392288728
+Metrics for MCWF with 200 Trajectories:
+Battacharyya Coefficient: 0.999536657699708
+Battacharyya Distance: 0.0004634496765048531
+Hellinger Distance: 0.02152538734248693
+Jensen-Shannon Divergence: 0.00046305806590908355
+Metrics for MCWF with 500 Trajectories:
+Battacharyya Coefficient: 0.99980142454289
+Battacharyya Distance: 0.000198595175826557
+Hellinger Distance: 0.014091680420095822
+Jensen-Shannon Divergence: 0.00019852924535290674
+Metrics for MCWF with 1000 Trajectories:
+Battacharyya Coefficient: 0.9999546625699516
+Battacharyya Distance: 4.533845782076613e-05
+Hellinger Distance: 0.006733307508273357
+Jensen-Shannon Divergence: 4.533581341466548e-05
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
 ===========================================================================
 

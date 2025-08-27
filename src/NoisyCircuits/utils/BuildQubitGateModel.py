@@ -608,7 +608,12 @@ class BuildModel:
             if not self._ensure_ctpt(error_operators_full_system):
                 print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
             ecr_error_operators[qpair] = {
+<<<<<<< HEAD
                 "operators": error_operators_full_system
+=======
+                "operators": error_operators_full_system,
+                "qubit_channel" : error_operators
+>>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
             }
         return ecr_error_operators
 
