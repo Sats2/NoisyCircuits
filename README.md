@@ -19,7 +19,7 @@ NoisyCircuits enables researchers and developers to:
 
 ✨ **Hardware-Calibrated Noise Models**: Direct integration with IBM Quantum backend calibration data  
 🚀 **Parallel Monte-Carlo Simulation**: Multi-core trajectory execution for scalable performance  
-🎛️ **Gate Set**: Support for IBM Eagle QPU basis gates (X, √X, Rz, ECR) and Heron QPU basis gates (X, √X, Rz, Rx, CZ, RZZ)
+🎛️ **Gate Set**: Support for IBM Eagle QPU basis gates (X, √X, Rz, ECR) and Heron QPU basis gates (X, √X, Rz, Rx, CZ, RZZ)  
 📊 **Validation Framework**: Built-in comparison with the density matrix method  
 🔬 **Research Applications**: Ready-to-use examples for quantum machine learning and algorithm development  
 
