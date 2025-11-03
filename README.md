@@ -3,13 +3,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
+<<<<<<< HEAD
 A Python package for creating and simulating noisy quantum circuits using error models from IBM Eagle R3 quantum hardware calibration data. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
+=======
+A Python package for creating and simulating noisy quantum circuits using error models from IBM (Heron RX / Eagle RX) quantum hardware calibration data. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
+>>>>>>> 9145809 (Revise README for updated QPU chipsets)
 
 ## 🎯 Overview
 
 NoisyCircuits enables researchers and developers to:
 
+<<<<<<< HEAD
 - **Simulate realistic quantum noise** using calibration data from IBM Eagle R3 chipsets
+=======
+- **Simulate realistic quantum noise** using calibration data from IBM QPU (Heron/Eagle) chipsets
+>>>>>>> 9145809 (Revise README for updated QPU chipsets)
 - **Perform efficient noisy statevector simulations** with the Monte-Carlo Wave Function method
 - **Validate quantum algorithms** under realistic hardware conditions  
 - **Develop noise-aware quantum machine learning** applications
@@ -19,7 +27,11 @@ NoisyCircuits enables researchers and developers to:
 
 ✨ **Hardware-Calibrated Noise Models**: Direct integration with IBM Quantum backend calibration data  
 🚀 **Parallel Monte-Carlo Simulation**: Multi-core trajectory execution for scalable performance  
+<<<<<<< HEAD
 🎛️ **Gate Set**: Support for IBM Eagle R3 basis gates (X, √X, Rz, ECR)  
+=======
+🎛️ **Gate Set**: Support for IBM Eagle QPU basis gates (X, √X, Rz, ECR) and Heron QPU basis gates (X, √X, Rz, Rx, CZ, RZZ)
+>>>>>>> 9145809 (Revise README for updated QPU chipsets)
 📊 **Validation Framework**: Built-in comparison with the density matrix method  
 🔬 **Research Applications**: Ready-to-use examples for quantum machine learning and algorithm development  
 
@@ -28,7 +40,11 @@ NoisyCircuits enables researchers and developers to:
 The supported gated are fully decomposed into the hardware basis gates and this decomposition is applied to the circuit.
 
 - **Single-qubit gates**: X, Y, Z, √X, Hadamard, Rx(θ), Ry(θ), Rz(θ)
+<<<<<<< HEAD
 - **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP
+=======
+- **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP, RZZ
+>>>>>>> 9145809 (Revise README for updated QPU chipsets)
 - **Unitary Operation**: Additionally, a unitary operator can be applied to the circuit. This unitary operator is not decomposed and is applied fully to the quantum circuit assuming a perfect implmenetation.
 
 ## 🛠️ Installation
@@ -74,7 +90,7 @@ Core dependencies are automatically installed:
 - **NumPy, Matplotlib**: Scientific computing and visualization
 
 ## 📁 Repository Structure
-
+_To be updated along with version release_
 ```
 NoisyCircuits/
 ├── src/NoisyCircuits/                    # Main package source code
