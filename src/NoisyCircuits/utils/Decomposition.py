@@ -349,6 +349,75 @@ class Decomposition(ABC):
         pass
 
     @abstractmethod
+    def RZZ(self,
+            theta:int|float,
+            qubit1:int,
+            qubit2:int):
+        r"""
+        Applies the RZZ Coupling Gate (Ising ZZ) :math:`ZZ(\theta)` which effectively applies the unitary:
+
+        .. math::
+            ZZ(\theta) = \begin{pmatrix}
+            \exp(-i\theta/2) & 0 & 0 & 0 \\
+            0 & \exp(i\theta/2) & 0 & 0 \\
+            0 & 0 & \exp(i\theta/2) & 0 \\
+            0 & 0 & 0 & \exp(-i\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The angle of rotation.
+            qubit1 (int): The first qubit.
+            qubit2 (int): The second qubit.
+        """
+        pass
+
+    @abstractmethod
+    def RXX(self,
+            theta:int|float,
+            qubit1:int,
+            qubit2:int):
+        r"""
+        Applies the RXX Coupling Gate (Ising XX) :math:`XX(\theta)` which effectively applies the unitary:
+
+        .. math::
+            XX(\theta) = \begin{pmatrix}
+            \cos(\theta/2) & 0 & 0 & -i\sin(\theta/2) \\
+            0 & \cos(\theta/2) & -i\sin(\theta/2) & 0 \\
+            0 & -i\sin(\theta/2) & \cos(\theta/2) & 0 \\
+            -i\sin(\theta/2) & 0 & 0 & \cos(\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The angle of rotation.
+            qubit1 (int): The first qubit.
+            qubit2 (int): The second qubit.
+        """
+        pass
+
+    @abstractmethod
+    def RYY(self,
+            theta:int|float,
+            qubit1:int,
+            qubit2:int):
+        r"""
+        Applies the RYY Coupling Gate (Ising YY) :math:`YY(\theta)` which effectively applies the unitary:
+
+        .. math::
+            YY(\theta) = \begin{pmatrix}
+            \cos(\theta/2) & 0 & 0 & i\sin(\theta/2) \\
+            0 & \cos(\theta/2) & -i\sin(\theta/2) & 0 \\
+            0 & -i\sin(\theta/2) & \cos(\theta/2) & 0 \\
+            i\sin(\theta/2) & 0 & 0 & \cos(\theta/2)
+            \end{pmatrix}
+
+        Args:
+            theta (int | float): The angle of rotation.
+            qubit1 (int): The first qubit.
+            qubit2 (int): The second qubit.
+        """
+        pass
+
+    @abstractmethod
     def apply_swap_decomposition(self,
               qubit1:int,
               qubit2:int):

@@ -100,32 +100,50 @@ class HeronDecomposition(Decomposition):
     
     def RZZ(self,
             theta:int|float,
-            control:int,
-            target:int):
-        r"""
-        Applies the RZZ Coupling Gate :math:`ZZ(\theta)` (a basis gate of the IBM Heron QPU), which effectively applies the unitary:
-
-        .. math::
-            ZZ(\theta) = \begin{pmatrix}
-            \exp(-i\theta/2) & 0 & 0 & 0 \\
-            0 & \exp(i\theta/2) & 0 & 0 \\
-            0 & 0 & \exp(i\theta/2) & 0 \\
-            0 & 0 & 0 & \exp(-i\theta/2)
-            \end{pmatrix}
-
-        Args:
-            theta (int | float): The angle of rotation.
-            control (int): The control qubit.
-            target (int): The target qubit.
-        """
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            qubit1:int,
+            qubit2:int):
+        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
         for swap in forward_swaps:
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        match_qubits = next((t for t in self.qubit_map if control in t and target in t), None)
-        if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
-            self.instruction_list.append(["rzz", [phys_control, phys_target], theta])
-        else:
-            self.instruction_list.append(["rzz", [phys_target, phys_control], theta])
+        self.instruction_list.append(["rzz", [phys_control, phys_target], theta])
+        for swap in reverse_swaps:
+            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+
+    def RXX(self,
+            theta:int|float,
+            qubit1:int,
+            qubit2:int):
+        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+        for swap in forward_swaps:
+            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RX(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi/2, qubit=phys_target)
+        self.RX(theta=-np.pi/2, qubit=phys_target)
+        self.RZ(theta=-np.pi/2, qubit=phys_target)
+        self.RZZ(theta=theta, control=phys_control, target=phys_target)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RX(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=-np.pi/2, qubit=phys_target)
+        self.RX(theta=-np.pi/2, qubit=phys_target)
+        self.RZ(theta=-np.pi/2, qubit=phys_target)
+        for swap in reverse_swaps:
+            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+
+    def RYY(self, 
+            theta:int|float, 
+            qubit1:int, 
+            qubit2:int):
+        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+        for swap in forward_swaps:
+            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        self.RX(theta=np.pi/2, qubit=phys_control)
+        self.RX(theta=np.pi/2, qubit=phys_target)
+        self.RZZ(theta=theta, control=phys_control, target=phys_target)
+        self.RX(theta=-np.pi/2, qubit=phys_control)
+        self.RX(theta=-np.pi/2, qubit=phys_target)
         for swap in reverse_swaps:
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
