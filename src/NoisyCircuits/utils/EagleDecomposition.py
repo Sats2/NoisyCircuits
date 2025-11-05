@@ -27,16 +27,19 @@ class EagleDecomposition(Decomposition):
     def RZ(self, 
            theta:int|float,
            qubit:int)->None:
-        self.instruction_list.append(["rz", [qubit], theta])
+        if super().RZ(theta=theta, qubit=qubit):
+            self.instruction_list.append(["rz", [qubit], theta])
 
     def SX(self,
            qubit:int)->None:
-        self.instruction_list.append(["sx", [qubit], None])
+        if super().SX(qubit=qubit):
+            self.instruction_list.append(["sx", [qubit], None])
 
     def X(self,
           qubit:int)->None:
-        self.instruction_list.append(["x", [qubit], None])
-    
+        if super().X(qubit=qubit):
+            self.instruction_list.append(["x", [qubit], None])
+
     def RY(self,
            theta:int|float,
            qubit:int)->None:
@@ -75,15 +78,16 @@ class EagleDecomposition(Decomposition):
     def ECR(self,
             control:int,
             target:int):
-        match_qubits = next((t for t in self.qubit_map if control in t and target in t), None)
-        if control == match_qubits[0] and target == match_qubits[1]:
-            self.instruction_list.append(["ecr", [control, target], None])
-        else:
-            self.RY(theta=-np.pi/2, qubit=control)
-            self.RY(theta=np.pi/2, qubit=target)
-            self.instruction_list.append(["ecr", [target, control], None])
-            self.H(qubit=control)
-            self.H(qubit=target)
+        if super().ECR(control=control, target=target):
+            match_qubits = next((t for t in self.qubit_map if control in t and target in t), None)
+            if control == match_qubits[0] and target == match_qubits[1]:
+                self.instruction_list.append(["ecr", [control, target], None])
+            else:
+                self.RY(theta=-np.pi/2, qubit=control)
+                self.RY(theta=np.pi/2, qubit=target)
+                self.instruction_list.append(["ecr", [target, control], None])
+                self.H(qubit=control)
+                self.H(qubit=target)
 
     def apply_swap_decomposition(self, qubit1, qubit2):
         self.RZ(theta=-np.pi/2, qubit=qubit1)
@@ -95,7 +99,6 @@ class EagleDecomposition(Decomposition):
         self.RZ(theta=-np.pi/2, qubit=qubit1)
         self.SX(qubit=qubit2)
         self.ECR(control=qubit1, target=qubit2)
-
         self.qubit_coupling.update_mapping_after_swap(qubit1, qubit2)
 
     def CZ(self,

@@ -37,8 +37,16 @@ class Decomposition(ABC):
         Args:
             theta (int | float): The rotation angle.
             qubit (int): The target qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def SX(self,
@@ -55,8 +63,13 @@ class Decomposition(ABC):
 
         Args:
             qubit (int): The target qubit.
+
+        Raises:
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def X(self,
@@ -73,8 +86,13 @@ class Decomposition(ABC):
 
         Args:
             qubit (int): The target qubit.
+        
+        Raises:
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def ECR(self,
@@ -93,8 +111,15 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+
+        Raises:
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def RY(self,
@@ -113,8 +138,16 @@ class Decomposition(ABC):
         Args:
             theta (int | float): The rotation angle.
             qubit (int): The target qubit.
+
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def RX(self,
@@ -133,8 +166,16 @@ class Decomposition(ABC):
         Args:
             theta (int | float): The rotation angle.
             qubit (int): The target qubit.
+
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def Y(self,
@@ -151,8 +192,13 @@ class Decomposition(ABC):
 
         Args:
             qubit (int): The target qubit.
+
+        Raises:
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def Z(self,
@@ -169,8 +215,13 @@ class Decomposition(ABC):
 
         Args:
             qubit (int): The target qubit.
+
+        Raises:
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def H(self,
@@ -187,8 +238,13 @@ class Decomposition(ABC):
 
         Args:
             qubit (int): The target qubit.
+
+        Raises:
+            TypeError: If qubit is not an integer.
         """
-        pass
+        if not isinstance(qubit, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def CX(self,
@@ -209,8 +265,14 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+        Raises:
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def CY(self,
@@ -231,8 +293,14 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+        Raises:
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def CZ(self,
@@ -253,8 +321,14 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+        Raises:
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def SWAP(self,
@@ -275,8 +349,14 @@ class Decomposition(ABC):
         Args:
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
+        Raises:
+            TypeError: If qubit1/qubit2 is not an integer.
         """
-        pass
+        if not isinstance(qubit1, int):
+            raise TypeError("The first qubit must be an integer.")
+        if not isinstance(qubit2, int):
+            raise TypeError("The second qubit must be an integer.")
+        return True
 
     @abstractmethod
     def CRX(self,
@@ -299,8 +379,18 @@ class Decomposition(ABC):
             theta (int | float): The rotation angle.
             control (int): The control qubit.
             target (int): The target qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def CRZ(self,
@@ -322,8 +412,18 @@ class Decomposition(ABC):
             theta (int | float): The rotation angle.
             control (int): The control qubit.
             target (int): The target qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def CRY(self,
@@ -345,8 +445,18 @@ class Decomposition(ABC):
             theta (int | float): The rotation angle.
             control (int): The control qubit.
             target (int): The target qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If control/target is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(control, int):
+            raise TypeError("The control qubit must be an integer.")
+        if not isinstance(target, int):
+            raise TypeError("The target qubit must be an integer.")
+        return True
 
     @abstractmethod
     def RZZ(self,
@@ -368,8 +478,18 @@ class Decomposition(ABC):
             theta (int | float): The angle of rotation.
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If qubit1/qubit2 is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(qubit1, int):
+            raise TypeError("The first qubit must be an integer.")
+        if not isinstance(qubit2, int):
+            raise TypeError("The second qubit must be an integer.")
+        return True
 
     @abstractmethod
     def RXX(self,
@@ -391,8 +511,18 @@ class Decomposition(ABC):
             theta (int | float): The angle of rotation.
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If qubit1/qubit2 is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(qubit1, int):
+            raise TypeError("The first qubit must be an integer.")
+        if not isinstance(qubit2, int):
+            raise TypeError("The second qubit must be an integer.")
+        return True
 
     @abstractmethod
     def RYY(self,
@@ -414,8 +544,18 @@ class Decomposition(ABC):
             theta (int | float): The angle of rotation.
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
+        
+        Raises:
+            TypeError: If theta is not an integer or float.
+            TypeError: If qubit1/qubit2 is not an integer.
         """
-        pass
+        if not isinstance(theta, (int, float)):
+            raise TypeError("The angle theta must be an integer or float.")
+        if not isinstance(qubit1, int):
+            raise TypeError("The first qubit must be an integer.")
+        if not isinstance(qubit2, int):
+            raise TypeError("The second qubit must be an integer.")
+        return True
 
     @abstractmethod
     def apply_swap_decomposition(self,
@@ -427,8 +567,15 @@ class Decomposition(ABC):
         Args:
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
+        
+        Raises:
+            TypeError: If qubit1/qubit2 is not an integer.
         """
-        pass
+        if not isinstance(qubit1, int):
+            raise TypeError("The first qubit must be an integer.")
+        if not isinstance(qubit2, int):
+            raise TypeError("The second qubit must be an integer.")
+        return True
 
     @abstractmethod
     def apply_unitary(self,

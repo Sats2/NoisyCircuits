@@ -1,3 +1,6 @@
+from collections import deque
+
+
 class QubitCouplingMap:
     def __init__(self,
                  num_qubits:int,
@@ -28,7 +31,6 @@ class QubitCouplingMap:
             graph[qubit] = neighbors
         
         # BFS to find shortest path
-        from collections import deque
         queue = deque([(start, [start])])
         visited = {start}
         

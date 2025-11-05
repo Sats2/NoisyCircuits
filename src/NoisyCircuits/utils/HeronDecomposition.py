@@ -26,21 +26,25 @@ class HeronDecomposition(Decomposition):
 
     def X(self,
           qubit:int):
-        self.instruction_list.append(["x", [qubit], None])
+        if super().X(qubit=qubit):
+            self.instruction_list.append(["x", [qubit], None])
 
     def SX(self,
            qubit:int):
-        self.instruction_list.append(["sx", [qubit], None])
+        if super().SX(qubit=qubit):
+            self.instruction_list.append(["sx", [qubit], None])
     
     def RZ(self,
            theta:int|float,
            qubit:int):
-        self.instruction_list.append(["rz", [qubit], theta])
+        if super().RZ(theta=theta, qubit=qubit):
+            self.instruction_list.append(["rz", [qubit], theta])
     
     def RX(self,
            theta:int|float,
            qubit:int):
-        self.instruction_list.append(["rx", [qubit], theta])
+        if super().RX(theta=theta, qubit=qubit):
+            self.instruction_list.append(["rx", [qubit], theta])
     
     def RY(self,
            theta:int|float,
@@ -87,27 +91,29 @@ class HeronDecomposition(Decomposition):
     def CZ(self,
            control:int,
            target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        match_qubits = next((t for t in self.qubit_map if control in t and target in t), None)
-        if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
-            self.instruction_list.append(["cz", [phys_control, phys_target], None])
-        else:
-            self.instruction_list.append(["cz", [phys_target, phys_control], None])
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CZ(control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            match_qubits = next((t for t in self.qubit_map if control in t and target in t), None)
+            if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
+                self.instruction_list.append(["cz", [phys_control, phys_target], None])
+            else:
+                self.instruction_list.append(["cz", [phys_target, phys_control], None])
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def RZZ(self,
             theta:int|float,
             qubit1:int,
             qubit2:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.instruction_list.append(["rzz", [phys_control, phys_target], theta])
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().RZZ(theta=theta, qubit1=qubit1, qubit2=qubit2):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.instruction_list.append(["rzz", [phys_control, phys_target], theta])
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def RXX(self,
             theta:int|float,
