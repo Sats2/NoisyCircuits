@@ -1,4 +1,4 @@
-name: NoisyCircuits
+name: NoisyCircuits_New_Branch
 channels:
   - conda-forge
 dependencies:

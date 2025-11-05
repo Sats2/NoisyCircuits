@@ -16,10 +16,22 @@ import ray
 
 class QuantumCircuit:
     """
-    This class allows a user to create a quantum circuit with error model from IBM machines with the Eagle R3 chipset using Pennylane where selected
-    gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses RZ, SX and X gates for single qubit operations
-    and ECR gate for two qubit operations as the basis gates.
+    This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are 
+    implemented as methods. The gate decomposition uses RZ, SX and X gates for single qubit operations and ECR gate for two qubit operations as the basis gates.
     """
+
+    # Update QPU Basis Gates Here!
+    basis_gates_set = {
+        'eagle': {
+                    "basis_gates" : ['rz', 'sx', 'x', 'ecr'],
+                    "gate_decomposition" : EagleDecomposition
+                },
+        'heron': {
+                    "basis_gates" : ['rz', 'rx', 'sx', 'x', 'cz', 'rzz'],
+                    "gate_decomposition" : HeronDecomposition
+                }
+    }
+
     def __init__(self,
                  num_qubits:int,
                  noise_model:dict,
@@ -60,6 +72,10 @@ class QuantumCircuit:
             raise ValueError("Number of qubits must be a positive integer.")
         if not isinstance(noise_model, dict):
             raise TypeError("Noise model must be a dictionary.")
+        if not isinstance(backend_qpu_type, str):
+            raise TypeError("Backend QPU type must be a string.")
+        if backend_qpu_type.lower() not in list(QuantumCircuit.basis_gates_set.keys()):
+            raise ValueError(f"Backend QPU type must be one of {list(QuantumCircuit.basis_gates_set.keys())}.")
         if not isinstance(num_trajectories, int):
             raise TypeError("Number of trajectories must be an integer.")
         if num_trajectories < 1:
@@ -81,19 +97,25 @@ class QuantumCircuit:
         self.num_trajectories = num_trajectories
         self.threshold = threshold
         self.num_cores = num_cores
-        self.instruction_list = []
-        self.qubit_to_instruction_list = []
-        single_error, multi_error, measure_error, connectivity = BuildModel(
-            noise_model=self.noise_model,
-            num_qubits=self.num_qubits,
-            threshold=self.threshold,
-            basis_gates=basis_gates
-        ).build_qubit_gate_model()
+        basis_gates = QuantumCircuit.basis_gates_set[backend_qpu_type.lower()]["basis_gates"]
+        modeller = BuildModel(
+                                noise_model=self.noise_model,
+                                num_qubits=self.num_qubits,
+                                threshold=self.threshold,
+                                basis_gates=basis_gates
+                            )    
+        single_error, multi_error, measure_error, connectivity = modeller.build_qubit_gate_model()
         self.single_qubit_instructions = single_error
         self.ecr_error_instruction = multi_error
         self.measurement_error = measure_error
         self.connectivity = connectivity
+        self.qubit_coupling_map = modeller.qubit_coupling_map
         self.measurement_error_operator = None
+        self._gate_decomposer = QuantumCircuit.basis_gates_set[backend_qpu_type.lower()]["gate_decomposition"](
+                                                                                                                num_qubits=self.num_qubits,
+                                                                                                                connectivity=self.connectivity,
+                                                                                                                qubit_map=self.qubit_coupling_map
+                                                                                                            )
         ray.init(num_cpus=self.num_cores, ignore_reinit_error=True, log_to_driver=False)
         self.workers = [
             RemoteExecutor.remote(
@@ -102,12 +124,17 @@ class QuantumCircuit:
                 ecr_dict=self.ecr_error_instruction
             ) for _ in range(self.num_cores)]
 
+    # def __getattr__(self, name: str) -> callable:
+    #     """
+    #     Delegate unknown attributes/methods to the selected methods class.
+    #     """
+    #     return getattr(self._gate_decomposer, name)
+
     def refresh(self):
         """
         Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.
         """
-        self.instruction_list = []
-        self.qubit_to_instruction_list = []
+        self._gate_decomposer.instruction_list = []
     
     def generate_measurement_operator(self,
                                       qubits:list[int])->np.ndarray:

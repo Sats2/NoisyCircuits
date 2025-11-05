@@ -82,6 +82,7 @@ class BuildModel:
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
         self.basis_gates = basis_gates
+        self.qubit_coupling_map = []
 
     def _ensure_ctpt(self,
                     kraus_ops:list)->bool:
@@ -182,6 +183,7 @@ class BuildModel:
                 if len(gate_qubits) != 2 or not set(gate_qubits).issubset(allowed_qubits):
                     # Only include valid 2 qubit gate pairs within allowed qubits
                     continue
+                self.qubit_coupling_map.append(tuple(gate_qubits))
                 qpair = tuple(sorted(gate_qubits))
                 for prob, instrs in zip(probabilities, instructions_list):
                     mapped_instrs = _map_instruction_qubits(instrs, gate_qubits)

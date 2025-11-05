@@ -2,7 +2,7 @@ from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ECRGate as ecr
 from qiskit.transpiler import generate_preset_pass_manager
-import NoisyCircuits
+from NoisyCircuits.QuantumCircuit import QuantumCircuit as NoisyCircuitsQuantumCircuit
 import numpy as np
 
 
@@ -48,13 +48,13 @@ class RunOnHardware:
         self.qubit_list_per_circuit = []
     
     def create_circuits(self,
-                       circuit:NoisyCircuits.QuantumCircuit=None,
+                       circuit:NoisyCircuitsQuantumCircuit=None,
                        measure_qubits:list[int]=None)->None:
         """
         Method that generates the fully decomposed circuit list in qiskit for IBM Hardware execution.
 
         Args:
-            circuit (NoisyCircuit.QuantumCircuit): The quantum circuit to add in qiskit version.
+            circuit (NoisyCircuit.QuantumCircuit.QuantumCircuit): The quantum circuit to add in qiskit version.
             measure_qubits (list[int]): The list of qubits to measure.
         
         Raises:
@@ -67,7 +67,7 @@ class RunOnHardware:
         """
         if circuit is None:
             raise ValueError("Please provide a QuantumCircuit object.")
-        if not isinstance(circuit, NoisyCircuits.QuantumCircuit):
+        if not isinstance(circuit, NoisyCircuitsQuantumCircuit):
             raise TypeError("The circuit must be a QuantumCircuit object.")
         if not isinstance(measure_qubits, list):
             raise TypeError("The measure_qubits must be a list of integers.")

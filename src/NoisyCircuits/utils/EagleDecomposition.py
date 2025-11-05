@@ -1,6 +1,6 @@
 import numpy as np
-from SwapSequence import QubitCouplingMap
-from Decomposition import Decomposition
+from NoisyCircuits.utils.SwapSequence import QubitCouplingMap
+from NoisyCircuits.utils.Decomposition import Decomposition
 
 class EagleDecomposition(Decomposition):
     """
