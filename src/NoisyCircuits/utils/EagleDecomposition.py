@@ -213,7 +213,27 @@ class EagleDecomposition(Decomposition):
         forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
         for swap in forward_swaps:
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        # TODO: Complete RXX Decomposition
+        self.RZ(theta=np.pi/2, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=3*np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=-np.pi/2, qubit=phys_control)
+        self.RZ(theta=np.pi+theta, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=np.pi, qubit=phys_target)
+        self.ECR(control=phys_control, target=phys_target)
+        self.X(qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_control)
+        self.SX(qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_control)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
+        self.SX(qubit=phys_target)
+        self.RZ(theta=np.pi/2, qubit=phys_target)
         for swap in reverse_swaps:
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
