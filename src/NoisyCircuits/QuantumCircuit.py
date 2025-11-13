@@ -23,11 +23,11 @@ class QuantumCircuit:
     # Update QPU Basis Gates Here!
     basis_gates_set = {
         'eagle': {
-                    "basis_gates" : ['rz', 'sx', 'x', 'ecr'],
+                    "basis_gates" : [['rz', 'sx', 'x'], ['ecr']],
                     "gate_decomposition" : EagleDecomposition
                 },
         'heron': {
-                    "basis_gates" : ['rz', 'rx', 'sx', 'x', 'cz', 'rzz'],
+                    "basis_gates" : [['rz', 'rx', 'sx', 'x'], ['cz', 'rzz']],
                     "gate_decomposition" : HeronDecomposition
                 }
     }
@@ -124,11 +124,12 @@ class QuantumCircuit:
                 ecr_dict=self.ecr_error_instruction
             ) for _ in range(self.num_cores)]
 
-    # def __getattr__(self, name: str) -> callable:
-    #     """
-    #     Delegate unknown attributes/methods to the selected methods class.
-    #     """
-    #     return getattr(self._gate_decomposer, name)
+    def __getattr__(self, name: str) -> callable:
+        """
+        Delegate unknown attributes/methods to the selected methods class.
+        """
+        if name is not None:
+            return getattr(self._gate_decomposer, name)
 
     def refresh(self):
         """
@@ -166,7 +167,7 @@ class QuantumCircuit:
             raise ValueError(f"Qubits must be in the range [0, {self.num_qubits - 1}].")
         print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
         self.measurement_error_operator = self.generate_measurement_operator(qubits)
-        print(f"Measurement Error Operator created.\nExecuting the circuit with {self.num_trajectories} trajectories.")
+        print(f"Measurement Error Operator created.")
 
     def execute(self,
                 qubits:list[int],
@@ -219,8 +220,7 @@ class QuantumCircuit:
             single_qubit_noise=self.single_qubit_instructions,
             ecr_noise=self.ecr_error_instruction,
             measurement_noise=self.measurement_error,
-            instruction_list=self.instruction_list,
-            qubit_instruction_list=self.qubit_to_instruction_list
+            instruction_list=self.instruction_list
         )
         probs = density_matrix_solver.solve(qubits=qubits)
         if measurement_error_operator is not None:

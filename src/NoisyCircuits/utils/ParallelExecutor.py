@@ -73,7 +73,7 @@ class RemoteExecutor:
             return psi_dash
         
         def handle_ecr(state, gate, qubits, params):
-            qpair = tuple(sorted(qubits))
+            qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
             ops = self.ecr_dict[qpair]["operators"]
             op_psi = np.array([op @ psi_dash for op in ops])
