@@ -9,7 +9,7 @@ class DensityMatrixSolver:
     def __init__(self,
                  num_qubits:int,
                  single_qubit_noise:dict,
-                 ecr_noise:dict,
+                 two_qubit_noise:dict,
                  measurement_noise:dict,
                  instruction_list:list)->None:
         """
@@ -18,7 +18,7 @@ class DensityMatrixSolver:
         Args:
             num_qubits (int): Number of qubits in the circuit.
             single_qubit_noise (dict): Noise instructions for single qubit gates for all qubits used.
-            ecr_noise (dict): Noise instructions for entangling gates (ECR) for all qubits used.
+            two_qubit_noise (dict): Noise instructions for entangling gates for all qubits used.
             measurement_noise (dict): Noise instructions for measurement operations for all qubits used.
             instruction_list (list): List of instructions to be executed on the circuit.
             qubit_instruction_list (list): List of instructions specific to each qubit.
@@ -35,8 +35,8 @@ class DensityMatrixSolver:
             raise TypeError("num_qubits must be an integer")
         if not isinstance(single_qubit_noise, dict):
             raise TypeError("single_qubit_noise must be a dictionary")
-        if not isinstance(ecr_noise, dict):
-            raise TypeError("ecr_noise must be a dictionary")
+        if not isinstance(two_qubit_noise, dict):
+            raise TypeError("two_qubit_noise must be a dictionary")
         if not isinstance(measurement_noise, dict):
             raise TypeError("measurement_noise must be a dictionary")
         if not isinstance(instruction_list, list):
@@ -45,7 +45,7 @@ class DensityMatrixSolver:
             raise ValueError("num_qubits must be greater than or equal to 1")
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
-        self.ecr_noise = ecr_noise
+        self.two_qubit_noise = two_qubit_noise
         self.measurement_noise = measurement_noise
         self.instruction_list = instruction_list
 
@@ -75,7 +75,7 @@ class DensityMatrixSolver:
             
             # Define noise application functions
             def apply_ecr_noise(qubits):
-                qml.QubitChannel(self.ecr_noise[tuple(qubits)]["qubit_channel"], wires=qubits)
+                qml.QubitChannel(self.two_qubit_noise["ecr"][tuple(qubits)]["qubit_channel"], wires=qubits)
             
             def apply_single_qubit_noise(gate, qubits):
                 qml.QubitChannel(self.single_qubit_noise[qubits[0]][gate]["qubit_channel"], wires=qubits)

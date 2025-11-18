@@ -99,7 +99,6 @@ class EagleDecomposition(Decomposition):
         self.RZ(theta=-np.pi/2, qubit=qubit1)
         self.SX(qubit=qubit2)
         self.ECR(control=qubit1, target=qubit2)
-        self.qubit_coupling.update_mapping_after_swap(qubit1, qubit2)
 
     def CZ(self,
            control:int,
@@ -243,21 +242,12 @@ class EagleDecomposition(Decomposition):
     def SWAP(self,
              qubit1:int,
              qubit2:int):
-        physical1 = self.qubit_coupling.logical_to_physical[qubit1]
-        physical2 = self.qubit_coupling.logical_to_physical[qubit2]
-        if physical2 in self.qubit_coupling.connectivity.get(physical1, []) or physical1 in self.qubit_coupling.connectivity.get(physical2, []):
-            self.apply_swap_decomposition(qubit1=physical1, qubit2=physical2)
-        else:
-            path = self.qubit_coupling.find_shortest_path(physical1, physical2)
-            current_pos = physical1
-            for i in range(1, len(path)):
-                next_pos = path[i]
-                self.apply_swap_decomposition(qubit1=current_pos, qubit2=next_pos)
-                current_pos = next_pos
-            for i in range(len(path) - 2, 0, -1):
-                prev_pos = path[i-1]
-                curr_pos = path[i]
-                self.apply_swap_decomposition(qubit1=curr_pos, qubit2=prev_pos)
+        forward_swaps, reverse_swaps, qubits_1, qubits_2 = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+        for swap in forward_swaps:
+            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        self.apply_swap_decomposition(qubit1=qubits_1, qubit2=qubits_2)
+        for swap in reverse_swaps:
+            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def CRX(self, 
             theta:int|float, 

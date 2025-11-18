@@ -13,10 +13,10 @@ class RemoteExecutor:
     def __init__(self,
                  num_qubits:int,
                  single_qubit_noise:dict,
-                 ecr_dict:dict):
+                 two_qubit_noise:dict):
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
-        self.ecr_dict = ecr_dict
+        self.two_qubit_noise = two_qubit_noise
         
         # Pre-create device and function maps for efficiency
         self.dev = qml.device("lightning.qubit", wires=self.num_qubits)
@@ -75,7 +75,7 @@ class RemoteExecutor:
         def handle_ecr(state, gate, qubits, params):
             qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
-            ops = self.ecr_dict[qpair]["operators"]
+            ops = self.two_qubit_noise["ecr"][qpair]["operators"]
             op_psi = np.array([op @ psi_dash for op in ops])
             kraus_probs = np.real(np.sum(np.conj(op_psi) * op_psi, axis=1))
             kraus_probs_sum = np.sum(kraus_probs)

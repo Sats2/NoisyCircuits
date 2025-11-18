@@ -106,7 +106,7 @@ class QuantumCircuit:
                             )    
         single_error, multi_error, measure_error, connectivity = modeller.build_qubit_gate_model()
         self.single_qubit_instructions = single_error
-        self.ecr_error_instruction = multi_error
+        self.two_qubit_instructions = multi_error
         self.measurement_error = measure_error
         self.connectivity = connectivity
         self.qubit_coupling_map = modeller.qubit_coupling_map
@@ -121,7 +121,7 @@ class QuantumCircuit:
             RemoteExecutor.remote(
                 num_qubits=self.num_qubits,
                 single_qubit_noise=self.single_qubit_instructions,
-                ecr_dict=self.ecr_error_instruction
+                two_qubit_noise=self.two_qubit_instructions
             ) for _ in range(self.num_cores)]
 
     def __getattr__(self, name: str) -> callable:
@@ -218,7 +218,7 @@ class QuantumCircuit:
         density_matrix_solver = DensityMatrixSolver(
             num_qubits=self.num_qubits,
             single_qubit_noise=self.single_qubit_instructions,
-            ecr_noise=self.ecr_error_instruction,
+            two_qubit_noise=self.two_qubit_instructions,
             measurement_noise=self.measurement_error,
             instruction_list=self.instruction_list
         )
