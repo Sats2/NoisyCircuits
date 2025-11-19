@@ -22,12 +22,15 @@ class RemoteExecutor:
         self.dev = qml.device("lightning.qubit", wires=self.num_qubits)
         
         # Separate instruction maps for parameterized vs non-parameterized gates
-        self.param_gates = {"rz", "unitary"}
+        self.param_gates = {"rz", "rx", "unitary", "rzz"}
         self.instruction_map = {
             "x" : qml.X,
             "sx" : qml.SX,
             "rz" : qml.RZ,
+            "rx" : qml.RX,
             "ecr" : qml.ECR,
+            "cz" : qml.CZ,
+            "rzz" : qml.IsingZZ,
             "unitary": qml.QubitUnitary,
         }
         
@@ -72,10 +75,10 @@ class RemoteExecutor:
                 psi_dash = self.apply_gate_noparams(noisy_state, gate_op, qubits)
             return psi_dash
         
-        def handle_ecr(state, gate, qubits, params):
+        def handle_two_qubit_gates(state, gate, qubits, params):
             qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
-            ops = self.two_qubit_noise["ecr"][qpair]["operators"]
+            ops = self.two_qubit_noise[gate][qpair]["operators"]
             op_psi = np.array([op @ psi_dash for op in ops])
             kraus_probs = np.real(np.sum(np.conj(op_psi) * op_psi, axis=1))
             kraus_probs_sum = np.sum(kraus_probs)
@@ -114,8 +117,8 @@ class RemoteExecutor:
         # Create lookup table for gate handlers
         self.gate_handlers = {}
         for gate in self.instruction_map:
-            if gate == "ecr":
-                self.gate_handlers[gate] = handle_ecr
+            if gate in ["ecr", "cz"]:
+                self.gate_handlers[gate] = handle_two_qubit_gates
             elif gate in self.param_gates:
                 self.gate_handlers[gate] = handle_param_gate
             else:

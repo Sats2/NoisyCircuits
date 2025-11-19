@@ -79,7 +79,7 @@ class QubitCouplingMap:
             if current_target_pos != swap_pos:
                 forward_swaps.append((current_target_pos, swap_pos))
                 # Update qubit mappings
-                self._update_mapping_after_swap(current_target_pos, swap_pos)
+                self.update_mapping_after_swap(current_target_pos, swap_pos)
                 current_target_pos = swap_pos
         
         final_control_pos = self.logical_to_physical[logical_control]
@@ -87,6 +87,9 @@ class QubitCouplingMap:
         
         # Generate reverse swaps (in reverse order)
         reverse_swaps = forward_swaps[::-1]
+
+        # Restore original mapping after generating swaps
+        self.reset_qubit_mapping()
         
         return forward_swaps, reverse_swaps, final_control_pos, final_target_pos
     

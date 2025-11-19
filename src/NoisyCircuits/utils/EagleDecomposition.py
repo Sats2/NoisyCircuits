@@ -79,19 +79,32 @@ class EagleDecomposition(Decomposition):
             control:int,
             target:int):
         if super().ECR(control=control, target=target):
-            match_qubits = next((t for t in self.qubit_map if control in t and target in t), None)
-            if control == match_qubits[0] and target == match_qubits[1]:
-                self.instruction_list.append(["ecr", [control, target], None])
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            match_qubits = next((t for t in self.qubit_map if phys_control in t and phys_target in t), None)
+            if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
+                self.instruction_list.append(["ecr", [phys_control, phys_target], None])
             else:
-                self.RY(theta=-np.pi/2, qubit=control)
-                self.RY(theta=np.pi/2, qubit=target)
-                self.instruction_list.append(["ecr", [target, control], None])
-                self.H(qubit=control)
-                self.H(qubit=target)
+                self.RZ(theta=np.pi/2, qubit=phys_control)
+                self.RZ(theta=-np.pi/2, qubit=phys_target)
+                self.SX(qubit=phys_control)
+                self.SX(qubit=phys_target)
+                self.RZ(theta=-np.pi/2, qubit=phys_control)
+                self.RZ(theta=np.pi/2, qubit=phys_target)
+                self.instruction_list.append(["ecr", [phys_target, phys_control], None])
+                self.RZ(theta=np.pi/2, qubit=phys_control)
+                self.RZ(theta=np.pi/2, qubit=phys_target)
+                self.SX(qubit=phys_control)
+                self.SX(qubit=phys_target)
+                self.RZ(theta=np.pi/2, qubit=phys_control)
+                self.RZ(theta=np.pi/2, qubit=phys_target)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def apply_swap_decomposition(self, qubit1, qubit2):
         self.RZ(theta=-np.pi/2, qubit=qubit1)
-        self.SX(qubit=qubit1)
+        self.SX(qubit=qubit2)
         self.ECR(control=qubit1, target=qubit2)
         self.SX(qubit=qubit1)
         self.RZ(theta=-np.pi/2, qubit=qubit2)

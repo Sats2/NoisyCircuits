@@ -38,14 +38,17 @@ class PureStateSolver:
                 "x": lambda q: qml.X(q),
                 "sx": lambda q: qml.SX(q),
                 "rz": lambda t, q: qml.RZ(t, q),
+                "rx": lambda t,q: qml.RX(t, q),
                 "ecr": lambda q: qml.ECR(q),
+                "cz": lambda q: qml.CZ(q),
+                "rzz": lambda t,q: qml.IsingZZ(t, q),
                 "unitary": lambda p, q: qml.QubitUnitary(p, q),
             }
             for entry in self.instruction_list:
                 gate_instruction = entry[0]
                 qubit_added = entry[1]
                 params = entry[2]
-                if gate_instruction in ["rz", "unitary"]:
+                if gate_instruction in ["rz", "rx", "unitary", "rzz"]:
                     instruction_map[gate_instruction](params, qubit_added)
                 else:
                     instruction_map[gate_instruction](qubit_added)
