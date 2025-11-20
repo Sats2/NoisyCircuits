@@ -18,6 +18,7 @@ class EagleDecomposition(Decomposition):
             connectivity (dict): A dictionary representing the connectivity of the qubits.
             qubit_map (list[tuple]): A list of tuples representing the mapping of logical qubits to physical qubits.
         """
+        super().__init__(num_qubits=num_qubits)
         self.instruction_list = []
         self.num_qubits = num_qubits
         self.connectivity = connectivity

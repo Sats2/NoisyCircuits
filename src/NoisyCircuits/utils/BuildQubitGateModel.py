@@ -1,6 +1,7 @@
 from pennylane import numpy as np
 from collections import defaultdict
 import math
+import logging
 
 def _map_instruction_qubits(instrs, gate_qubits)->list:
     """
@@ -45,7 +46,8 @@ class BuildModel:
                  noise_model:dict,
                  num_qubits:int,
                  threshold:float=1e-12,
-                 basis_gates:list[list[str]]=None)->None:
+                 basis_gates:list[list[str]]=None,
+                 verbose:bool=True)->None:
         """
         Initializes the BuildModel with a noise model, number of qubits, and an optional threshold.
 
@@ -80,6 +82,14 @@ class BuildModel:
         self.threshold = threshold
         self.basis_gates = basis_gates
         self.qubit_coupling_map = []
+        self.verbose = verbose
+        self.logger = logging.getLogger(self.__class__.__name__)
+        handler = logging.StreamHandler()
+        self.logger.addHandler(handler)
+        if self.verbose:
+            self.logger.setLevel(logging.INFO)
+        else:
+            self.logger.setLevel(logging.WARNING)
 
     def _ensure_ctpt(self,
                     kraus_ops:list)->bool:
@@ -385,14 +395,13 @@ class BuildModel:
                         for op in ops:
                             operators.append(np.sqrt(prob) * op)
                 if not self._ensure_ctpt(operators):
-                    print(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
+                    self.logging.warning(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
                     mat = np.zeros((2,2), dtype=complex)
                     for op in operators:
                         mat += np.dot(op.conj().T, op)
-                    print(mat)
                 kraus_operators = self.extend_kraus_to_system(operators, qubit)
                 if not self._ensure_ctpt(kraus_operators):
-                    print(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
+                    self.logging.warning(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
                 qubit_errors[gate] = {
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
@@ -426,7 +435,7 @@ class BuildModel:
             dict: A dictionary containing the processed two-qubit errors.
         """
         processed_errors = {}
-        print("Processing two-qubit gate errors.")
+        self.logger.info("Processing two-qubit gate errors.")
         for two_qubit_gate in two_qubit_errors.keys():
             gate_error_processed = {}
             for qpair, error_list in two_qubit_errors[two_qubit_gate].items():
@@ -500,10 +509,10 @@ class BuildModel:
                         "kraus": unique_kraus_operators,
                         "kraus_qubit": list(kraus_qubits)
                     }
-                    print(f"Qubit pair {qpair}: {len(instructions)}/{total_count} errors above threshold "
+                    self.logger.info(f"Qubit pair {qpair}: {len(instructions)}/{total_count} errors above threshold "
                     f"({filtered_count} filtered out)")
             processed_errors[two_qubit_gate] = gate_error_processed
-        print("Two Qubit Gate errors processed.")
+        self.logger.info("Two Qubit Gate errors processed.")
         return processed_errors
 
     def _extract_kraus_op(self,
@@ -638,7 +647,7 @@ class BuildModel:
                                     error_operators.append(np.sqrt(prob) * k_op)
                 error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
                 if not self._ensure_ctpt(error_operators_full_system):
-                    print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
+                    self.logger.warning(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
                 two_qubit_gate_error_operators[two_qubit_gate][qpair] = {
                     "operators": error_operators_full_system,
                     "qubit_channel" : error_operators
@@ -660,7 +669,6 @@ class BuildModel:
         """
         connectivity_map = {qubit: [] for qubit in use_qubits}
         
-        # Extract connectivity from Two Qubit Gate error instruction keys (qubit pairs)
         for qubit_pair in two_qubit_gate_error_instructions[self.basis_gates[1][0]].keys():
             if isinstance(qubit_pair, tuple) and len(qubit_pair) == 2:
                 q0, q1 = qubit_pair
@@ -689,7 +697,7 @@ class BuildModel:
         for entry in data:
             if entry.get("type") != "roerror":
                 continue
-            operations = entry.get("operations", [])  # Fixed typo: was "gat_qubits"
+            operations = entry.get("operations", [])
             target_ops = ["measure"]
             if target_ops and not any(op in target_ops for op in operations):
                 continue
@@ -703,11 +711,11 @@ class BuildModel:
                         "matrix": matrix
                     }
         measurement_errors = {}
-        print("Available qubits in roerror_map:", list(roerror_map.keys()))
-        print("Requested qubits:", extract_qubits)
+        self.logger.info(f"Available qubits in roerror_map: {list(roerror_map.keys())}")
+        self.logger.info(f"Requested qubits: {extract_qubits}")
         for qubit in extract_qubits:
             if qubit not in roerror_map:
-                print(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
+                self.logger.warning(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
                 # Use identity matrix (no error) if measurement error data is not available
                 matrix = np.eye(2)
             else:
@@ -741,18 +749,18 @@ class BuildModel:
             self.use_qubits,
             self.basis_gates[1]
         )
-        print("Completed Extraction of two-qubit gate Errors.\nStarting post-processing on Single Qubit Errors.")
+        self.logger.info("Completed Extraction of two-qubit gate Errors.\nStarting post-processing on Single Qubit Errors.")
         single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors, self.basis_gates[0])
-        print("Completed post-processing on Single Qubit Errors.")
+        self.logger.info("Completed post-processing on Single Qubit Errors.")
         two_qubit_error_post_processed = self.post_process_two_qubit_errors(two_qubit_errors, self.threshold)
-        print("Building Noise Operators for Two Qubit Gate Errors.")
+        self.logger.info("Building Noise Operators for Two Qubit Gate Errors.")
         two_qubit_gate_error_instructions = self.get_two_qubit_gate_noise_operators(two_qubit_error_post_processed)
-        print("Completed building Noise Operators for Two Qubit Gate Errors.\nExtracting Measurement Errors.")
+        self.logger.info("Completed building Noise Operators for Two Qubit Gate Errors.\nExtracting Measurement Errors.")
         measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
                                                               self.use_qubits)
-        print("Completed Extraction of Measurement Errors.")
-        print("Preparing Qubit Connectivity Map for Requested Qubits")
+        self.logger.info("Completed Extraction of Measurement Errors.")
+        self.logger.info("Preparing Qubit Connectivity Map for Requested Qubits")
         connectivity_map = self._create_connectivity_map(two_qubit_gate_error_instructions, self.use_qubits)
-        print("Qubit Connectivity Map Prepared.")
-        print("Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.")
+        self.logger.info("Qubit Connectivity Map Prepared.")
+        self.logger.info("Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.")
         return single_qubit_error_instructions, two_qubit_gate_error_instructions, measurement_errors, connectivity_map

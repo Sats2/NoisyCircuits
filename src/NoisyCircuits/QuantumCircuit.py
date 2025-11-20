@@ -3,6 +3,7 @@ os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 
+import pennylane as qml
 from pennylane import numpy as np
 from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
@@ -39,6 +40,7 @@ class QuantumCircuit:
                  num_trajectories:int,
                  num_cores:int=2,
                  jsonize:bool=False,
+                 verbose:bool=True,
                  threshold:float=1e-12)->None:
         """
         Initializes the QuantumCircuit with the specified number of qubits, noise model, number of trajectories for Monte-Carlo simulation, and threshold for noise application.
@@ -50,6 +52,7 @@ class QuantumCircuit:
             num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.
             num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.
             jsonize (bool, optional): If True, the circuit will be serialized to JSON format. Defaults to False.
+            verbose (bool, optional): If False, suppresses detailed output during initialization. Defaults to True.
             threshold (float, optional): The threshold for noise application. Defaults to 1e-12.
 
         Raises:
@@ -65,6 +68,7 @@ class QuantumCircuit:
             TypeError: If num_cores is not an integer.
             ValueError: If num_cores is less than 1.
             TypeError: If jsonize is not a boolean.
+            TypeError: If verbose is not a boolean.
         """
         if not isinstance(num_qubits, int):
             raise TypeError("Number of qubits must be an integer.")
@@ -90,6 +94,8 @@ class QuantumCircuit:
             raise ValueError("Number of cores must be a positive integer greater than or equal to 1.")
         if not isinstance(jsonize, bool):
             raise TypeError("Jsonize must be a boolean.")
+        if not isinstance(verbose, bool):
+            raise TypeError("Verbose must be a boolean.")
         self.num_qubits = num_qubits
         self.noise_model = noise_model
         if jsonize:
@@ -97,12 +103,14 @@ class QuantumCircuit:
         self.num_trajectories = num_trajectories
         self.threshold = threshold
         self.num_cores = num_cores
+        self.verbose = verbose
         basis_gates = QuantumCircuit.basis_gates_set[backend_qpu_type.lower()]["basis_gates"]
         modeller = BuildModel(
                                 noise_model=self.noise_model,
                                 num_qubits=self.num_qubits,
                                 threshold=self.threshold,
-                                basis_gates=basis_gates
+                                basis_gates=basis_gates,
+                                verbose=self.verbose
                             )    
         single_error, multi_error, measure_error, connectivity = modeller.build_qubit_gate_model()
         self.single_qubit_instructions = single_error
@@ -136,53 +144,20 @@ class QuantumCircuit:
         Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.
         """
         self._gate_decomposer.instruction_list = []
-    
-    def generate_measurement_operator(self,
-                                      qubits:list[int])->np.ndarray:
-        """
-        Generates the measurement error operator for the specified qubits based on the noise model.
-
-        Args:
-            qubits (list[int]): List of qubit indices to include in the measurement error operator.
-
-        Returns:
-            np.ndarray: The measurement error operator as a NumPy array.
-        """
-        for q_num, qubit in enumerate(qubits):
-            if q_num == 0:
-                measure_op = self.measurement_error[qubit]
-            else:
-                measure_op = np.kron(measure_op, self.measurement_error[qubit])
-        return measure_op
-    
-    def instantiate_measurement(self,
-                            qubits:list[int])->None:
-        if not isinstance(qubits, (list, range)):
-            raise TypeError("Qubits must be a list of integers.")
-        if isinstance(qubits, range):
-            qubits = list(qubits)
-        if not all(isinstance(q, int) for q in qubits):
-            raise TypeError("All qubits must be integers.")
-        if not all(0 <= q < self.num_qubits for q in qubits):
-            raise ValueError(f"Qubits must be in the range [0, {self.num_qubits - 1}].")
-        print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
-        self.measurement_error_operator = self.generate_measurement_operator(qubits)
-        print(f"Measurement Error Operator created.")
 
     def execute(self,
                 qubits:list[int],
-                num_trajectories:int=None,
-                use_prev:bool=True)->np.ndarray:
+                num_trajectories:int=None)->np.ndarray:
         """
         Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.
 
         Args:
             qubits (list[int]): The list of qubits to be measured.
             num_trajectories (int): The number of trajectories for the Monte-Carlo simulation (can be modified). Defaults to None and uses the class attribute.
-                                    If specified, it overrides the class attribute for this execution. Defaults to None.
+                                    If specified, it overrides the class attribute for only this execution. Defaults to None.
         
         Raises:
-            TypeError: If qubits is not a list.
+            TypeError: If qubits is not a list or the items in the list are not integers.
             TypeError: If num_trajectories is not an integer.
             ValueError: If num_trajectories is less than 1.
             ValueError: If qubits contains invalid qubit indices.
@@ -190,15 +165,24 @@ class QuantumCircuit:
         Returns:
             np.ndarray: The probabilities of the output states.
         """
-        if use_prev:
-            self.num_trajectories = num_trajectories if isinstance(num_trajectories, int) else self.num_trajectories
-        else:
-            self.instantiate_measurement(qubits)
+        if num_trajectories is not None:
+            if not isinstance(num_trajectories, int):
+                raise TypeError("Number of trajectories must be an integer.")
+            if num_trajectories < 1:
+                raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
+            original_trajectories = self.num_trajectories
+            self.num_trajectories = num_trajectories
+        if all(not isinstance(qubit, int) for qubit in qubits) and not isinstance(qubits, list):
+            raise TypeError("qubits must be of type list.\nAll entries in qubits must be integers.")
+        if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
+            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         futures = [self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list, qubits) for traj_id in range(self.num_trajectories)]
         probs_raw = np.array(ray.get(futures))
         probs = np.mean(probs_raw, axis=0)
         if self.measurement_error_operator is not None:
             probs = np.dot(self.measurement_error_operator, probs)
+        if num_trajectories is not None:
+            self.num_trajectories = original_trajectories
         return probs
 
     def run_with_density_matrix(self, 
@@ -212,9 +196,6 @@ class QuantumCircuit:
         Returns:
             np.ndarray: Probabilities of the output states.
         """
-        print(f"Creating Measurement Error Operator for observable qubits: {qubits}")
-        measurement_error_operator =self.generate_measurement_operator(qubits)
-        print(f"Measurement Error Operator created.\nExecuting the circuit with Density Matrix.")
         density_matrix_solver = DensityMatrixSolver(
             num_qubits=self.num_qubits,
             single_qubit_noise=self.single_qubit_instructions,
@@ -223,8 +204,8 @@ class QuantumCircuit:
             instruction_list=self.instruction_list
         )
         probs = density_matrix_solver.solve(qubits=qubits)
-        if measurement_error_operator is not None:
-            probs = np.dot(measurement_error_operator, probs)
+        if self.measurement_error_operator is not None:
+            probs = np.dot(self.measurement_error_operator, probs)
         return probs
 
     def run_pure_state(self, 
@@ -244,5 +225,59 @@ class QuantumCircuit:
             )
         return pure_state_solver.solve(qubits=qubits)
     
+    def draw_circuit(self,
+                     style:str="mpl")->None:
+        """
+        Draws the quantum circuit.
+
+        Args:
+            style (str, optional): The style of the drawing, either 'mpl' for matplotlib
+                                      or 'text' for text-based representation. Defaults to 'mpl'.
+        
+        Raises:
+            TypeError: If style is not a string.
+            ValueError: If style is not one of ['mpl', 'text'].
+            ValueError: If there are no instructions in the circuit to draw.
+        
+        Returns:
+            None
+        """
+        if not isinstance(style, str):
+            raise TypeError("Style must be a string.")
+        if style.lower() not in ["mpl", "text"]:
+            raise ValueError("Style must be one of ['mpl', 'text'].")
+        if self.instruction_list == []:
+            raise ValueError("No instructions in the circuit to draw.")
+        
+        @qml.qnode(qml.device("default.qubit", wires=self.num_qubits))
+        def circuit():
+            instruction_map = {
+                                "x": lambda q: qml.X(q),
+                                "sx": lambda q: qml.SX(q),
+                                "rz": lambda t, q: qml.RZ(t, q),
+                                "rx": lambda t,q: qml.RX(t, q),
+                                "ecr": lambda q: qml.ECR(q),
+                                "cz": lambda q: qml.CZ(q),
+                                "rzz": lambda t,q: qml.IsingZZ(t, q),
+                                "unitary": lambda p, q: qml.QubitUnitary(p, q),
+            }
+            for entry in self.instruction_list:
+                gate_instruction = entry[0]
+                qubit_added = entry[1]
+                params = entry[2]
+                if gate_instruction in ["rz", "rx", "unitary", "rzz"]:
+                    instruction_map[gate_instruction](params, qubit_added)
+                else:
+                    instruction_map[gate_instruction](qubit_added)
+            return qml.state()
+        
+        if style.lower() == "mpl":
+            qml.draw_mpl(circuit)()
+        else:
+            qml.draw(circuit)()
+    
     def shutdown(self):
+        """
+        Shutsdown the Ray parallel execution environment.
+        """
         ray.shutdown()

@@ -18,6 +18,7 @@ class HeronDecomposition(Decomposition):
             connectivity (dict): A dictionary representing the connectivity of the qubits.
             qubit_map (list[tuple]): A list of tuples representing the mapping of logical qubits to physical qubits.
         """
+        super().__init__(num_qubits=num_qubits)
         self.instruction_list = []
         self.num_qubits = num_qubits
         self.connectivity = connectivity
@@ -92,8 +93,6 @@ class HeronDecomposition(Decomposition):
            target:int):
         if super().CZ(control=control, target=target):
             forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-            if forward_swaps or reverse_swaps:
-                print(forward_swaps, reverse_swaps, phys_control, phys_target)
             for swap in forward_swaps:
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
             match_qubits = next((t for t in self.qubit_map if phys_control in t and phys_target in t), None)

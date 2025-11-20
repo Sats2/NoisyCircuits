@@ -73,34 +73,6 @@ Core dependencies are automatically installed:
 - **Ray**: Distributed computing for parallel execution
 - **NumPy, Matplotlib**: Scientific computing and visualization
 
-## 📁 Repository Structure
-_To be updated along with version release_
-```
-NoisyCircuits/
-├── src/NoisyCircuits/                    # Main package source code
-│   ├── __init__.py
-│   ├── QuantumCircuit.py                 # Core quantum circuit class
-│   └── utils/                            # Utility modules
-│       ├── GetNoiseModel.py              # IBM backend integration
-│       ├── BuildQubitGateModel.py
-│       ├── DensityMatrixSolver.py
-│       ├── PureStateSolver.py
-│       └── ParallelExecutor.py
-├── examples/                             # Example suite and examples
-│   ├── README.md                         # Detailed documentation
-│   ├── introduction.ipynb                # Getting started tutorial
-│   ├── quantum_neural_networks.ipynb     # ML application example
-│   └── design_study_single_feature.csv   # Sample dataset
-├── validation/                           # Validation suite
-│   ├── README.md                         # Detailed documentation
-│   ├── method_verification.ipynb         # Validation against exact methods
-│   ├── Results_Log_File.txt              # Results of the validation study compiled in a single log file
-├── environment.yml                       # Conda environment specification
-├── setup.py                              # Package installation configuration
-├── requirements.txt                      # Python dependencies
-└── LICENSE                               # MIT License
-```
-
 ## 🧪 Eamples and Validation
 
 The `validation/` and `examples/` directories contains comprehensive validation and example notebooks:
@@ -151,6 +123,43 @@ We welcome contributions to NoisyCircuits! Here's how you can help:
 - 🧪 **Testing**: Add test cases or improve validation coverage
 - 💻 **Code Contributions**: Implement new features or optimize existing code
 
+### 📁 Repository Structure
+_To be updated along with version release_
+```
+NoisyCircuits/
+├── src/NoisyCircuits/                          # Main package source code
+│   ├── __init__.py
+│   ├── QuantumCircuit.py                       # Core quantum circuit class
+│   └── utils/                                  # Utility modules
+│       └── __init__.py
+│       ├── GetNoiseModel.py                    # IBM backend integration to retreive Calibration Data
+│       ├── BuildQubitGateModel.py              # Module to generate the noise operators
+│       ├── DensityMatrixSolver.py              # Module to simulate a circuit with the density matrix method
+│       ├── PureStateSolver.py                  # Module to simulate a circuit without noise (statevector simulator)
+│       └── ParallelExecutor.py                 # Module to simulate a circuit with the MCWF method
+│       └── Decomposition.py                    # Abstract class for QPU based gate decomposition
+│       └── EagleDecomposition.py               # Gate Decomposition for Eagle QPU
+│       └── HeronDecomposition.py               # Gate Decomposition for Heron QPU
+│       └── SwapSequence.py                     # Module that ensures correct qubit coupling
+├── noise_models/                               # Directory with sample noise models
+│   ├── README.md                               # Detailed documentation (will be added)
+│   ├── Noise_Model_Eagle_QPU.pkl               # Sample Noise Model for the Eagle QPU taken from IBM Brisbane calibration data
+│   ├── Noise_Model_Heron_QPU.pkl               # Sample Noise Model for the Heron QPU taken from IBM Fez calibration data
+├── examples/                                   # Example suite and examples
+│   ├── README.md                               # Detailed documentation
+│   ├── introduction.ipynb                      # Getting started tutorial
+│   ├── quantum_neural_networks.ipynb           # ML application example
+│   └── design_study_single_feature.csv         # Sample dataset
+├── validation/                                 # Validation suite
+│   ├── README.md                               # Detailed documentation
+│   ├── method_verification.ipynb               # Validation against exact methods
+│   ├── Results_Log_File.txt                    # Results of the validation study compiled in a single log file
+├── environment.yml                             # Conda environment specification
+├── setup.py                                    # Package installation configuration
+├── requirements.txt                            # Python dependencies
+└── LICENSE                                     # MIT License
+```
+
 ### Development Workflow
 
 1. **Fork the repository** and create a feature branch:
@@ -197,4 +206,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*For more detailed information, examples, and tutorials, please refer to the documentation in the `test/` directory.*
+*For more detailed information, examples, and tutorials, please refer to the documentation in the `examples/` directory.*

@@ -20,6 +20,16 @@ class Decomposition(ABC):
     Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different 
     QPUs with varying basis gates.
     """
+    def __init__(self,
+                 num_qubits:int)->None:
+        """
+        Initializes the Decomposition class.
+
+        Args:
+            num_qubits (int): The number of qubits in the quantum circuit.
+        """
+        self.num_qubits = num_qubits
+
     @abstractmethod
     def RZ(self,
            theta:int|float,
@@ -41,11 +51,14 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If qubit is not an integer.
+            ValueError: If qubit is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -66,9 +79,12 @@ class Decomposition(ABC):
 
         Raises:
             TypeError: If qubit is not an integer.
+            ValueError: If qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -89,9 +105,12 @@ class Decomposition(ABC):
         
         Raises:
             TypeError: If qubit is not an integer.
+            ValueError: If qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -114,11 +133,14 @@ class Decomposition(ABC):
 
         Raises:
             TypeError: If control/target is not an integer.
+            ValueError: If control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
             raise TypeError("The target qubit must be an integer.")
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -142,11 +164,14 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If qubit is not an integer.
+            ValueError: If the qubit is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -170,11 +195,14 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If qubit is not an integer.
+            ValueError: If the qubit is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -195,9 +223,12 @@ class Decomposition(ABC):
 
         Raises:
             TypeError: If qubit is not an integer.
+            ValueError: If the qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -218,9 +249,12 @@ class Decomposition(ABC):
 
         Raises:
             TypeError: If qubit is not an integer.
+            ValueError: If the qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -241,9 +275,12 @@ class Decomposition(ABC):
 
         Raises:
             TypeError: If qubit is not an integer.
+            ValueError: If the qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
+        if qubit < 0 or qubit >= self.num_qubits:
+            raise ValueError(f"The target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -265,13 +302,17 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+
         Raises:
             TypeError: If control/target is not an integer.
+            ValueError: If the control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
             raise TypeError("The target qubit must be an integer.")
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -293,13 +334,17 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+
         Raises:
             TypeError: If control/target is not an integer.
+            ValueError: If the control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
             raise TypeError("The target qubit must be an integer.")
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -321,13 +366,17 @@ class Decomposition(ABC):
         Args:
             control (int): The control qubit.
             target (int): The target qubit.
+
         Raises:
             TypeError: If control/target is not an integer.
+            ValueError: If the control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
             raise TypeError("The target qubit must be an integer.")
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -349,13 +398,17 @@ class Decomposition(ABC):
         Args:
             qubit1 (int): The first qubit.
             qubit2 (int): The second qubit.
+
         Raises:
             TypeError: If qubit1/qubit2 is not an integer.
+            ValueError: If qubit1/qubit2 is out of range.
         """
         if not isinstance(qubit1, int):
             raise TypeError("The first qubit must be an integer.")
         if not isinstance(qubit2, int):
             raise TypeError("The second qubit must be an integer.")
+        if (qubit1 < 0 or qubit1 >= self.num_qubits) or (qubit2 < 0 or qubit2 >= self.num_qubits):
+            raise ValueError(f"The first or second qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -383,6 +436,7 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If control/target is not an integer.
+            ValueError: If the control/target is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -390,6 +444,8 @@ class Decomposition(ABC):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
             raise TypeError("The target qubit must be an integer.")
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -416,6 +472,7 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If control/target is not an integer.
+            ValueError: If the control/target is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -423,6 +480,8 @@ class Decomposition(ABC):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
             raise TypeError("The target qubit must be an integer.")
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -449,13 +508,16 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If control/target is not an integer.
+            ValueError: If the control/target is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
         if not isinstance(target, int):
-            raise TypeError("The target qubit must be an integer.")
+            raise TypeError("The target qubit must be an integer.")#
+        if (control < 0 or control >= self.num_qubits) or (target < 0 or target >= self.num_qubits):
+            raise ValueError(f"The control or target qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -482,6 +544,7 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If qubit1/qubit2 is not an integer.
+            ValueError: If qubit1/qubit2 is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -489,6 +552,8 @@ class Decomposition(ABC):
             raise TypeError("The first qubit must be an integer.")
         if not isinstance(qubit2, int):
             raise TypeError("The second qubit must be an integer.")
+        if (qubit1 < 0 or qubit1 >= self.num_qubits) or (qubit2 < 0 or qubit2 >= self.num_qubits):
+            raise ValueError(f"The first or second qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -515,6 +580,7 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If qubit1/qubit2 is not an integer.
+            ValueError: If qubit1/qubit2 is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -522,6 +588,8 @@ class Decomposition(ABC):
             raise TypeError("The first qubit must be an integer.")
         if not isinstance(qubit2, int):
             raise TypeError("The second qubit must be an integer.")
+        if (qubit1 < 0 or qubit1 >= self.num_qubits) or (qubit2 < 0 or qubit2 >= self.num_qubits):
+            raise ValueError(f"The first or second qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -548,6 +616,7 @@ class Decomposition(ABC):
         Raises:
             TypeError: If theta is not an integer or float.
             TypeError: If qubit1/qubit2 is not an integer.
+            ValueError: If qubit1/qubit2 is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -555,6 +624,8 @@ class Decomposition(ABC):
             raise TypeError("The first qubit must be an integer.")
         if not isinstance(qubit2, int):
             raise TypeError("The second qubit must be an integer.")
+        if (qubit1 < 0 or qubit1 >= self.num_qubits) or (qubit2 < 0 or qubit2 >= self.num_qubits):
+            raise ValueError(f"The first or second qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -570,11 +641,14 @@ class Decomposition(ABC):
         
         Raises:
             TypeError: If qubit1/qubit2 is not an integer.
+            ValueError: If qubit1/qubit2 is out of range.
         """
         if not isinstance(qubit1, int):
             raise TypeError("The first qubit must be an integer.")
         if not isinstance(qubit2, int):
             raise TypeError("The second qubit must be an integer.")
+        if (qubit1 < 0 or qubit1 >= self.num_qubits) or (qubit2 < 0 or qubit2 >= self.num_qubits):
+            raise ValueError(f"The first or second qubit is out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True
 
     @abstractmethod
@@ -592,6 +666,8 @@ class Decomposition(ABC):
             NonSquareMatrixError: If the unitary matrix is not square.
             ShapeMismatchError: If the shape of the unitary matrix does not match the state of the qubits for the provided number of qubits.
             NonUnitaryMatrixError: If the matrix is not unitary. 
+            TypeError: If any qubit in the qubits list is not an integer.
+            ValueError: If any qubit in the qubits list is out of range.
         """
         if not unitary_matrix.shape[0] == unitary_matrix.shape[1]:
             raise NonSquareMatrixError("The provided matrix is not square.")
@@ -599,4 +675,8 @@ class Decomposition(ABC):
             raise ShapeMismatchError("The shape of the unitary matrix does not match the state of the qubits.")
         if not np.allclose(np.eye(unitary_matrix.shape[0]), unitary_matrix.conj().T @ unitary_matrix):
             raise NonUnitaryMatrixError("The provided matrix is not unitary.")
+        if not all(isinstance(qubit, int) for qubit in qubits):
+            raise TypeError("All qubits must be integers.")
+        if any(qubit < 0 or qubit >= self.num_qubits for qubit in qubits):
+            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True

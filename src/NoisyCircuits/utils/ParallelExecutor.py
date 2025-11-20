@@ -18,10 +18,8 @@ class RemoteExecutor:
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
         
-        # Pre-create device and function maps for efficiency
         self.dev = qml.device("lightning.qubit", wires=self.num_qubits)
         
-        # Separate instruction maps for parameterized vs non-parameterized gates
         self.param_gates = {"rz", "rx", "unitary", "rzz"}
         self.instruction_map = {
             "x" : qml.X,
@@ -34,10 +32,7 @@ class RemoteExecutor:
             "unitary": qml.QubitUnitary,
         }
         
-        # Pre-compile qnodes for better performance
         self._setup_qnodes()
-        
-        # Create gate function lookup table to eliminate conditionals
         self._create_gate_handlers()
 
     def _setup_qnodes(self):
@@ -70,7 +65,6 @@ class RemoteExecutor:
             """Apply gate with NaN handling only when needed"""
             psi_dash = self.apply_gate_noparams(state, gate_op, qubits)
             if np.isnan(psi_dash).any():
-                # Generate noise only when NaN is detected
                 noisy_state = state + np.random.normal(0, 1e-8, size=state.shape)
                 psi_dash = self.apply_gate_noparams(noisy_state, gate_op, qubits)
             return psi_dash
@@ -82,7 +76,6 @@ class RemoteExecutor:
             op_psi = np.array([op @ psi_dash for op in ops])
             kraus_probs = np.real(np.sum(np.conj(op_psi) * op_psi, axis=1))
             kraus_probs_sum = np.sum(kraus_probs)
-            # Handle edge case where all probabilities are zero/NaN
             if kraus_probs_sum == 0 or np.isnan(kraus_probs_sum):
                 kraus_probs = np.ones(len(kraus_probs)) / len(kraus_probs)
             else:
@@ -93,7 +86,6 @@ class RemoteExecutor:
             
         def handle_param_gate(state, gate, qubits, params):
             result = self.apply_gate_params(state, self.instruction_map[gate], params, qubits)
-            # Handle NaN in parameterized gates only when detected
             if np.isnan(result).any():
                 noisy_state = state + np.random.normal(0, 1e-8, size=state.shape)
                 result = self.apply_gate_params(noisy_state, self.instruction_map[gate], params, qubits)
@@ -105,7 +97,6 @@ class RemoteExecutor:
             op_psi = np.array([op @ psi_dash for op in ops])
             kraus_probs = np.real(np.sum(np.conj(op_psi) * op_psi, axis=1))
             kraus_probs_sum = np.sum(kraus_probs)
-            # Handle edge case where all probabilities are zero/NaN
             if kraus_probs_sum == 0 or np.isnan(kraus_probs_sum):
                 kraus_probs = np.ones(len(kraus_probs)) / len(kraus_probs)
             else:
@@ -114,7 +105,6 @@ class RemoteExecutor:
             prob_sqrt = np.sqrt(kraus_probs[kraus_idx])
             return ops[kraus_idx] @ psi_dash / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx] @ psi_dash
         
-        # Create lookup table for gate handlers
         self.gate_handlers = {}
         for gate in self.instruction_map:
             if gate in ["ecr", "cz"]:
@@ -137,15 +127,12 @@ class RemoteExecutor:
             init_state[0] = 1.0
             state = init_state.copy()
             
-            # Main loop without conditionals - use function lookup
             for gate, qubits, params in self.instruction_list:
                 state = self.gate_handlers[gate](state, gate, qubits, params)
-                # Early NaN detection to avoid propagating through entire circuit
                 if np.isnan(state).any():
                     return np.zeros(2**len(self.measured_qubits))
             
             probs = self.get_probs(state)
-            # Fix: Return zeros if NaNs are detected, otherwise return probabilities
             return np.zeros(probs.shape) if np.isnan(probs).any() else probs
         
         return compute_trajectory(traj_id)
