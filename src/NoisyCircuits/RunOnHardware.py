@@ -42,7 +42,8 @@ class RunOnHardware:
         self.backend = backend
         self.shots = shots
         self.service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token)
-        if self.backend not in self.service.backends():
+        backend_list = [backend.name for backend in self.service.backends()]
+        if self.backend not in backend_list:
             raise ValueError(f"The backend '{self.backend}' is not available. Please check your IBM Quantum account.")
         self.circuit_list = []
         self.qubit_list_per_circuit = []
@@ -77,19 +78,25 @@ class RunOnHardware:
         if len(instructions) == 0:
             raise ValueError("The circuit is empty.")
         qc = QuantumCircuit(circuit.num_qubits, len(measure_qubits))
+        instruction_map = {
+            "x" : lambda q: qc.x(q),
+            "sx": lambda q: qc.sx(q),
+            "rz": lambda p, q: qc.rz(p, q),
+            "rx": lambda p, q: qc.rx(p, q),
+            "ecr": lambda q1, q2: qc.append(ecr(), [q1, q2]),
+            "cz": lambda q1, q2: qc.cz(q1, q2),
+            "rzz": lambda p, q1, q2: qc.rzz(p, q1, q2)
+        }
         self.qubit_list_per_circuit.append(list(range(circuit.num_qubits)))
         for inst in instructions:
             gate, qubits, params = inst
-            if gate == "x":
-                qc.x(qubits[0])
-            elif gate == "sx":
-                qc.sx(qubits[0])
-            elif gate == "rz":
-                qc.rz(params[0], qubits[0])
-            elif gate == "ecr":
-                qc.append(ecr(), qubits)
-            else:
-                raise ValueError(f"Unsupported gate: {gate} for backend {self.backend}")
+            try:
+                if params is not None:
+                    instruction_map[gate](*params, *qubits)
+                else:
+                    instruction_map[gate](*qubits)
+            except KeyError:
+                raise ValueError(f"The gate '{gate}' is not supported on the backend '{self.backend}'. Please check the backend's basis gates.")
         qc.measure(measure_qubits, measure_qubits)
         self.circuit_list.append(qc)
     

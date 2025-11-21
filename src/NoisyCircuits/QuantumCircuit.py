@@ -118,7 +118,7 @@ class QuantumCircuit:
         self.measurement_error = measure_error
         self.connectivity = connectivity
         self.qubit_coupling_map = modeller.qubit_coupling_map
-        self.measurement_error_operator = None
+        self.measurement_error_operator = self._generate_measurement_error_operator()
         self._gate_decomposer = QuantumCircuit.basis_gates_set[backend_qpu_type.lower()]["gate_decomposition"](
                                                                                                                 num_qubits=self.num_qubits,
                                                                                                                 connectivity=self.connectivity,
@@ -144,6 +144,31 @@ class QuantumCircuit:
         Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.
         """
         self._gate_decomposer.instruction_list = []
+    
+    def _generate_measurement_error_operator(self,
+                                            qubit_list:list[int]=None)->np.ndarray:
+        """
+        Generates the measurement error operator for the specified qubits.
+        
+        Args:
+            qubit_list (list[int], optional): The list of qubits to include in the measurement error operator.
+                                              If None, includes all qubits. Defaults to None.
+
+        Returns:
+            np.ndarray: The measurement error operator as a numpy array. Returns None if there are no measurement errors.
+        """
+        if qubit_list is None:
+            measure_qubits = list(range(self.num_qubits))
+        else:
+            measure_qubits = qubit_list
+        if self.measurement_error == {}:
+            return None
+        for qubit_number, qubit in enumerate(measure_qubits):
+            if qubit_number == 0:
+                meas_error_op = self.measurement_error[qubit]
+            else:
+                meas_error_op = np.kron(meas_error_op, self.measurement_error[qubit])
+        return meas_error_op
 
     def execute(self,
                 qubits:list[int],
@@ -176,6 +201,9 @@ class QuantumCircuit:
             raise TypeError("qubits must be of type list.\nAll entries in qubits must be integers.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if len(qubits) != self.num_qubits:
+            full_measurement_operator = self.measurement_error_operator
+            self.measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
         futures = [self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list, qubits) for traj_id in range(self.num_trajectories)]
         probs_raw = np.array(ray.get(futures))
         probs = np.mean(probs_raw, axis=0)
@@ -183,6 +211,8 @@ class QuantumCircuit:
             probs = np.dot(self.measurement_error_operator, probs)
         if num_trajectories is not None:
             self.num_trajectories = original_trajectories
+        if len(qubits) != self.num_qubits:
+            self.measurement_error_operator = full_measurement_operator
         return probs
 
     def run_with_density_matrix(self, 
