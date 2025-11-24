@@ -32,6 +32,21 @@ This notebook demonstrates a practical application of noisy quantum circuits for
 
 **Dependencies:** pandas, scipy, scikit-learn, matplotlib, numpy
 
+#### `run_on_hardware.ipynb`
+**Tutorial Notebook on Creating and Submitting Quantum Circuits to Hardware**
+
+This notebook provides a tutorial on using the package to create and submit a quantum circuit to IBM Quantum Hardware. The tutorial includes:
+- Setting up IBM API access.
+- Creating and Submitting Quantum Circuits to quantum hardware.
+- Retreiving results from the quantum hardware.
+- Fidelity comparison between simulator and hardware results from output probabilities.
+
+#### `run_multiple_on_hardware.ipynb`
+**Tutorial Notebook on Creating and Submitting Multiple Quantum Circuits to Hardware**
+
+This notebook provides a tutorial on using the package to create and submit multiple quantum circuits to IBM Quantum Hardware and retreive the results from the hardware.
+
+
 ### 📊 Data Files
 
 #### `design_study_single_feature.csv`
@@ -52,7 +67,8 @@ Before running the notebooks in this directory, ensure you have:
 
 ### Quick Start
 1. Begin with `introduction.ipynb` to understand basic library usage
-3. Explore `quantum_neural_networks.ipynb` for practical applications
+2. Explore `quantum_neural_networks.ipynb` for practical applications
+3. Look into `run_on_hardware.ipynb` and `run_multiple_on_hardware.ipynb` for creating and submitting quantum circuits to quantum hardware.
 
 ### Configuration Notes
 - **IBM Backend:** Currently supports IBM Eagle / Heron chipset, but the Eagle QPU devices have been retired (API access to these devices is no longer possible).

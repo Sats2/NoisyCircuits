@@ -128,7 +128,7 @@ class HeronDecomposition(Decomposition):
         self.RZ(theta=-np.pi/2, qubit=phys_target)
         self.RX(theta=-np.pi/2, qubit=phys_target)
         self.RZ(theta=-np.pi/2, qubit=phys_target)
-        self.RZZ(theta=theta, control=phys_control, target=phys_target)
+        self.RZZ(theta=theta, qubit1=phys_control, qubit2=phys_target)
         self.RZ(theta=-np.pi/2, qubit=phys_control)
         self.RX(theta=-np.pi/2, qubit=phys_control)
         self.RZ(theta=-np.pi/2, qubit=phys_control)
@@ -147,7 +147,7 @@ class HeronDecomposition(Decomposition):
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
         self.RX(theta=np.pi/2, qubit=phys_control)
         self.RX(theta=np.pi/2, qubit=phys_target)
-        self.RZZ(theta=theta, control=phys_control, target=phys_target)
+        self.RZZ(theta=theta, qubit1=phys_control, qubit2=phys_target)
         self.RX(theta=-np.pi/2, qubit=phys_control)
         self.RX(theta=-np.pi/2, qubit=phys_target)
         for swap in reverse_swaps:
@@ -216,7 +216,7 @@ class HeronDecomposition(Decomposition):
         self.RZ(theta=np.pi/2, qubit=phys_target)
         self.SX(qubit=phys_target)
         self.RZ(theta=(np.pi + theta)/2, qubit=phys_target)
-        self.RZZ(theta=-theta/2, control=phys_control, target=phys_target)
+        self.RZZ(theta=-theta/2, qubit1=phys_control, qubit2=phys_target)
         self.RZ(theta=np.pi/2, qubit=phys_target)
         self.SX(qubit=phys_target)
         self.RZ(theta=np.pi/2, qubit=phys_target)
@@ -237,7 +237,7 @@ class HeronDecomposition(Decomposition):
         self.RZ(theta=3*np.pi/2, qubit=phys_target)
         self.SX(qubit=phys_target)
         self.RZ(theta=(5*np.pi + theta)/2, qubit=phys_target)
-        self.RZZ(theta=-theta/2, control=phys_control, target=phys_target)
+        self.RZZ(theta=-theta/2, qubit1=phys_control, qubit2=phys_target)
         self.RZ(theta=np.pi/2, qubit=phys_target)
         self.SX(qubit=phys_target)
         self.RZ(theta=np.pi/2, qubit=phys_target)
@@ -255,7 +255,7 @@ class HeronDecomposition(Decomposition):
         for swap in forward_swaps:
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
         self.RZ(theta=theta/2, qubit=phys_target)
-        self.RZZ(theta=-theta/2, control=phys_control, target=phys_target)
+        self.RZZ(theta=-theta/2, qubit1=phys_control, qubit2=phys_target)
         for swap in reverse_swaps:
             self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     

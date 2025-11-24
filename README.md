@@ -28,7 +28,7 @@ NoisyCircuits enables researchers and developers to:
 The supported gated are fully decomposed into the hardware basis gates and this decomposition is applied to the circuit.
 
 - **Single-qubit gates**: X, Y, Z, √X, Hadamard, Rx(θ), Ry(θ), Rz(θ)
-- **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP, RZZ
+- **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP, RZZ(θ), RXX(θ), RYY(θ)
 - **Unitary Operation**: Additionally, a unitary operator can be applied to the circuit. This unitary operator is not decomposed and is applied fully to the quantum circuit assuming a perfect implmenetation.
 
 ## 🛠️ Installation
@@ -106,6 +106,8 @@ For detailed information about the example suite, see [`examples/README.md`](exa
 ### Tutorials
 1. **[Introduction](examples/introduction.ipynb)**: Basic usage and configuration
 2. **[Quantum Neural Networks](examples/quantum_neural_networks.ipynb)**: Machine learning applications
+3. **[Hardware Submission](examples/run_on_hardware.ipynb)**: Creating, submitting and retreiving results from IBM hardware.
+4. **[Multiple Hardware Submissions](examples/run_multiple_on_hardware.ipynb)**: Creating, submitting and retreiving multiple quantum circuits from IBM Hardware.
 
 ### Key Concepts
 - **Monte-Carlo Wave Function**: Efficient method for simulating open quantum systems
@@ -149,6 +151,8 @@ NoisyCircuits/
 │   ├── README.md                               # Detailed documentation
 │   ├── introduction.ipynb                      # Getting started tutorial
 │   ├── quantum_neural_networks.ipynb           # ML application example
+│   └── run_on_hardware.ipynb                   # Tutorial to create, submit and retreive a quantum circuit from hardware
+│   └── run_multiple_on_hardware.ipynb          # Tutorial to create, submit and retreive multiple quantum circuits from hardware
 │   └── design_study_single_feature.csv         # Sample dataset
 ├── validation/                                 # Validation suite
 │   ├── README.md                               # Detailed documentation

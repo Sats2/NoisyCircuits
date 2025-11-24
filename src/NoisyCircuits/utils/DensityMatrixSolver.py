@@ -10,7 +10,6 @@ class DensityMatrixSolver:
                  num_qubits:int,
                  single_qubit_noise:dict,
                  two_qubit_noise:dict,
-                 measurement_noise:dict,
                  instruction_list:list)->None:
         """
         Initializes the DensityMatrixSolver with the given parameters.
@@ -19,7 +18,6 @@ class DensityMatrixSolver:
             num_qubits (int): Number of qubits in the circuit.
             single_qubit_noise (dict): Noise instructions for single qubit gates for all qubits used.
             two_qubit_noise (dict): Noise instructions for entangling gates for all qubits used.
-            measurement_noise (dict): Noise instructions for measurement operations for all qubits used.
             instruction_list (list): List of instructions to be executed on the circuit.
             qubit_instruction_list (list): List of instructions specific to each qubit.
 
@@ -27,8 +25,7 @@ class DensityMatrixSolver:
             TypeError: If any of the input types are incorrect.
             ValueError: If num_qubits is less than 1.
             TypeError: If single_qubit_noise is not a dictionary.
-            TypeError: If ecr_noise is not a dictionary.
-            TypeError: If measurement_noise is not a dictionary.
+            TypeError: If two_qubit_noise is not a dictionary.
             TypeError: If instruction_list is not a list.
         """
         if not isinstance(num_qubits, int):
@@ -37,8 +34,6 @@ class DensityMatrixSolver:
             raise TypeError("single_qubit_noise must be a dictionary")
         if not isinstance(two_qubit_noise, dict):
             raise TypeError("two_qubit_noise must be a dictionary")
-        if not isinstance(measurement_noise, dict):
-            raise TypeError("measurement_noise must be a dictionary")
         if not isinstance(instruction_list, list):
             raise TypeError("instruction_list must be a list")
         if num_qubits < 1:
@@ -46,7 +41,6 @@ class DensityMatrixSolver:
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
-        self.measurement_noise = measurement_noise
         self.instruction_list = instruction_list
 
     def solve(self,

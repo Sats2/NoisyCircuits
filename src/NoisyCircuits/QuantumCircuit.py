@@ -195,24 +195,21 @@ class QuantumCircuit:
                 raise TypeError("Number of trajectories must be an integer.")
             if num_trajectories < 1:
                 raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
-            original_trajectories = self.num_trajectories
-            self.num_trajectories = num_trajectories
         if all(not isinstance(qubit, int) for qubit in qubits) and not isinstance(qubits, list):
             raise TypeError("qubits must be of type list.\nAll entries in qubits must be integers.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if num_trajectories is None:
+            num_trajectories = self.num_trajectories
         if len(qubits) != self.num_qubits:
-            full_measurement_operator = self.measurement_error_operator
-            self.measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
-        futures = [self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list, qubits) for traj_id in range(self.num_trajectories)]
+            measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
+        else:
+            measurement_error_operator = self.measurement_error_operator
+        futures = [self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list, qubits) for traj_id in range(num_trajectories)]
         probs_raw = np.array(ray.get(futures))
         probs = np.mean(probs_raw, axis=0)
-        if self.measurement_error_operator is not None:
-            probs = np.dot(self.measurement_error_operator, probs)
-        if num_trajectories is not None:
-            self.num_trajectories = original_trajectories
-        if len(qubits) != self.num_qubits:
-            self.measurement_error_operator = full_measurement_operator
+        if measurement_error_operator is not None:
+            probs = np.dot(measurement_error_operator, probs)
         return probs
 
     def run_with_density_matrix(self, 
@@ -226,16 +223,23 @@ class QuantumCircuit:
         Returns:
             np.ndarray: Probabilities of the output states.
         """
+        if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
+            raise TypeError("Qubits must be a list of integers.")
+        if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
+            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if len(qubits) != self.num_qubits:
+            measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
+        else:
+            measurement_error_operator = self.measurement_error_operator
         density_matrix_solver = DensityMatrixSolver(
             num_qubits=self.num_qubits,
             single_qubit_noise=self.single_qubit_instructions,
             two_qubit_noise=self.two_qubit_instructions,
-            measurement_noise=self.measurement_error,
             instruction_list=self.instruction_list
         )
         probs = density_matrix_solver.solve(qubits=qubits)
-        if self.measurement_error_operator is not None:
-            probs = np.dot(self.measurement_error_operator, probs)
+        if measurement_error_operator is not None:
+            probs = np.dot(measurement_error_operator, probs)
         return probs
 
     def run_pure_state(self, 

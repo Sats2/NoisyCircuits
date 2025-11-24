@@ -79,22 +79,22 @@ class RunOnHardware:
             raise ValueError("The circuit is empty.")
         qc = QuantumCircuit(circuit.num_qubits, len(measure_qubits))
         instruction_map = {
-            "x" : lambda q: qc.x(q),
-            "sx": lambda q: qc.sx(q),
-            "rz": lambda p, q: qc.rz(p, q),
-            "rx": lambda p, q: qc.rx(p, q),
-            "ecr": lambda q1, q2: qc.append(ecr(), [q1, q2]),
-            "cz": lambda q1, q2: qc.cz(q1, q2),
-            "rzz": lambda p, q1, q2: qc.rzz(p, q1, q2)
+            "x" : lambda q: qc.x(q[0]),
+            "sx": lambda q: qc.sx(q[0]),
+            "rz": lambda p, q: qc.rz(p, q[0]),
+            "rx": lambda p, q: qc.rx(p, q[0]),
+            "ecr": lambda q: qc.append(ecr(), [q[0], q[1]]),
+            "cz": lambda q: qc.cz(q[0], q[1]),
+            "rzz": lambda p, q: qc.rzz(p, q[0], q[1])
         }
         self.qubit_list_per_circuit.append(list(range(circuit.num_qubits)))
         for inst in instructions:
             gate, qubits, params = inst
             try:
                 if params is not None:
-                    instruction_map[gate](*params, *qubits)
+                    instruction_map[gate](params, qubits)
                 else:
-                    instruction_map[gate](*qubits)
+                    instruction_map[gate](qubits)
             except KeyError:
                 raise ValueError(f"The gate '{gate}' is not supported on the backend '{self.backend}'. Please check the backend's basis gates.")
         qc.measure(measure_qubits, measure_qubits)
@@ -104,12 +104,14 @@ class RunOnHardware:
         """
         Method that generates the PUB for the circuit list for execution on the IBM Hardware.
         """
-        pm = generate_preset_pass_manager(
-            backend=self.service.backend(self.backend),
-            optimization_level=0,
-            initial_layout=self.qubit_list_per_circuit
-        )
-        self.isa_circuits = pm.run(self.circuit_list)
+        self.isa_circuits = []
+        for circuit, layout in zip(self.circuit_list, self.qubit_list_per_circuit):
+            pass_manager = generate_preset_pass_manager(
+                backend = self.service.backend(self.backend),
+                optimization_level=0,
+                initial_layout=layout
+            )
+            self.isa_circuits.append(pass_manager.run(circuit))
     
     def run(self)->str:
         """
@@ -128,6 +130,50 @@ class RunOnHardware:
         self.job_id = job.job_id()
         print(f"Job ID: {self.job_id}")
         return self.job_id
+    
+    def status(self,
+               job_id:str=None)->str:
+        """
+        Method that retrieves the status of the submitted job.
+
+        Args:
+            job_id (str, optional): The Job Id for the submitted batch of PUBs. If not provided, uses the 
+                                    last submitted job_id provided the class object is not destroyed.
+        
+        Raises:
+            TypeError: When the job_id is not of the expected type -> str.
+
+        Returns:
+            str: The status of the submitted job.
+        """
+        if job_id is not None:
+            if not isinstance(job_id, str):
+                raise TypeError("The job_id must be a string.")
+            self.job_id = job_id
+        job = self.service.job(self.job_id)
+        return job.status()
+    
+    def cancel(self,
+               job_id:str=None)->None:
+        """
+        Method to cancel the submitted job.
+
+        Args:
+            job_id (str, optional): The Job Id for the submitted batch of PUBs. If not provided, uses the 
+                                    last submitted job_id provided the class object is not destroyed.
+
+        Raises:
+            TypeError: When the job_id is not of the expected type -> str.
+        """
+        if job_id is not None:
+            if not isinstance(job_id, str):
+                raise TypeError("The job_id must be a string.")
+            self.job_id = job_id
+        job = self.service.job(self.job_id)
+        try:
+            job.cancel()
+        except Exception as e:
+            print(f"An error occurred while cancelling the job: {e}")
 
     def get_results(self,
                     job_id:str=None)->list[np.ndarray]:
@@ -155,9 +201,11 @@ class RunOnHardware:
         counts_list = [pub.join_data().get_counts() for pub in result]
         result_array_list = []
         for counts_dict in counts_list:
-            result_array = np.zeros(len(counts_dict.keys()), dtype=float)
+            num_bits = 2**len(next(iter(counts_dict)))
+            result_array = np.zeros(num_bits, dtype=float)
             for key in counts_dict.keys():
-                location = int(str(key), 2)
-                result_array[location] = counts_dict[key] / self.shots
+                location = str(key)[::-1]
+                location = int(location, 2)
+                result_array[location]  = counts_dict[key] / self.shots
             result_array_list.append(result_array)
         return result_array_list
