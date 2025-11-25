@@ -1,16 +1,17 @@
-from NoisyCircuits.utils.GetNoiseModel import GetNoiseModel
 from NoisyCircuits.QuantumCircuit import QuantumCircuit
 from NoisyCircuits.RunOnHardware import RunOnHardware
 import pytest
 import pickle
 import json
 import os
+from pathlib import Path
 
 api_token = json.load(open(os.path.join(os.path.expanduser("~"), "ibm_api.json"), "r"))["apikey"]
+file_path = os.path.join(Path(__file__).parent.parent, "noise_models/Noise_Model_Heron_QPU.pkl")
 runner = RunOnHardware(token=api_token, backend="ibm_fez", shots=1024)
 circuit = QuantumCircuit(
     num_qubits=2,
-    noise_model=pickle.load(open("../noise_models/Noise_Model_Heron_QPU.pkl", "rb")),
+    noise_model=pickle.load(open(file_path, "rb")),
     backend_qpu_type="heron",
     num_trajectories=100,
     jsonize=True,
