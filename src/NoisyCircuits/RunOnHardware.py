@@ -64,6 +64,7 @@ class RunOnHardware:
             TypeError: When the measure_qubits is not of the expected type -> list.
             TypeError: When the elements of measure_qubits are not of the expected type -> int.
             ValueError: When the circuit is empty.
+            ValueError: When the measure_qubits contain invalid qubit indices.
             ValueError: When the circuit contains gates that are not in the backend's basis gates.
         """
         if circuit is None:
@@ -74,6 +75,8 @@ class RunOnHardware:
             raise TypeError("The measure_qubits must be a list of integers.")
         if not all(isinstance(q, int) for q in measure_qubits):
             raise TypeError("All elements in measure_qubits must be integers.")
+        if np.max(measure_qubits) >= circuit.num_qubits or np.min(measure_qubits) < 0:
+            raise ValueError("The measure_qubits contain invalid qubit indices.")
         instructions = circuit.instruction_list
         if len(instructions) == 0:
             raise ValueError("The circuit is empty.")
@@ -142,6 +145,7 @@ class RunOnHardware:
         
         Raises:
             TypeError: When the job_id is not of the expected type -> str.
+            ValueError: When the job_id is not provided and the class object is destroyed.
 
         Returns:
             str: The status of the submitted job.
@@ -150,6 +154,8 @@ class RunOnHardware:
             if not isinstance(job_id, str):
                 raise TypeError("The job_id must be a string.")
             self.job_id = job_id
+        if job_id is None and not hasattr(self, 'job_id'):
+            raise ValueError("Please provide a job_id as the class object does not hold any job id.")
         job = self.service.job(self.job_id)
         return job.status()
     
@@ -164,11 +170,14 @@ class RunOnHardware:
 
         Raises:
             TypeError: When the job_id is not of the expected type -> str.
+            ValueError: When the job_id is not provided and the class object is destroyed.
         """
         if job_id is not None:
             if not isinstance(job_id, str):
                 raise TypeError("The job_id must be a string.")
             self.job_id = job_id
+        if job_id is None and not hasattr(self, 'job_id'):
+            raise ValueError("Please provide a job_id as the class object does not hold any job id.")
         job = self.service.job(self.job_id)
         try:
             job.cancel()

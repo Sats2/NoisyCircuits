@@ -186,6 +186,7 @@ class QuantumCircuit:
             TypeError: If num_trajectories is not an integer.
             ValueError: If num_trajectories is less than 1.
             ValueError: If qubits contains invalid qubit indices.
+            ValueError: If there are no instructions in the circuit to execute.
 
         Returns:
             np.ndarray: The probabilities of the output states.
@@ -195,10 +196,12 @@ class QuantumCircuit:
                 raise TypeError("Number of trajectories must be an integer.")
             if num_trajectories < 1:
                 raise ValueError("Number of trajectories must be a positive integer greater than or equal to 1.")
-        if all(not isinstance(qubit, int) for qubit in qubits) and not isinstance(qubits, list):
+        if not isinstance(qubits, list) or any(not isinstance(qubit, int) for qubit in qubits):
             raise TypeError("qubits must be of type list.\nAll entries in qubits must be integers.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if self._gate_decomposer.instruction_list == []:
+            raise ValueError("No instructions in the circuit to execute.")
         if num_trajectories is None:
             num_trajectories = self.num_trajectories
         if len(qubits) != self.num_qubits:
@@ -220,6 +223,11 @@ class QuantumCircuit:
         Args:
             qubits (list[int]): List of qubits to be simulated.
 
+        Raises:
+            TypeError: If qubits is not a list or the items in the list are not integers.
+            ValueError: If qubits contains invalid qubit indices.
+            ValueError: If there are no instructions in the circuit to execute.
+
         Returns:
             np.ndarray: Probabilities of the output states.
         """
@@ -227,6 +235,8 @@ class QuantumCircuit:
             raise TypeError("Qubits must be a list of integers.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if self._gate_decomposer.instruction_list == []:
+            raise ValueError("No instructions in the circuit to execute.")
         if len(qubits) != self.num_qubits:
             measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
         else:
@@ -249,10 +259,21 @@ class QuantumCircuit:
 
         Args:
             qubits (list[int]): List of qubits to be simulated.
+        
+        Raises:
+            TypeError: If qubits is not a list or the items in the list are not integers.
+            ValueError: If qubits contains invalid qubit indices.
+            ValueError: If there are no instructions in the circuit to execute.
 
         Returns:
             np.ndarray: Probabilities of the output states.
         """
+        if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
+            raise TypeError("Qubits must be a list of integers.")
+        if self._gate_decomposer.instruction_list == []:
+            raise ValueError("No instructions in the circuit to execute.")
+        if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
+            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         pure_state_solver = PureStateSolver(
             num_qubits=self.num_qubits,
             instruction_list=self.instruction_list
