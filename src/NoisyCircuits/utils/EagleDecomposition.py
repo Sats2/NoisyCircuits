@@ -44,37 +44,43 @@ class EagleDecomposition(Decomposition):
     def RY(self,
            theta:int|float,
            qubit:int)->None:
-        self.X(qubit=qubit)
-        self.SX(qubit=qubit)
-        self.RZ(theta=-theta, qubit=qubit)
-        self.SX(qubit=qubit)
+        if super().RY(theta=theta, qubit=qubit):
+            self.X(qubit=qubit)
+            self.SX(qubit=qubit)
+            self.RZ(theta=-theta, qubit=qubit)
+            self.SX(qubit=qubit)
 
     def RX(self,
            theta:int|float,
            qubit:int):
-        self.RZ(theta=np.pi/2, qubit=qubit)
-        self.SX(qubit=qubit)
-        self.RZ(theta=2*np.pi + theta, qubit=qubit)
-        self.SX(qubit=qubit)
-        self.RZ(theta=5*np.pi/2, qubit=qubit)
-        self.X(qubit=qubit)
+        if super().RX(theta=theta, qubit=qubit):
+            self.RZ(theta=np.pi/2, qubit=qubit)
+            self.SX(qubit=qubit)
+            self.RZ(theta=2*np.pi + theta, qubit=qubit)
+            self.SX(qubit=qubit)
+            self.RZ(theta=5*np.pi/2, qubit=qubit)
+            self.X(qubit=qubit)
 
     def H(self,
           qubit:int):
-        self.SX(qubit=qubit)
-        self.RZ(theta=np.pi/2, qubit=qubit)
-        self.SX(qubit=qubit)
+        if super().H(qubit=qubit):
+            self.SX(qubit=qubit)
+            self.RZ(theta=np.pi/2, qubit=qubit)
+            self.SX(qubit=qubit)
 
     def Z(self,
           qubit:int):
-        self.H(qubit=qubit)
-        self.RZ(theta=np.pi/2, qubit=qubit)
+        if super().Z(qubit=qubit):
+            self.X(qubit=qubit)
+            self.RX(theta=np.pi, qubit=qubit)
+            self.RZ(theta=-np.pi, qubit=qubit)
 
     def Y(self,
           qubit:int):
-        self.RY(theta=np.pi, qubit=qubit)
-        self.RX(theta=np.pi, qubit=qubit)
-        self.X(qubit=qubit)
+        if super().Y(qubit=qubit):
+            self.RY(theta=-np.pi, qubit=qubit)
+            self.RX(theta=np.pi, qubit=qubit)
+            self.X(qubit=qubit)
 
     def ECR(self,
             control:int,
@@ -104,237 +110,253 @@ class EagleDecomposition(Decomposition):
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def apply_swap_decomposition(self, qubit1, qubit2):
-        self.RZ(theta=-np.pi/2, qubit=qubit1)
-        self.SX(qubit=qubit2)
-        self.ECR(control=qubit1, target=qubit2)
-        self.SX(qubit=qubit1)
-        self.RZ(theta=-np.pi/2, qubit=qubit2)
-        self.ECR(control=qubit2, target=qubit1)
-        self.RZ(theta=-np.pi/2, qubit=qubit1)
-        self.SX(qubit=qubit2)
-        self.ECR(control=qubit1, target=qubit2)
+        if super().apply_swap_decomposition(qubit1=qubit1, qubit2=qubit2):
+            self.RZ(theta=-np.pi/2, qubit=qubit1)
+            self.SX(qubit=qubit2)
+            self.ECR(control=qubit1, target=qubit2)
+            self.SX(qubit=qubit1)
+            self.RZ(theta=-np.pi/2, qubit=qubit2)
+            self.ECR(control=qubit2, target=qubit1)
+            self.RZ(theta=-np.pi/2, qubit=qubit1)
+            self.SX(qubit=qubit2)
+            self.ECR(control=qubit1, target=qubit2)
 
     def CZ(self,
            control:int,
            target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.RX(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CZ(control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.RX(theta=-np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def CY(self,
            control:int,
            target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.RZ(theta=np.pi, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=np.pi, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CY(control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            self.RZ(theta=np.pi, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def CX(self,
            control:int,
            target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=-np.pi, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=np.pi, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CX(control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=-np.pi, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            self.RZ(theta=np.pi, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def RZZ(self,
             theta:int|float,
             qubit1:int,
             qubit2:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=(theta - np.pi), qubit=phys_target)
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RY(theta=2*np.pi, qubit=phys_control)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().RZZ(theta=theta, qubit1=qubit1, qubit2=qubit2):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=(theta - np.pi), qubit=phys_target)
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RY(theta=2*np.pi, qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def RYY(self,
             theta:int|float,
             qubit1:int,
             qubit2:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi/2, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi-theta, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=-np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RX(theta=-np.pi, qubit=phys_control)
-        self.X(qubit=phys_control)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().RYY(theta=theta, qubit1=qubit1, qubit2=qubit2):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=np.pi, qubit=phys_control)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.SX(qubit=phys_control)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi/2, qubit=phys_control)
+            self.RZ(theta=2*np.pi, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=np.pi+theta, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.SX(qubit=phys_control)
+            self.SX(qubit=phys_target)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def RXX(self,
             theta:int|float,
             qubit1:int,
             qubit2:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=3*np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=np.pi+theta, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().RXX(theta=theta, qubit1=qubit1, qubit2=qubit2):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=3*np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=np.pi+theta, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def SWAP(self,
              qubit1:int,
              qubit2:int):
-        forward_swaps, reverse_swaps, qubits_1, qubits_2 = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.apply_swap_decomposition(qubit1=qubits_1, qubit2=qubits_2)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().SWAP(qubit1=qubit1, qubit2=qubit2):
+            forward_swaps, reverse_swaps, qubits_1, qubits_2 = self.qubit_coupling.generate_swap_sequence(logical_control=qubit1, logical_target=qubit2)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.apply_swap_decomposition(qubit1=qubits_1, qubit2=qubits_2)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def CRX(self, 
             theta:int|float, 
             control:int, 
             target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=-np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=(np.pi - theta)/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=np.pi-theta/2, qubit=phys_target)
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta==np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=np.pi, qubit=phys_control)
-        self.SX(qubit=phys_control)
-        self.RZ(theta=np.pi, qubit=phys_control)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CRX(theta=theta, control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=-np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=(np.pi - theta)/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=np.pi-theta/2, qubit=phys_target)
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=-np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi/2, qubit=phys_target)
+            self.SX(qubit=phys_control)
+            self.RZ(theta=np.pi, qubit=phys_control)
+            self.SX(qubit=phys_control)
+            self.RZ(theta=np.pi, qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def CRY(self,
             theta:int|float,
             control:int,
             target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=-np.pi/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=np.pi - theta/2, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi + theta/2, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CRY(theta=theta, control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi+0.5*theta, qubit=phys_target)
+            self.X(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi-0.5*theta, qubit=phys_target)
+            self.X(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
 
     def CRZ(self,
             theta:int|float,
             control:int,
             target:int):
-        forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
-        for swap in forward_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
-        self.RZ(theta=-np.pi/2, qubit=phys_control)
-        self.RZ(theta=-np.pi+theta/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.X(qubit=phys_control)
-        self.RZ(theta=np.pi-theta/2, qubit=phys_target)
-        self.SX(qubit=phys_target)
-        self.RZ(theta=-np.pi, qubit=phys_target)
-        self.ECR(control=phys_control, target=phys_target)
-        self.RZ(theta=-np.pi/2, qubit=phys_target)
-        for swap in reverse_swaps:
-            self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+        if super().CRZ(theta=theta, control=control, target=target):
+            forward_swaps, reverse_swaps, phys_control, phys_target = self.qubit_coupling.generate_swap_sequence(logical_control=control, logical_target=target)
+            for swap in forward_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=np.pi+0.5*theta, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=-np.pi/2, qubit=phys_control)
+            self.RZ(theta=np.pi-0.5*theta, qubit=phys_target)
+            self.SX(qubit=phys_target)
+            self.RZ(theta=np.pi, qubit=phys_target)
+            self.ECR(control=phys_control, target=phys_target)
+            self.X(qubit=phys_control)
+            self.RZ(theta=2*np.pi, qubit=phys_control)
+            for swap in reverse_swaps:
+                self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     
     def apply_unitary(self, 
                       unitary_matrix:np.ndarray, 

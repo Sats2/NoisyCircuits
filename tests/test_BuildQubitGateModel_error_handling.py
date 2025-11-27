@@ -116,5 +116,30 @@ def test_basis_gates_empty():
     with pytest.raises(ValueError):
         BuildModel(noise_model=noise_model,
                             num_qubits=2
-                            )
-            
+                )
+
+def test_build_model_wrong_basis_gates():
+    """
+    Test that invalid basis_gates combinations raise ValueError.
+    """
+    with pytest.raises(ValueError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=3,
+                   basis_gates=[["u1", "u2", "u3"], ["cy"]]).build_qubit_gate_model()
+    with pytest.raises(UserWarning):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=3,
+                   basis_gates=[["u1", "u2", "u3"], ["cz"]]).build_qubit_gate_model()
+    with pytest.raises(UserWarning):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=3,
+                   basis_gates=[["rx", "x", "sx", "rz"], ["ecr"]]).build_qubit_gate_model()
+
+def test_num_qubits_exceeds_available():
+    """
+    Test that requesting more qubits than available in the noise model raises ValueError.
+    """
+    with pytest.raises(ValueError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=250,
+                   basis_gates=[["rx", "x"], ["cz"]]).build_qubit_gate_model()

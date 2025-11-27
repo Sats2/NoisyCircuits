@@ -690,6 +690,9 @@ class BuildModel:
             data (list): List of Noise model entries from Qiskit JSON.
             extract_qubits (list[int]): List of qubits for which to extract measurement errors.
         
+        Raises:
+            ValueError: If requested qubit index exceeds available qubit indices in measurement error data.
+        
         Returns:
             dict: Dictionary of measurement errors for the specified qubits.
         """
@@ -713,6 +716,10 @@ class BuildModel:
         measurement_errors = {}
         self.logger.info(f"Available qubits in roerror_map: {list(roerror_map.keys())}")
         self.logger.info(f"Requested qubits: {extract_qubits}")
+        if all(qubit not in roerror_map.keys() for qubit in extract_qubits):
+            self.logger.warning("Warning: No measurement error data found for the requested qubits. Using identity matrices for all.")
+        if max(extract_qubits) > max(roerror_map.keys()):
+            raise ValueError("Error: Requested qubit index (indices) exceeds available qubit indices in measurement error data.")
         for qubit in extract_qubits:
             if qubit not in roerror_map:
                 self.logger.warning(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
@@ -735,6 +742,9 @@ class BuildModel:
         Args:
             threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates).
                                 Default is None, which means no filtering.
+        
+        Raises:
+            ValueError: If the noise model does not contain information regarding the specified basis gates.
 
         Returns:
             tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.
@@ -749,6 +759,15 @@ class BuildModel:
             self.use_qubits,
             self.basis_gates[1]
         )
+        if single_qubit_errors == {} and all(two_qubit_errors[gate] == {} for gate in self.basis_gates[1]):
+            raise ValueError("Provided noise model does not contain information regarding the specified basis gates.")
+        if all(two_qubit_errors[gate] == {} for gate in self.basis_gates[1]) and len(self.use_qubits) > 1:
+            raise UserWarning("No information on two qubit gate errors were found.")
+        if single_qubit_errors == {} and not all(two_qubit_errors[gate]=={} for gate in self.basis_gates[1]):
+            raise UserWarning("No information on single qubit gate errors were found.")
+        measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
+                                                              self.use_qubits)
+        self.logger.info("Completed Extraction of Measurement Errors.")
         self.logger.info("Completed Extraction of two-qubit gate Errors.\nStarting post-processing on Single Qubit Errors.")
         single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors, self.basis_gates[0])
         self.logger.info("Completed post-processing on Single Qubit Errors.")
@@ -756,9 +775,6 @@ class BuildModel:
         self.logger.info("Building Noise Operators for Two Qubit Gate Errors.")
         two_qubit_gate_error_instructions = self.get_two_qubit_gate_noise_operators(two_qubit_error_post_processed)
         self.logger.info("Completed building Noise Operators for Two Qubit Gate Errors.\nExtracting Measurement Errors.")
-        measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
-                                                              self.use_qubits)
-        self.logger.info("Completed Extraction of Measurement Errors.")
         self.logger.info("Preparing Qubit Connectivity Map for Requested Qubits")
         connectivity_map = self._create_connectivity_map(two_qubit_gate_error_instructions, self.use_qubits)
         self.logger.info("Qubit Connectivity Map Prepared.")

@@ -663,20 +663,23 @@ class Decomposition(ABC):
             qubits (list[int]): The list of qubits to which the unitary matrix will be applied.
         
         Raises:
+            TypeError: If unitary_matrix is not a numpy ndarray.
+            TypeError: If any qubit in the qubits list is not an integer or if qubits is not a list.
+            ValueError: If any qubit in the qubits list is out of range.
             NonSquareMatrixError: If the unitary matrix is not square.
             ShapeMismatchError: If the shape of the unitary matrix does not match the state of the qubits for the provided number of qubits.
             NonUnitaryMatrixError: If the matrix is not unitary. 
-            TypeError: If any qubit in the qubits list is not an integer.
-            ValueError: If any qubit in the qubits list is out of range.
         """
+        if not isinstance(unitary_matrix, np.ndarray):
+            raise TypeError("The unitary_matrix must be a numpy ndarray.")
+        if not all(isinstance(qubit, int) for qubit in qubits) or not isinstance(qubits, list):
+            raise TypeError("All qubits must be integers contained in a list.")
+        if any(qubit < 0 or qubit >= self.num_qubits for qubit in qubits):
+            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         if not unitary_matrix.shape[0] == unitary_matrix.shape[1]:
             raise NonSquareMatrixError("The provided matrix is not square.")
         if not unitary_matrix.shape[0] == 2**len(qubits):
             raise ShapeMismatchError("The shape of the unitary matrix does not match the state of the qubits.")
         if not np.allclose(np.eye(unitary_matrix.shape[0]), unitary_matrix.conj().T @ unitary_matrix):
             raise NonUnitaryMatrixError("The provided matrix is not unitary.")
-        if not all(isinstance(qubit, int) for qubit in qubits):
-            raise TypeError("All qubits must be integers.")
-        if any(qubit < 0 or qubit >= self.num_qubits for qubit in qubits):
-            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         return True

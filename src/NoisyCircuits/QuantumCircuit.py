@@ -104,7 +104,8 @@ class QuantumCircuit:
         self.threshold = threshold
         self.num_cores = num_cores
         self.verbose = verbose
-        basis_gates = QuantumCircuit.basis_gates_set[backend_qpu_type.lower()]["basis_gates"]
+        self.qpu = backend_qpu_type.lower()
+        basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
         modeller = BuildModel(
                                 noise_model=self.noise_model,
                                 num_qubits=self.num_qubits,
@@ -119,7 +120,7 @@ class QuantumCircuit:
         self.connectivity = connectivity
         self.qubit_coupling_map = modeller.qubit_coupling_map
         self.measurement_error_operator = self._generate_measurement_error_operator()
-        self._gate_decomposer = QuantumCircuit.basis_gates_set[backend_qpu_type.lower()]["gate_decomposition"](
+        self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
                                                                                                                 num_qubits=self.num_qubits,
                                                                                                                 connectivity=self.connectivity,
                                                                                                                 qubit_map=self.qubit_coupling_map
