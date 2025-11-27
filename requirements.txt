@@ -1,7 +1,7 @@
 pennylane
 qiskit
 qiskit-aer
-qiskit-ibm-provider
 qiskit-ibm-runtime
 matplotlib
 ray
+pytest
