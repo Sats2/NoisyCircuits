@@ -2,15 +2,29 @@ from collections import deque
 
 
 class QubitCouplingMap:
+    """
+    Module that builds the connectivity map for the given hardware for the number of qubits used.
+    This module also generates the shortest path to connect qubits in the hardware to ensure that the least possible
+    number of SWAP operations are performed to connect two qubits on the system hardware.
+    """
     def __init__(self,
                  num_qubits:int,
-                 connectivity:dict):
+                 connectivity:dict)->None:
+        """
+        Constructor for the module.
+
+        Args:
+            num_qubits (int): Total number of qubits in the system that are utilized.
+            connectivity (dict): Dictionary containing the directionality of the qubits (control-target pairings.)
+        """
         self.num_qubits = num_qubits
         self.connectivity = connectivity
         self.logical_to_physical = {i: i for i in range(num_qubits)}
         self.physical_to_logical = {i: i for i in range(num_qubits)}
 
-    def find_shortest_path(self, start: int, end: int) -> list:
+    def find_shortest_path(self, 
+                           start:int, 
+                           end:int)->list:
         """
         Find the shortest path between two qubits using BFS.
         
@@ -47,7 +61,9 @@ class QubitCouplingMap:
         
         raise ValueError(f"No path found between qubits {start} and {end}")
 
-    def generate_swap_sequence(self, logical_control: int, logical_target: int) -> tuple:
+    def generate_swap_sequence(self, 
+                               logical_control:int, 
+                               logical_target:int)->tuple:
         """
         Generate SWAP sequence to bring qubits close enough for interaction.
         
@@ -93,7 +109,9 @@ class QubitCouplingMap:
         
         return forward_swaps, reverse_swaps, final_control_pos, final_target_pos
     
-    def update_mapping_after_swap(self, qubit1: int, qubit2: int):
+    def update_mapping_after_swap(self, 
+                                  qubit1:int, 
+                                  qubit2:int):
         """
         Update logical-physical mapping after a SWAP operation.
         

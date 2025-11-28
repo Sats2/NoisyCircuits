@@ -42,6 +42,9 @@ def _extract_kraus(instrs)->list:
     return None
 
 class BuildModel:
+    """
+    Module that generates the noise operators for each gate on each qubit from the noise model.
+    """
     def __init__(self,
                  noise_model:dict,
                  num_qubits:int,
@@ -55,7 +58,8 @@ class BuildModel:
             noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
             num_qubits (int): The number of qubits in the model.
             threshold (float, optional): The threshold for noise. Defaults to None.
-            basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.        
+            basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators. 
+               
         Raises:
             TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
             ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
