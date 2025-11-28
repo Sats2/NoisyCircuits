@@ -60,7 +60,7 @@ class RemoteExecutor:
                 qubit_list (list): List of qubits that the operator must bbe applied to.
             
             Returns:
-                (np.ndarray): The updated state of the qubit system.
+                np.ndarray: The updated state of the qubit system.
             """
             qml.StatePrep(state, wires=range(self.num_qubits))
             gate_op(qubit_list)
@@ -81,7 +81,7 @@ class RemoteExecutor:
                 qubit_list (list): List of qubits that the operator must bbe applied to.
 
             Returns:
-                (np.ndarray): The updated state of the qubit system.
+                np.ndarray: The updated state of the qubit system.
             """
             qml.StatePrep(state, wires=range(self.num_qubits))
             gate_op(params, qubit_list)
@@ -96,7 +96,7 @@ class RemoteExecutor:
                 state (np.ndarray): Final state of the qubit system in the current trajectory.
 
             Returns:
-                (np.ndarray): Probabilities of the measured qubits from the qubit system.
+                np.ndarray: Probabilities of the measured qubits from the qubit system.
             """
             qml.StatePrep(state, wires=range(self.num_qubits))
             return qml.probs(wires=self.measured_qubits)

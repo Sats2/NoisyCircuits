@@ -294,9 +294,6 @@ class QuantumCircuit:
             TypeError: If style is not a string.
             ValueError: If style is not one of ['mpl', 'text'].
             ValueError: If there are no instructions in the circuit to draw.
-        
-        Returns:
-            None
         """
         if not isinstance(style, str):
             raise TypeError("Style must be a string.")

@@ -124,7 +124,7 @@ class RunOnHardware:
             ValueError: When the maximum circuit execution limit of 10,000,000 is exceeded.
 
         Returns:
-            job_id (str): Returns the Job Id for the submitted batch of PUBs for retrieval.
+            str: Returns the Job Id for the submitted batch of PUBs for retrieval.
         """
         sampler = Sampler(mode=self.service.backend(self.backend))
         if len(self.isa_circuits) * self.shots > 10_000_000:
