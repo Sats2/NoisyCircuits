@@ -1,3 +1,19 @@
+"""
+This module provides the ability for the QuantumCircuit module to perform a density matrix simulation for a specific quantum circuit. Alternatively, the user can opt to use just this method to perform a density matrix simulation using a custom instruction set with a custom noise model for single qubit and two qubit gates, as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. The measurement error is not considered in this module and is only applied from within the QuantumCircuit module. For the full application of noise information from the quantum hardware, it is recommended to run all simulations via the QuantumCircuit module. 
+
+Example:
+    >>> import numpy as np
+    >>> from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
+    >>> instruction_list = []
+    >>> instruction_list.append(["rx", [0], np.pi])
+    >>> instruction_list.append(["ecr", [0, 1], None])
+    >>> solver = DensityMatrixSolver(num_qubits=2, single_qubit_noise=single_qubit_noise, two_qubit_noise=two_qubit_noise, instruction_list=instruction_list)
+    >>> solver.solve(qubits=[0,1])
+    [0.45, 0.45, 0.05, 0.05]
+
+This module contains only one class `DensityMatrixSolver` which has only one callable function `solve(qubits)` whose arguements are the qubits that are to be measured.
+"""
+
 import pennylane as qml
 from pennylane import numpy as np
 
@@ -19,7 +35,6 @@ class DensityMatrixSolver:
             single_qubit_noise (dict): Noise instructions for single qubit gates for all qubits used.
             two_qubit_noise (dict): Noise instructions for entangling gates for all qubits used.
             instruction_list (list): List of instructions to be executed on the circuit.
-            qubit_instruction_list (list): List of instructions specific to each qubit.
 
         Raises:
             TypeError: If any of the input types are incorrect.

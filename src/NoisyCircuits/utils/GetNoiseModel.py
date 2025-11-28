@@ -1,3 +1,10 @@
+"""
+This module allows the user to get the raw noise model dictionary from the calibration data of IBM quantum hardware (user's choice) using their IBM token. This raw noise model can be provided to the QuantumCircuit or BuildQubitGateModel modules for post-processing. The BuildQubitGateModel module returns the post-processed noise operators for each standardized gate on each qubit whereas the QuantumCircuit module uses the post-processed noise model to perform quantum circuit simulations under noise.
+
+Example:
+    >>> from NoisyCircuits.utils.GetNoiseModel import GetNoiseModel
+    >>> noise_model = GetNoiseModel(backend_name=backend_name, token=token).get_noise_model()
+"""
 from qiskit_aer.noise import NoiseModel
 from qiskit_ibm_runtime import QiskitRuntimeService
 

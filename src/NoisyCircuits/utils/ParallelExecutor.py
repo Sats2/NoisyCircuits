@@ -1,3 +1,6 @@
+"""
+This module is responsible for running the MCWF simulations in parallel for noisy quantum circuit simulations. It is not meant to be called independently by a user but instead to be used as a helper module within the QuantumCircuit module to perform MCWF trajectory simulations in a parallel (shared/distributed memory) environment.
+"""
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"

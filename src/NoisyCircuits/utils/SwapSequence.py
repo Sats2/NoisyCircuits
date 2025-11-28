@@ -1,11 +1,12 @@
+"""
+This module builds the connectivity map for the given hardware for the number of qubits used. This module also generates the shortest path to connect qubits in the hardware to ensure that the least possible number of SWAP operations are performed to connect two qubits on the system hardware. It is not meant to be used as a standalone module, but could be used to determine qubit connection paths for a given qubit layout which is provided as a dictionary.
+"""
 from collections import deque
 
 
 class QubitCouplingMap:
     """
-    Module that builds the connectivity map for the given hardware for the number of qubits used.
-    This module also generates the shortest path to connect qubits in the hardware to ensure that the least possible
-    number of SWAP operations are performed to connect two qubits on the system hardware.
+    Module that builds the connectivity map for the given hardware for the number of qubits used. This module also generates the shortest path to connect qubits in the hardware to ensure that the least possible number of SWAP operations are performed to connect two qubits on the system hardware.
     """
     def __init__(self,
                  num_qubits:int,

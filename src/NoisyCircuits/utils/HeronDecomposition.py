@@ -1,3 +1,7 @@
+"""
+This module provides the exact decomposition for several single and two qubit gates using only the gates that are available in the Heron QPU from IBM quantum hardware. The decomposition also considers the swap sequencing required for connecting qubits in the systems while keeping the directionality of qubits in mind. It is implemented with the abtract class `Decomposition` in the background to conform to error handling and skeleton templates. It is selected according to the user specified QPU in the QuantumCircuit class.
+"""
+
 import numpy as np
 from NoisyCircuits.utils.SwapSequence import QubitCouplingMap
 from NoisyCircuits.utils.Decomposition import Decomposition

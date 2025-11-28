@@ -1,3 +1,14 @@
+"""
+This module provides the skeleton for users/developers to add custom decompositions for the different gates. This module only contains abstract classes and methods, providing error handling to the specific backend decomposition classes.
+
+This module includes the following classes:
+
+- `Decomposition` - Abstract class that acts as a template to the specific QPU decompositions.
+- `ShapeMismatchError` - Execption handling for errors in dimensionality mismatch to the size of the unitary matrix to the applied qubits.
+- `NonSquareMatrixError` - Execption handling for errors where the unitary matrix is not of size (N,N)
+- `NonUnitaryMatrixError` - Execption handling for errors where the input matrix is not a unitary matrix.
+"""
+
 from abc import ABC, abstractmethod
 import numpy as np
 
@@ -17,8 +28,7 @@ class NonUnitaryMatrixError(Exception):
 
 class Decomposition(ABC):
     """
-    Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different 
-    QPUs with varying basis gates.
+    Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different QPUs with varying basis gates.
     """
     def __init__(self,
                  num_qubits:int)->None:

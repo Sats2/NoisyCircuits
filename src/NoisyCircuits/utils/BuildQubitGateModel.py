@@ -1,3 +1,18 @@
+"""
+This module allows users to generate the noise operators for single qubit and two qubit gates from the noise model dictionary obtained from the the calibration data from IBM Hardware using the class BuildModel.
+
+The module allows users to filter out noise instructions that have a certain user-defined probability of occurrance (called threshold). The output from the module are the noise operators for single and two qubit gates, the connectivity chart for the specified device and the error operators on the measurement operation.
+
+The connectivity chart is created from the two qubit gate instruction set where the directionality and the connection between qubits in the hardware is considered. An example usage is as follows:
+
+Example:
+    >>> from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
+    >>> model = BuildModel(noise_model=noise_model, num_qubits=num_qubits, threshold=1e-6, basis_gates=[["u1"], ["cx"]], verbose=True)
+    >>> single_qubit_noise, two_qubit_noise, connectivity, measurement_noise = model.build_qubit_gate_model()
+
+Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.
+"""
+
 from pennylane import numpy as np
 from collections import defaultdict
 import math
@@ -57,8 +72,9 @@ class BuildModel:
         Args:
             noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
             num_qubits (int): The number of qubits in the model.
-            threshold (float, optional): The threshold for noise. Defaults to None.
-            basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators. 
+            threshold (float, optional): The threshold for noise. Defaults to 1e-12.
+            basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.
+            verbose (bool): Flag to indicate whether logging is required or not. Defaults to True.
                
         Raises:
             TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
@@ -336,8 +352,7 @@ class BuildModel:
                                          single_qubit_errors:dict,
                                          basis_gates:list)->dict:
         """
-        Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without 
-        further processing.
+        Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without further processing.
 
         Args:
             single_qubit_errors (dict): The dictionary of single-qubit errors extracted from the noise model.
@@ -744,8 +759,7 @@ class BuildModel:
         Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.
 
         Args:
-            threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates).
-                                Default is None, which means no filtering.
+            threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates). Default is 1e-12, which means no filtering as lowest recorded probabilities are approximately 1e-11.
         
         Raises:
             ValueError: If the noise model does not contain information regarding the specified basis gates.

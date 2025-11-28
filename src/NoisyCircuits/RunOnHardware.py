@@ -1,3 +1,26 @@
+"""
+This module contains the `RunOnHardware` class which allows users to run quantum circuits on IBM Quantum Hardware. The class provides methods to create circuits (according to hardware requirements), set them up for execution, submit them to the hardware, check job status, cancel jobs, and retrieve results. IBM Quantum's Qiskit Runtime Service is utilized for backend communication and job management. The retrieved results are formatted as probability distributions from little Endian format to big Endian format for easy analysis.
+
+Example usage:
+    >>> from NoisyCircuits.RunOnHardware import RunOnHardware
+    >>> from NoisyCircuits.QuantumCircuit import QuantumCircuit
+    >>> circuit = QuantumCircuit(num_qubits=2, noise_model=noise_model, num_cores=2, num_trajectories=100)
+    >>> circuit.H(qubit=0)
+    >>> circuit.CX(control=0, target=1)
+    >>> runner = RunOnHardware(token=your_token, backend="ibm_fez", shots=1024)
+    >>> runner.create_circuits(circuit=circuit, measure_qubits=[0, 1])
+    >>> runner.setup_circuits()
+    >>> job_id = runner.run()
+    >>> status = runner.status(job_id=job_id)
+    'DONE'
+    >>> results = runner.get_results(job_id=job_id)
+    >>> circuit.execute(qubits=[0, 1])
+    [0.40313749, 0.09695667, 0.09692287, 0.40298296]
+    >>> print(results)
+    [0.40813749, 0.09195667, 0.10892288, 0.39098296]
+
+It should be noted that the IBM Quantum backends have a maximum limit of 10,000,000 circuit executions per job submission. Users should ensure that the product of the number of circuits and shots does not exceed this limit to avoid job submission errors.
+"""
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import ECRGate as ecr

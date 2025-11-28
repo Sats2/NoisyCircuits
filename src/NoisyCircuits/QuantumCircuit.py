@@ -1,3 +1,19 @@
+"""
+This module allows users to create and simulate quantum circuits with noise models based on IBM quantum machines. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors.
+
+Example:
+    >>> from NoisyCircuits.QuantumCircuit import QuantumCircuit
+    >>> circuit = QuantumCircuit(num_qubits=3, noise_model=my_noise_model, backend_qpu_type='Heron', num_trajectories=1000)
+    >>> circuit.h(0)
+    >>> circuit.cx(0, 1)
+    >>> circuit.cx(1, 2)
+    >>> circuit.run_with_density_matrix(qubits=[0, 1, 2]) # Executes the circuit using the density matrix solver
+    [0.39841323, 0.00300163, 0.09303931, 0.00615167, 0.00616272, 0.09281154, 0.00300024, 0.39741967]
+    >>> circuit.execute(qubits=[0, 1, 2]) # Executes the circuit using the Monte-Carlo Wavefunction method
+    [0.39748485, 0.0037614 , 0.09168292, 0.00799886, 0.00746056, 0.09156762, 0.00367236, 0.39637143]
+    >>> circuit.run_pure_state(qubits=[0, 1, 2]) # Executes the circuit using the pure state solver
+    [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
+"""
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
@@ -17,8 +33,7 @@ import ray
 
 class QuantumCircuit:
     """
-    This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are 
-    implemented as methods. The gate decomposition uses RZ, SX and X gates for single qubit operations and ECR gate for two qubit operations as the basis gates.
+    This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses RZ, SX and X gates for single qubit operations and ECR gate for two qubit operations as the basis gates.
     """
 
     # Update QPU Basis Gates Here!
@@ -121,10 +136,10 @@ class QuantumCircuit:
         self.qubit_coupling_map = modeller.qubit_coupling_map
         self.measurement_error_operator = self._generate_measurement_error_operator()
         self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
-                                                                                                                num_qubits=self.num_qubits,
-                                                                                                                connectivity=self.connectivity,
-                                                                                                                qubit_map=self.qubit_coupling_map
-                                                                                                            )
+                                                                                                num_qubits=self.num_qubits,
+                                                                                                connectivity=self.connectivity,
+                                                                                                qubit_map=self.qubit_coupling_map
+                                                                                            )
         ray.init(num_cpus=self.num_cores, ignore_reinit_error=True, log_to_driver=False)
         self.workers = [
             RemoteExecutor.remote(
@@ -152,8 +167,7 @@ class QuantumCircuit:
         Generates the measurement error operator for the specified qubits.
         
         Args:
-            qubit_list (list[int], optional): The list of qubits to include in the measurement error operator.
-                                              If None, includes all qubits. Defaults to None.
+            qubit_list (list[int], optional): The list of qubits to include in the measurement error operator. If None, includes all qubits. Defaults to None.
 
         Returns:
             np.ndarray: The measurement error operator as a numpy array. Returns None if there are no measurement errors.
@@ -179,8 +193,7 @@ class QuantumCircuit:
 
         Args:
             qubits (list[int]): The list of qubits to be measured.
-            num_trajectories (int): The number of trajectories for the Monte-Carlo simulation (can be modified). Defaults to None and uses the class attribute.
-                                    If specified, it overrides the class attribute for only this execution. Defaults to None.
+            num_trajectories (int): The number of trajectories for the Monte-Carlo simulation (can be modified). Defaults to None and uses the class attribute. If specified, it overrides the class attribute for only this execution. Defaults to None.
         
         Raises:
             TypeError: If qubits is not a list or the items in the list are not integers.
@@ -287,8 +300,7 @@ class QuantumCircuit:
         Draws the quantum circuit.
 
         Args:
-            style (str, optional): The style of the drawing, either 'mpl' for matplotlib
-                                      or 'text' for text-based representation. Defaults to 'mpl'.
+            style (str, optional): The style of the drawing, either 'mpl' for matplotlib or 'text' for text-based representation. Defaults to 'mpl'.
         
         Raises:
             TypeError: If style is not a string.

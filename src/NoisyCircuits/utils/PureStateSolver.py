@@ -1,3 +1,18 @@
+"""
+This module provides the ability for the QuantumCircuit module to perform a pure statevector simulation for a specific quantum circuit. Alternatively, the user can opt to use just this method to perform a pure statevector simulation using a custom instruction set as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. It is recommended to run all simulations via the QuantumCircuit module in order to allow for the correct decomposition of quantum gates according to the QPU's basis gates.
+
+Example:
+    >>> import numpy as np
+    >>> from NoisyCircuits.utils.PureStateSolver import PureStateSolver
+    >>> instruction_list = []
+    >>> instruction_list.append(["rx", [0], np.pi])
+    >>> instruction_list.append(["ecr", [0, 1], None])
+    >>> solver = PureStateSolver(num_qubits=2, instruction_list=instruction_list)
+    >>> solver.solve(qubits=[0,1])
+    [0.5, 0.5, 0.0, 0.0]
+
+This module contains only one class `PureStateSolver` which has only one callable function `solve(qubits)` whose arguements are the qubits that are to be measured.
+"""
 import pennylane as qml
 from pennylane import numpy as np
 
