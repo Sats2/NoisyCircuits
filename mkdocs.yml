@@ -1,0 +1,58 @@
+site_name: NoisyCircuits
+
+theme:
+
+  name: material
+  features:
+    - content.code.copy
+    - navigation.tabs
+    - navigation.expand
+    - toc.integrate
+    - search.highlight
+
+repo_url: https://github.com/Sats2/NoisyCircuits
+repo_name: NoisyCircuits
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: readthedocs
+          setup_commands:
+            - import sys
+            - import os
+            - sys.path.insert(0, os.path.abspath('.'))
+          rendering:
+            show_root_toc_entry: false
+            show_source: false
+  - mkdocs-jupyter:
+      include_notebooks:
+        - examples/introduction.ipynb
+        - examples/run_on_hardware.ipynb
+        - examples/quantum_neural_networks.ipynb
+        - examples/run_multiple_on_hardware.ipynb
+
+nav:
+  - Home: index.md
+  - User Guide:
+    - Noise Model Generation: user_guide/noise_model_generation.md
+    - Quantum Circuits: user_guide/quantum_circuit_construction.md
+    - Simulation Methods: user_guide/simulation_methods.md
+    - Hardware Execution: user_guide/hardware_execution.md
+  - Theory:
+    - Overview: theory/overview.md
+    - Noise Simulations: theory/noise_simulations.md
+    - Monte Carlo Wave Function Method: theory/mcwf.md
+  - Tutorials:
+    - Introduction Notebook: examples/introduction.ipynb
+    - Run on Hardware Notebook: examples/run_on_hardware.ipynb
+    - Use Case (QNNs): examples/quantum_neural_networks.ipynb
+    - Batch Hardware Execution: examples/run_multiple_on_hardware.ipynb
+  - Development:
+    - Contribution Guidelines: development/contribution_guidelines.md
+    - Code Structure: development/code_structure.md
+    - Testing and CI: development/testing_and_ci.md
+  - References: reference.md
+  - License: license.md
