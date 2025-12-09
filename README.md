@@ -134,7 +134,7 @@ NoisyCircuits/
 │   ├── QuantumCircuit.py                       # Core quantum circuit class
 │   └── utils/                                  # Utility modules
 │       └── __init__.py
-│       ├── GetNoiseModel.py                    # IBM backend integration to retreive Calibration Data
+│       ├── GetNoiseModel.py                    # IBM backend integration to retrieve Calibration Data
 │       ├── BuildQubitGateModel.py              # Module to generate the noise operators
 │       ├── DensityMatrixSolver.py              # Module to simulate a circuit with the density matrix method
 │       ├── PureStateSolver.py                  # Module to simulate a circuit without noise (statevector simulator)
