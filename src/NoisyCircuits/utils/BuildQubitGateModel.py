@@ -767,6 +767,7 @@ class BuildModel:
         Returns:
             tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.
         """
+        basis_gates = ["x", "sx", "rz"]
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],
             self.basis_gates[0],
