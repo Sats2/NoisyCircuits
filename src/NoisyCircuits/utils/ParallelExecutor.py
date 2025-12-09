@@ -131,8 +131,23 @@ class RemoteExecutor:
                 psi_dash = self.apply_gate_noparams(noisy_state, gate_op, qubits)
             return psi_dash
         
-        def handle_ecr(state, gate, qubits, params):
-            qpair = tuple(sorted(qubits))
+        def handle_two_qubit_gates(state:np.ndarray, 
+                                   gate:str, 
+                                   qubits:list, 
+                                   params:np.ndarray)->np.ndarray:
+            """
+            Apply two qubit gate with NaN handling when needed.
+
+            Args:
+                state (np.ndarray): Current state of the qubit system.
+                gate (str): Name of the gate to be applied to the system.
+                qubits (list): List of qubits that the gate must be applied to.
+                params (np.ndarray): Parameter value for parameterized two qubit gates.
+
+            Returns:
+                np.ndarray: Updated state after NaN checks.
+            """
+            qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
             ops = self.two_qubit_noise[gate][qpair]["operators"]
             op_psi = np.array([op @ psi_dash for op in ops])
