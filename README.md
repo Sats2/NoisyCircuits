@@ -73,7 +73,7 @@ Core dependencies are automatically installed:
 - **Ray**: Distributed computing for parallel execution
 - **NumPy, Matplotlib**: Scientific computing and visualization
 
-## 🧪 Eamples and Validation
+## 🧪 Examples and Validation
 
 The `validation/` and `examples/` directories contains comprehensive validation and example notebooks:
 
