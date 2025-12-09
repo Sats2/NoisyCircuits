@@ -1,0 +1,460 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction to NoisyCircuits &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Running Circuits on Hardware" href="run_on_hardware.html" />
+    <link rel="prev" title="Tutorials" href="../tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Introduction to NoisyCircuits</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Library-Imports">Library Imports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Setup-Input-Fields">Setup Input Fields</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Getting-the-Noise-Model">Getting the Noise Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Initialize-the-Circuit-Instance">Initialize the Circuit Instance</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Example-Circuit">Example Circuit</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Example-1:-Creating-an-EPR-Pair">Example 1: Creating an EPR Pair</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Example-2:-Qubit-Swap">Example 2: Qubit Swap</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Shutdown-the-Parallel-instance">Shutdown the Parallel instance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="run_on_hardware.html">Running Circuits on Hardware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_neural_networks.html">Quantum Neural Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#downloads">Downloads</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Introduction to NoisyCircuits</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/examples/introduction.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Introduction-to-NoisyCircuits">
+<h1>Introduction to NoisyCircuits<a class="headerlink" href="#Introduction-to-NoisyCircuits" title="Link to this heading"></a></h1>
+<section id="Library-Imports">
+<h2>Library Imports<a class="headerlink" href="#Library-Imports" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span> <span class="k">as</span> <span class="n">QC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.GetNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-11-24 14:21:19,383 INFO util.py:154 -- Missing packages: [&#39;ipywidgets&#39;]. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.
+</pre></div></div>
+</div>
+</section>
+<section id="Setup-Input-Fields">
+<h2>Setup Input Fields<a class="headerlink" href="#Setup-Input-Fields" title="Link to this heading"></a></h2>
+<p>In the input fields:</p>
+<ol class="arabic simple">
+<li><p><strong>token:</strong> refers to the IBM API token for accessing IBM Quantum Systems. See IBM Documentation for account creation and token access <a class="reference external" href="https://quantum.cloud.ibm.com/docs/en/guides/cloud-setup">here</a>.</p></li>
+<li><p><strong>backend_name:</strong> refers to the IBM quantum hardware for which the noise model needs to be built. Currently, the software only supports the IBM Eagle R3 Chip set which have a basis gate set comprising of <span class="math notranslate nohighlight">\(X\)</span>, <span class="math notranslate nohighlight">\(\sqrt{X}\)</span>, <span class="math notranslate nohighlight">\(R_z(\cdot)\)</span> and <span class="math notranslate nohighlight">\(ECR\)</span>. As of 15.08.2025, the backend codenamed “ibm_brisbane” is the only available quantum hardware with the Eagle R3 chip.</p></li>
+<li><p><strong>num_qubits:</strong> the number of qubits in the quantum circuits.</p></li>
+<li><p><strong>num_cores:</strong> the number of cores to run parallel Monte-Carlo Wavefunction (MCWF) Trajectories. (Ensure sufficient resources are available for runs.)</p></li>
+<li><p><strong>num_trajectories:</strong> the number of trajectories for the MCWF method.</p></li>
+<li><p><strong>threshold:</strong> the threshold for filtering out noise data.</p></li>
+<li><p><strong>jsonize:</strong> a boolean variable indicating whether the noise model needs to be jsonized or if the input noise model is already in a json format.</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum token</span>
+<span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_fez&quot;</span>
+<span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">num_trajectories</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="n">jsonize</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># Options: &quot;heron&quot;, &quot;eagle&quot;. Note that &quot;eagle&quot; is now deprecated and only available in simulation mode (i.e., no noise model from hardware).</span>
+<span class="n">qpu_type</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span>
+</pre></div>
+</div>
+</div>
+<section id="Getting-the-Noise-Model">
+<h3>Getting the Noise Model<a class="headerlink" href="#Getting-the-Noise-Model" title="Link to this heading"></a></h3>
+<p>Run the code below to obtain the noise model from IBM backend calibration data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+qiskit_runtime_service._discover_account:WARNING:2025-11-24 14:21:42,256: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service.__init__:WARNING:2025-11-24 14:21:45,579: Instance was not set at service instantiation. Free and trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and available plans: (open), the available account instances are: Open_Sys. If you need a specific instance set it explicitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService().
+qiskit_runtime_service.backends:WARNING:2025-11-24 14:21:45,582: Using instance: Open_Sys, plan: open
+qiskit_runtime_service.backends:WARNING:2025-11-24 14:21:45,945: Using instance: Open_Sys, plan: open
+</pre></div></div>
+</div>
+<p>Run the code below to use a sample noise model generated from IBM calibration data.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;eagle&quot;</span><span class="p">:</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../noise_models/Noise_Model_Eagle_QPU.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">elif</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;heron&quot;</span><span class="p">:</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../noise_models/Noise_Model_Heron_QPU.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid qpu_type. Choose either &#39;heron&#39; or &#39;eagle&#39;.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Initialize-the-Circuit-Instance">
+<h3>Initialize the Circuit Instance<a class="headerlink" href="#Initialize-the-Circuit-Instance" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nqc</span> <span class="o">=</span> <span class="n">QC</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
+         <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
+         <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
+         <span class="n">backend_qpu_type</span><span class="o">=</span><span class="s2">&quot;heron&quot;</span><span class="p">,</span>
+         <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
+         <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+         <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
+         <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Completed Extraction of two-qubit gate Errors.
+Starting post-processing on Single Qubit Errors.
+Completed post-processing on Single Qubit Errors.
+Processing two-qubit gate errors.
+Qubit pair (0, 1): 18/48 errors above threshold (30 filtered out)
+Qubit pair (1, 0): 18/48 errors above threshold (30 filtered out)
+Two Qubit Gate errors processed.
+Building Noise Operators for Two Qubit Gate Errors.
+Completed building Noise Operators for Two Qubit Gate Errors.
+Extracting Measurement Errors.
+Available qubits in roerror_map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]
+Requested qubits: [0, 1]
+Completed Extraction of Measurement Errors.
+Preparing Qubit Connectivity Map for Requested Qubits
+Qubit Connectivity Map Prepared.
+Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.
+2025-11-24 14:22:05,159 INFO worker.py:2012 -- Started a local Ray instance.
+/Users/adam-ukj7r05xnu2fywx/miniconda3/envs/NoisyCircuits_New_Branch/lib/python3.10/site-packages/ray/_private/worker.py:2051: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+  warnings.warn(
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Example-Circuit">
+<h2>Example Circuit<a class="headerlink" href="#Example-Circuit" title="Link to this heading"></a></h2>
+<section id="Example-1:-Creating-an-EPR-Pair">
+<h3>Example 1: Creating an EPR Pair<a class="headerlink" href="#Example-1:-Creating-an-EPR-Pair" title="Link to this heading"></a></h3>
+<p>First we create an EPR pair generating quantum circuit and execute it as a pure statevector simulation and as a noisy simulation (comparing density matrix and MCWF methods).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reset the circuit --&gt; Ensure the circuit tape has no prior instructions</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the EPR Pair Circuit</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">H</span><span class="p">(</span><span class="n">qubit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">CX</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the circuit with pure state simulation, argument qubits is the measured qubits</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([5.00000000e-01, 3.39184123e-33, 3.39184123e-33, 5.00000000e-01])
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the circuit with density matrix simulation</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">run_with_density_matrix</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+tensor([0.48032117, 0.02057075, 0.01992805, 0.47918003], requires_grad=True)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Running with MCWF method, here the number of trajectories can be modified from the originally specified value</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+tensor([0.48256871, 0.01757185, 0.01756723, 0.48229221], requires_grad=True)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># MCWF converges to the output from the density matrix method as the number of trajectories increases, but at the cost of more computational time.</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+tensor([0.48094121, 0.01919909, 0.01919402, 0.48066568], requires_grad=True)
+</pre></div></div>
+</div>
+<p>For the MCWF method, using more trajectories ensures better convergence to the density matrix result.</p>
+</section>
+<section id="Example-2:-Qubit-Swap">
+<h3>Example 2: Qubit Swap<a class="headerlink" href="#Example-2:-Qubit-Swap" title="Link to this heading"></a></h3>
+<p>In this example, we see the effect of noise on a qubit swap between two qubits whose states where initialized using angle encoding.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># nqc.refresh() resets the quantum circuit to zero gates.</span>
+<span class="c1"># The argument to the rotation gates are the angle, followed by the qubit index.</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">qubit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">qubit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">SWAP</span><span class="p">(</span><span class="n">qubit1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">qubit2</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with pure state simulation</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([0.63948479, 0.29930649, 0.04169409, 0.01951463])
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with the density matrix simulation</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">run_with_density_matrix</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+tensor([0.61218666, 0.30444565, 0.05366529, 0.0297024 ], requires_grad=True)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with MCWF Simulation</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+tensor([0.60631076, 0.30501247, 0.05658733, 0.03208945], requires_grad=True)
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Shutdown-the-Parallel-instance">
+<h2>Shutdown the Parallel instance<a class="headerlink" href="#Shutdown-the-Parallel-instance" title="Link to this heading"></a></h2>
+<p>Due to parallel implementation with “ray”, there is a requirement to explicitly shutdown the parallel pool</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nqc</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="run_on_hardware.html" class="btn btn-neutral float-right" title="Running Circuits on Hardware" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
