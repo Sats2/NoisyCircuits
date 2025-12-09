@@ -1,6 +1,22 @@
+"""
+This module allows users to generate the noise operators for single qubit and two qubit gates from the noise model dictionary obtained from the the calibration data from IBM Hardware using the class BuildModel.
+
+The module allows users to filter out noise instructions that have a certain user-defined probability of occurrance (called threshold). The output from the module are the noise operators for single and two qubit gates, the connectivity chart for the specified device and the error operators on the measurement operation.
+
+The connectivity chart is created from the two qubit gate instruction set where the directionality and the connection between qubits in the hardware is considered. An example usage is as follows:
+
+Example:
+    >>> from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
+    >>> model = BuildModel(noise_model=noise_model, num_qubits=num_qubits, threshold=1e-6, basis_gates=[["u1"], ["cx"]], verbose=True)
+    >>> single_qubit_noise, two_qubit_noise, connectivity, measurement_noise = model.build_qubit_gate_model()
+
+Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.
+"""
+
 from pennylane import numpy as np
 from collections import defaultdict
 import math
+import logging
 
 def _map_instruction_qubits(instrs, gate_qubits)->list:
     """
@@ -41,21 +57,30 @@ def _extract_kraus(instrs)->list:
     return None
 
 class BuildModel:
+    """
+    Module that generates the noise operators for each gate on each qubit from the noise model.
+
+    Args:
+        noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
+        num_qubits (int): The number of qubits in the model.
+        threshold (float, optional): The threshold for noise. Defaults to 1e-12.
+        basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.
+        verbose (bool): Flag to indicate whether logging is required or not. Defaults to True.
+               
+    Raises:
+        TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
+        ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
+        TypeError: If threshold is not a float or int.
+        ValueError: If basis_gates is None or not a list of lists of strings.
+    """
     def __init__(self,
                  noise_model:dict,
                  num_qubits:int,
-                 threshold:float=1e-12):
+                 threshold:float=1e-12,
+                 basis_gates:list[list[str]]=None,
+                 verbose:bool=True)->None:
         """
         Initializes the BuildModel with a noise model, number of qubits, and an optional threshold.
-
-        Args:
-            noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
-            num_qubits (int): The number of qubits in the model.
-            threshold (float, optional): The threshold for noise. Defaults to None.
-        
-        Raises:
-            TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
-            ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
         """
         if not isinstance(noise_model, dict):
             raise TypeError("Noise model must be a dictionary.")
@@ -67,11 +92,14 @@ class BuildModel:
             raise TypeError("Threshold must be a float or int.")
         if threshold < 0 or threshold > 1:
             raise ValueError("Threshold must be between 0 and 1.")
+        if basis_gates is None:
+            raise ValueError("Basis gates must be provided as a list of lists of strings.")
+        if basis_gates and not all(isinstance(bg, list) and all(isinstance(g, str) for g in bg) for bg in basis_gates):
+            raise TypeError("Basis gates must be a list of lists of strings.")
         self.noise_model = noise_model
         self.num_qubits = num_qubits
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
-        self.qubit_coupling_map = []
 
     def _ensure_ctpt(self,
                     kraus_ops:list)->bool:
@@ -145,25 +173,30 @@ class BuildModel:
                                 result[q][op]["kraus"] = kraus_matrices
         return dict(result)
     
-    def extract_ecr_errors(self,
+    def extract_two_qubit_errors(self,
                            data:list, 
-                           allowed_qubits:list[int])->dict:
+                           allowed_qubits:list[int],
+                           basis_gates:list[str])->dict:
         """
         Extracts ECR errors from the noise model data.
 
         Args:
             data (list): List of Noise model entries from Qiskit JSON.
             allowed_qubits (list[int]): List of allowed qubits.
+            basis_gates (list[str]): List of basis gates to consider.
 
         Returns:
             dict: Dictionary of extracted ECR errors.
         """
         allowed_qubits = set(allowed_qubits)
-        ecr_errors = defaultdict(list)
+        two_qubit_errors = {}
+        for basis_gate in basis_gates:
+            two_qubit_errors[basis_gate] = defaultdict(list)
         for entry in data:
             if entry.get("type") != "qerror":
                 continue
-            if "ecr" not in entry.get("operations", []):
+            two_qubit_operator = entry.get("operations", [None])[0]
+            if two_qubit_operator not in basis_gates:
                 continue
             probabilities = entry["probabilities"]
             instructions_list = entry["instructions"]
@@ -177,12 +210,14 @@ class BuildModel:
                 for prob, instrs in zip(probabilities, instructions_list):
                     mapped_instrs = _map_instruction_qubits(instrs, gate_qubits)
                     kraus = _extract_kraus(mapped_instrs)
-                    ecr_errors[qpair].append({
-                        "instructions":mapped_instrs,
-                        "probability": prob,
-                        "kraus": kraus
+                    two_qubit_errors[two_qubit_operator][qpair].append({
+                        "instructions" : mapped_instrs,
+                        "probability" : prob,
+                        "kraus" : kraus
                     })
-        return dict(ecr_errors)
+        for basis_gate in basis_gates:
+            two_qubit_errors[basis_gate] = dict(two_qubit_errors[basis_gate])
+        return two_qubit_errors
     
     def build_full_matrix(self,
                           P:np.ndarray,
@@ -307,8 +342,7 @@ class BuildModel:
                                          single_qubit_errors:dict,
                                          basis_gates:list)->dict:
         """
-        Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without 
-        further processing.
+        Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without further processing.
 
         Args:
             single_qubit_errors (dict): The dictionary of single-qubit errors extracted from the noise model.
@@ -370,120 +404,114 @@ class BuildModel:
                         for op in ops:
                             operators.append(np.sqrt(prob) * op)
                 if not self._ensure_ctpt(operators):
-                    print(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
+                    self.logging.warning(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
                     mat = np.zeros((2,2), dtype=complex)
                     for op in operators:
                         mat += np.dot(op.conj().T, op)
-                    print(mat)
                 kraus_operators = self.extend_kraus_to_system(operators, qubit)
                 if not self._ensure_ctpt(kraus_operators):
-                    print(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
+                    self.logging.warning(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
                 qubit_errors[gate] = {
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
                     "probabilities" : probabilities,
                     "kraus" : kraus_ops
                 }
-            for basis_gate in basis_gates:
-                if basis_gate not in qubit_errors.keys():
-                    qubit_errors[basis_gate] = {
-                        "kraus_operators" : np.eye(2**self.num_qubits, dtype=complex),
-                        "instructions" : ["id"],
-                        "probabilities" : [1.0],
-                        "kraus" : None
-                    }
             single_qubit_errors_processed[qubit] = qubit_errors
         return single_qubit_errors_processed
 
-    def post_process_ecr_errors(self,
-                                ecr_errors:dict,
+    def post_process_two_qubit_errors(self,
+                                two_qubit_errors:dict,
                                 threshold:float=1e-12)->dict:
         """
         Post-processes the ECR errors to create a dictionary of instructions, probabilities, and Kraus operators for each qubit pair.
 
         Args:
-            ecr_errors (dict): The ECR errors to process.
+            two_qubit_errors (dict): The two-qubit gate errors to process.
             threshold (float, optional): The probability threshold for filtering errors. Defaults to 1e-12.
 
         Returns:
-            dict: A dictionary containing the processed ECR errors.
+            dict: A dictionary containing the processed two-qubit errors.
         """
         processed_errors = {}
-        print("Processing ECR errors.")
-        for qpair, error_list in ecr_errors.items():
-            instructions = []
-            probabilities = []
-            kraus_ops = []
-            kraus_qubits = set()
-            unique_kraus_per_qubit = {}  # qubit -> unique kraus operators
-            filtered_count = 0
-            total_count = len(error_list)
-            for error_entry in error_list:
-                prob = error_entry["probability"]
-                if prob < threshold:
-                    filtered_count += 1
-                    continue
-                probabilities.append(prob)
-                pauli_instruction = None
-                pauli_qubits = None
-                gate_instructions = {}
-                for inst in error_entry["instructions"]:
-                    inst_name = inst["name"]
-                    inst_qubits = inst.get("qubits", [])
-                    if inst_name == "pauli":
-                        params = inst.get("params", ["II"])
-                        pauli_instruction = params[0] if params else "II"
-                        pauli_qubits = inst_qubits
-                    elif inst_name == "kraus":
-                        kraus_params = inst.get("params", [])
-                        if kraus_params and inst_qubits:
-                            qubit = inst_qubits[0]
-                            if qubit not in unique_kraus_per_qubit:
-                                unique_kraus_per_qubit[qubit] = kraus_params
-                                kraus_qubits.add(qubit)
-                        for q in inst_qubits:
-                            gate_instructions[q] = inst_name
-                    else:
-                        for q in inst_qubits:
-                            gate_instructions[q] = inst_name
-                final_instruction = []
-                qubits_list = list(qpair)
-                if pauli_instruction and pauli_qubits:
-                    pauli_map = {}
-                    for i, q in enumerate(pauli_qubits):
-                        if i < len(pauli_instruction):
-                            pauli_map[q] = pauli_instruction[i]
-                    reordered_pauli = ""
+        self.logger.info("Processing two-qubit gate errors.")
+        for two_qubit_gate in two_qubit_errors.keys():
+            gate_error_processed = {}
+            for qpair, error_list in two_qubit_errors[two_qubit_gate].items():
+                instructions = []
+                probabilities = []
+                kraus_ops = []
+                kraus_qubits = set()
+                unique_kraus_per_qubit = {}  # qubit -> unique kraus operators
+                filtered_count = 0
+                total_count = len(error_list)
+                for error_entry in error_list:
+                    prob = error_entry["probability"]
+                    if prob < threshold:
+                        filtered_count += 1
+                        continue
+                    probabilities.append(prob)
+                    pauli_instruction = None
+                    pauli_qubits = None
+                    gate_instructions = {}
+                    for inst in error_entry["instructions"]:
+                        inst_name = inst["name"]
+                        inst_qubits = inst.get("qubits", [])
+                        if inst_name == "pauli":
+                            params = inst.get("params", ["II"])
+                            pauli_instruction = params[0] if params else "II"
+                            pauli_qubits = inst_qubits
+                        elif inst_name == "kraus":
+                            kraus_params = inst.get("params", [])
+                            if kraus_params and inst_qubits:
+                                qubit = inst_qubits[0]
+                                if qubit not in unique_kraus_per_qubit:
+                                    unique_kraus_per_qubit[qubit] = kraus_params
+                                    kraus_qubits.add(qubit)
+                            for q in inst_qubits:
+                                gate_instructions[q] = inst_name
+                        else:
+                            for q in inst_qubits:
+                                gate_instructions[q] = inst_name
+                    final_instruction = []
+                    qubits_list = list(qpair)
+                    if pauli_instruction and pauli_qubits:
+                        pauli_map = {}
+                        for i, q in enumerate(pauli_qubits):
+                            if i < len(pauli_instruction):
+                                pauli_map[q] = pauli_instruction[i]
+                        reordered_pauli = ""
+                        for q in qubits_list:
+                            reordered_pauli += pauli_map.get(q, "I")
+                        final_instruction.append(reordered_pauli)
+                    gate_parts = []
                     for q in qubits_list:
-                        reordered_pauli += pauli_map.get(q, "I")
-                    final_instruction.append(reordered_pauli)
-                gate_parts = []
-                for q in qubits_list:
-                    gate_name = gate_instructions.get(q, "id")
-                    gate_parts.append(gate_name)
-                if gate_parts:
-                    combined_gate = "-".join(gate_parts)
-                    final_instruction.append(combined_gate)
-                final_instruction.append(qubits_list)
-                instructions.append(final_instruction)
-                kraus_ops.append(None)
-            if instructions:
-                if unique_kraus_per_qubit:
-                    unique_kraus_per_qubit_value = [self._extract_kraus_op(inst) for inst in unique_kraus_per_qubit.values()]
-                    unique_kraus_operators = {q: ops for q, ops in zip(unique_kraus_per_qubit.keys(), unique_kraus_per_qubit_value)}
-                    probabilities = np.array(probabilities)
-                    probabilities /= np.sum(probabilities)
-                else:
-                    unique_kraus_operators = None
-                processed_errors[qpair] = {
-                    "instructions": instructions,
-                    "probabilities": probabilities,
-                    "kraus": unique_kraus_operators,
-                    "kraus_qubit": list(kraus_qubits)
-                }
-                print(f"  Qubit pair {qpair}: {len(instructions)}/{total_count} errors above threshold "
-                  f"({filtered_count} filtered out)")
-        print("ECR errors processed.")
+                        gate_name = gate_instructions.get(q, "id")
+                        gate_parts.append(gate_name)
+                    if gate_parts:
+                        combined_gate = "-".join(gate_parts)
+                        final_instruction.append(combined_gate)
+                    final_instruction.append(qubits_list)
+                    instructions.append(final_instruction)
+                    kraus_ops.append(None)
+                if instructions:
+                    if unique_kraus_per_qubit:
+                        unique_kraus_per_qubit_value = [self._extract_kraus_op(inst) for inst in unique_kraus_per_qubit.values()]
+                        unique_kraus_operators = {q: ops for q, ops in zip(unique_kraus_per_qubit.keys(), unique_kraus_per_qubit_value)}
+                        probabilities = np.array(probabilities)
+                        probabilities /= np.sum(probabilities)
+                    else:
+                        unique_kraus_operators = None
+                    gate_error_processed[qpair] = {
+                        "instructions": instructions,
+                        "probabilities": probabilities,
+                        "kraus": unique_kraus_operators,
+                        "kraus_qubit": list(kraus_qubits)
+                    }
+                    self.logger.info(f"Qubit pair {qpair}: {len(instructions)}/{total_count} errors above threshold "
+                    f"({filtered_count} filtered out)")
+            processed_errors[two_qubit_gate] = gate_error_processed
+        self.logger.info("Two Qubit Gate errors processed.")
         return processed_errors
 
     def _extract_kraus_op(self,
@@ -495,8 +523,18 @@ class BuildModel:
         ops_list = [op.astype(np.complex128) for op in ops_list]
         return ops_list
         
-    def get_ecr_noise_operators(self, ecr_errors:dict)->dict:
-        ecr_error_operators = {}
+    def get_two_qubit_gate_noise_operators(self, 
+                                           two_qubit_gate_errors:dict)->dict:
+        """
+        Constructs the Error Operators for the two-qubit gates from the processed error instructions.
+
+        Args:
+            two_qubit_gate_errors (dict): The processed two-qubit gate errors.
+        
+        Returns:
+            dict: Dictionary of two-qubit gate error operators.
+        """
+        two_qubit_gate_error_operators = {}
         instruction_map = {
             "id" : np.array([[1, 0], [0, 1]]),
             "x" : np.array([[0, 1], [1, 0]]),
@@ -608,21 +646,18 @@ class BuildModel:
             if not self._ensure_ctpt(error_operators_full_system):
                 print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
             ecr_error_operators[qpair] = {
-<<<<<<< HEAD
                 "operators": error_operators_full_system
-=======
-                "operators": error_operators_full_system,
-                "qubit_channel" : error_operators
->>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
             }
         return ecr_error_operators
 
-    def _create_connectivity_map(self, ecr_error_instructions:dict, use_qubits:list)->dict:
+    def _create_connectivity_map(self, 
+                                 two_qubit_gate_error_instructions:dict, 
+                                 use_qubits:list)->dict:
         """
-        Creates a connectivity map from ECR error instructions showing which qubits are connected.
+        Creates a connectivity map from Two Qubit Gate error instructions showing which qubits are connected.
 
         Args:
-            ecr_error_instructions (dict): Dictionary of ECR error instructions with qubit pairs as keys.
+            two_qubit_gate_error_instructions (dict): Dictionary of Two Qubit Gate error instructions with qubit pairs as keys.
             use_qubits (list): List of qubits being used in the system.
         
         Returns:
@@ -630,8 +665,7 @@ class BuildModel:
         """
         connectivity_map = {qubit: [] for qubit in use_qubits}
         
-        # Extract connectivity from ECR error instruction keys (qubit pairs)
-        for qubit_pair in ecr_error_instructions.keys():
+        for qubit_pair in two_qubit_gate_error_instructions[self.basis_gates[1][0]].keys():
             if isinstance(qubit_pair, tuple) and len(qubit_pair) == 2:
                 q0, q1 = qubit_pair
                 if q0 in use_qubits and q1 in use_qubits:
@@ -652,6 +686,9 @@ class BuildModel:
             data (list): List of Noise model entries from Qiskit JSON.
             extract_qubits (list[int]): List of qubits for which to extract measurement errors.
         
+        Raises:
+            ValueError: If requested qubit index exceeds available qubit indices in measurement error data.
+        
         Returns:
             dict: Dictionary of measurement errors for the specified qubits.
         """
@@ -659,7 +696,7 @@ class BuildModel:
         for entry in data:
             if entry.get("type") != "roerror":
                 continue
-            operations = entry.get("operations", [])  # Fixed typo: was "gat_qubits"
+            operations = entry.get("operations", [])
             target_ops = ["measure"]
             if target_ops and not any(op in target_ops for op in operations):
                 continue
@@ -673,11 +710,15 @@ class BuildModel:
                         "matrix": matrix
                     }
         measurement_errors = {}
-        print("Available qubits in roerror_map:", list(roerror_map.keys()))
-        print("Requested qubits:", extract_qubits)
+        self.logger.info(f"Available qubits in roerror_map: {list(roerror_map.keys())}")
+        self.logger.info(f"Requested qubits: {extract_qubits}")
+        if all(qubit not in roerror_map.keys() for qubit in extract_qubits):
+            self.logger.warning("Warning: No measurement error data found for the requested qubits. Using identity matrices for all.")
+        if max(extract_qubits) > max(roerror_map.keys()):
+            raise ValueError("Error: Requested qubit index (indices) exceeds available qubit indices in measurement error data.")
         for qubit in extract_qubits:
             if qubit not in roerror_map:
-                print(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
+                self.logger.warning(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
                 # Use identity matrix (no error) if measurement error data is not available
                 matrix = np.eye(2)
             else:
@@ -695,8 +736,10 @@ class BuildModel:
         Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.
 
         Args:
-            threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates).
-                                Default is None, which means no filtering.
+            threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates). Default is 1e-12, which means no filtering as lowest recorded probabilities are approximately 1e-11.
+        
+        Raises:
+            ValueError: If the noise model does not contain information regarding the specified basis gates.
 
         Returns:
             tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.
@@ -704,15 +747,15 @@ class BuildModel:
         basis_gates = ["x", "sx", "rz"]
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],
-            basis_gates,
+            ["x", "sx", "rz"],
             self.use_qubits
         )
-        ecr_errors = self.extract_ecr_errors(
+        two_qubit_errors = self.extract_two_qubit_errors(
             self.noise_model["errors"],
             self.use_qubits
         )
         print("Completed Extraction of ECR Errors.\nStarting post-processing on Single Qubit Errors.")
-        single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors, basis_gates)
+        single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors)
         print("Completed post-processing on Single Qubit Errors.")
         ecr_error_post_processed = self.post_process_ecr_errors(ecr_errors, self.threshold)
         print("Building Noise Operators for ECR Errors.")
@@ -720,9 +763,16 @@ class BuildModel:
         print("Completed building Noise Operators for ECR Errors.\nExtracting Measurement Errors.")
         measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
                                                               self.use_qubits)
-        print("Completed Extraction of Measurement Errors.")
-        print("Preparing Qubit Connectivity Map for Requested Qubits")
-        connectivity_map = self._create_connectivity_map(ecr_error_instructions, self.use_qubits)
-        print("Qubit Connectivity Map Prepared.")
-        print("Returning Single Qubit Error Instructions, ECR Error Instructions, Measurement Errors and Connectivity Map.")
-        return single_qubit_error_instructions, ecr_error_instructions, measurement_errors, connectivity_map
+        self.logger.info("Completed Extraction of Measurement Errors.")
+        self.logger.info("Completed Extraction of two-qubit gate Errors.\nStarting post-processing on Single Qubit Errors.")
+        single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors, self.basis_gates[0])
+        self.logger.info("Completed post-processing on Single Qubit Errors.")
+        two_qubit_error_post_processed = self.post_process_two_qubit_errors(two_qubit_errors, self.threshold)
+        self.logger.info("Building Noise Operators for Two Qubit Gate Errors.")
+        two_qubit_gate_error_instructions = self.get_two_qubit_gate_noise_operators(two_qubit_error_post_processed)
+        self.logger.info("Completed building Noise Operators for Two Qubit Gate Errors.\nExtracting Measurement Errors.")
+        self.logger.info("Preparing Qubit Connectivity Map for Requested Qubits")
+        connectivity_map = self._create_connectivity_map(two_qubit_gate_error_instructions, self.use_qubits)
+        self.logger.info("Qubit Connectivity Map Prepared.")
+        self.logger.info("Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.")
+        return single_qubit_error_instructions, two_qubit_gate_error_instructions, measurement_errors, connectivity_map

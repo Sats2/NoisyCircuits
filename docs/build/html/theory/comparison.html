@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Method Comparisons &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Hardware Considerations" href="hardware.html" />
+    <link rel="prev" title="Quantum Circuit Simulators" href="quantum_simulator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quantum_computing.html">Quantum Computing 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_noise.html">Quantum Noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcwf_method.html">Monte-Carlo Wave Function (MCWF) Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_simulator.html">Quantum Circuit Simulators</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Method Comparisons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#metrics">Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#noise-filtering">Noise Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mcwf-vs-density-matrix-simulation">MCWF Vs Density Matrix Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hardware.html">Hardware Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
+      <li class="breadcrumb-item active">Method Comparisons</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/theory/comparison.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="method-comparisons">
+<h1>Method Comparisons<a class="headerlink" href="#method-comparisons" title="Link to this heading"></a></h1>
+<p>This section provides a comparison between different methods for simulating noisy circuits. The focus is on two main aspects of the software. The first is the ability to filter out noise from the calibration data. The second is the performance comparison between Monte Carlo Wave Function (MCWF) simulations and Density Matrix simulations.</p>
+<section id="metrics">
+<h2>Metrics<a class="headerlink" href="#metrics" title="Link to this heading"></a></h2>
+<p>To compare the different methods, we use the following metrics:</p>
+<ul>
+<li><p><strong>Battacharyya Coefficient:</strong>
+The Battacharyya Coefficient (BC) is a measure of similarity between two probability distributions.
+It is defined as shown below, where <span class="math notranslate nohighlight">\(P\)</span> and <span class="math notranslate nohighlight">\(Q\)</span> are the two distributions being compared.
+A BC value of <span class="math notranslate nohighlight">\(1\)</span> indicates identical distributions, while a value of <span class="math notranslate nohighlight">\(0\)</span> indicates completely disjoint distributions. <span id="id1">[<a class="reference internal" href="../references.html#id6" title="A. Bhattacharyya. On a measure of divergence between two multinomial populations. Sankhyā: The Indian Journal of Statistics (1933-1960), 7(4):401–406, 1946. URL: http://www.jstor.org/stable/25047882 (visited on 2025-07-19).">8</a>]</span></p>
+<div class="math notranslate nohighlight">
+\[BC(P, Q) = \sum_i \sqrt{P(i)\, Q(i)}\]</div>
+</li>
+<li><p><strong>Battacharyya Distance:</strong>
+The Battacharyya Distance (BD) is derived from the Battacharyya Coefficient and is defined as shown below.
+A BD value of <span class="math notranslate nohighlight">\(0\)</span> indicates identical distributions, while larger values indicate greater dissimilarity. <span id="id2">[<a class="reference internal" href="../references.html#id6" title="A. Bhattacharyya. On a measure of divergence between two multinomial populations. Sankhyā: The Indian Journal of Statistics (1933-1960), 7(4):401–406, 1946. URL: http://www.jstor.org/stable/25047882 (visited on 2025-07-19).">8</a>]</span></p>
+<div class="math notranslate nohighlight">
+\[BD(P, Q) = -\ln(\sum_i \sqrt{P(i)\, Q(i)})\]</div>
+</li>
+<li><p><strong>Hellinger Distance:</strong>
+The Hellinger Distance (HD) is another measure of similarity between two probability distributions. It is defined as shown below.
+A HD value of <span class="math notranslate nohighlight">\(0\)</span> indicates identical distributions, while a value of <span class="math notranslate nohighlight">\(1\)</span> indicates completely disjoint distributions. <span id="id3">[<a class="reference internal" href="../references.html#id10" title="Ernst Hellinger and Otto Toeplitz. Grundlagen für eine theorie der unendlichen matrizen. Mathematische Annalen, 69(3):289–330, 1910. URL: https://doi.org/10.1007/BF01456325, doi:10.1007/BF01456325.">9</a>]</span></p>
+<div class="math notranslate nohighlight">
+\[HD(P, Q) =  \frac{1}{\sqrt{2}} \sqrt{\sum_i (\sqrt{P(i)} - \sqrt{Q(i)})^2}\]</div>
+</li>
+<li><p><strong>Jensen-Shannon Divergence:</strong>
+The Jensen-Shannon Divergence (JSD) is a symmetric measure of similarity between two probability distributions. It is defined as shown below, where <span class="math notranslate nohighlight">\(M = \frac{1}{2}(P + Q)\)</span> and <span class="math notranslate nohighlight">\(D_{KL}\)</span> is the Kullback-Leibler divergence.
+A BD value of <span class="math notranslate nohighlight">\(0\)</span> indicates identical distributions, while larger values indicate greater dissimilarity. <span id="id4">[<a class="reference internal" href="../references.html#id11" title="Frank Nielsen. On the jensen-shannon symmetrization of distances relying on abstract means. Entropy, 21(5):485, 2019. URL: https://doi.org/10.3390/e21050485, doi:10.3390/e21050485.">10</a>]</span></p>
+<div class="math notranslate nohighlight">
+\[JSD(P, Q) = \frac{1}{2} D_{KL}(P || M) + \frac{1}{2} D_{KL}(Q || M)\]</div>
+</li>
+</ul>
+</section>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h2>
+<p>For both comparisons, we use a randomized quantum circuit. The circuit consists of layers of single qubit gates followed by entangling gates. The depth of the circuit is varied to observe the performance under different noise levels. Only single qubit gates are subject to noise and the entangling gates are assumed to be ideal. The randomized circuit blueprint is shown in Figure 1.</p>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/randomized_circuit.png"><img alt="Randomized Circuit Blueprint" src="../_images/randomized_circuit.png" style="width: 60%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Figure 1: Randomized Circuit Blueprint</span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>The Randomized Circuit generation for the two cases are as follows:</p>
+<ul class="simple">
+<li><p><strong>Noise Filtering:</strong> The circuit size is fixed to <span class="math notranslate nohighlight">\(4\)</span> qubits. The single qubit gates are chosen randomly from <span class="math notranslate nohighlight">\(\{X, Y, Z, \sqrt{X}, H, R_x(\theta), R_y(\theta), R_z(\theta)\}\)</span> and the entagling gates are chosen randomly from <span class="math notranslate nohighlight">\(\{CX, CY, CZ\}\)</span>. The rotation angles <span class="math notranslate nohighlight">\(\theta\)</span> is sampled from a normal distribution <span class="math notranslate nohighlight">\(\mathcal{N}(0, 2\pi)\)</span>. The initial state of the circuit is also randomly initialied from uniform distribution over the Bloch sphere, but is the same for all depths. This randomized circuit setup is repeated <span class="math notranslate nohighlight">\(100\)</span> times for each of the depths <span class="math notranslate nohighlight">\(\{1, 5, 10, 20, 50, 100, 250\}\)</span>, with each repeated run starting at the different initial state. The noise model used for each single qubit gate is given below:</p></li>
+</ul>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Error Instruction</p></td>
+<td><p>Probability</p></td>
+</tr>
+<tr class="row-even"><td><p>I-I</p></td>
+<td><p>0.9521977439010979</p></td>
+</tr>
+<tr class="row-odd"><td><p>I-Z</p></td>
+<td><p>0.0164082737956068</p></td>
+</tr>
+<tr class="row-even"><td><p>I-Reset</p></td>
+<td><p>0.013588129921428271</p></td>
+</tr>
+<tr class="row-odd"><td><p>X-I</p></td>
+<td><p>1.777030358953864e-05</p></td>
+</tr>
+<tr class="row-even"><td><p>X-Z</p></td>
+<td><p>2.939666582579276e-10</p></td>
+</tr>
+<tr class="row-odd"><td><p>X-Reset</p></td>
+<td><p>2.434416438154702e-09</p></td>
+</tr>
+<tr class="row-even"><td><p>Y-I</p></td>
+<td><p>0.01777030358953864</p></td>
+</tr>
+<tr class="row-odd"><td><p>Y-Z</p></td>
+<td><p>2.939666582579276e-10</p></td>
+</tr>
+<tr class="row-even"><td><p>Y-Reset</p></td>
+<td><p>2.434416438154702e-09</p></td>
+</tr>
+<tr class="row-odd"><td><p>Z-I</p></td>
+<td><p>1.777030358953864e-05</p></td>
+</tr>
+<tr class="row-even"><td><p>Z-Z</p></td>
+<td><p>2.939666582579276e-10</p></td>
+</tr>
+<tr class="row-odd"><td><p>Z-Reset</p></td>
+<td><p>2.434416438154702e-09</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>MCWF Vs Density Matrix Simulation:</strong> The circuit size is varied from <span class="math notranslate nohighlight">\(2\)</span> qubits to <span class="math notranslate nohighlight">\(9\)</span> qubits and the depth is varied from <span class="math notranslate nohighlight">\(1\)</span> to <span class="math notranslate nohighlight">\(200\)</span> layers. The single qubit gates are chosen randomly from <span class="math notranslate nohighlight">\(\{X, \sqrt{X}\}\)</span> and the entangling gate is fixed to <span class="math notranslate nohighlight">\(ECR\)</span>, which are the basis gates of the IBM Eagle QPU. The noise model used is generated from the calibration data of the IBM Eagle device and applied to both single qubit and two qubit gates. The initial state of the circuit is fixed to <span class="math notranslate nohighlight">\(|0\rangle^{\otimes n}\)</span> for all runs. For this case, the results with the Battacharyya Coefficient and the Jensen-Shannon Divergence are presented for depths of <span class="math notranslate nohighlight">\(\{1, 50, 200\}\)</span>. For the MCWF simulations, a total of <span class="math notranslate nohighlight">\(50\)</span> cores were used to parallelize the trajectory simulations. The number of trajectories used are varied from <span class="math notranslate nohighlight">\(10\)</span> to <span class="math notranslate nohighlight">\(1000\)</span> to observe the influence on the accuracy of the results.</p></li>
+</ul>
+</section>
+<section id="noise-filtering">
+<h2>Noise Filtering<a class="headerlink" href="#noise-filtering" title="Link to this heading"></a></h2>
+<p>Noise models from real-world quantum devices show a relatively large chance of success, especially for single qubit gates <span id="id5">[<a class="reference internal" href="../references.html#id9" title="Konstantinos Georgopoulos, Clive Emary, and Paolo Zuliani. Quantum computer benchmarking via quantum algorithms. 2021. URL: https://arxiv.org/abs/2112.09457, arXiv:2112.09457.">11</a>]</span>. The noise model built from the calibration data generated from the <a class="reference external" href="https://en.wikipedia.org/wiki/Randomized_benchmarking">Randomized Benchmark</a> tests <span id="id6">[<a class="reference internal" href="../references.html#id14" title="Wikipedia contributors. Randomized benchmarking — Wikipedia, the free encyclopedia. 2025. [Online; accessed 9-December-2025]. URL: https://en.wikipedia.org/w/index.php?title=Randomized_benchmarking&amp;oldid=1315013854.">12</a>]</span> performed on the hardware is very comprehensive. The idea of noise filtering is to remove low probability noise instructions from the noise model to reduce the computational overhead from many Kraus operators with very low probabilities and reduce the memory consumption during the simulation.</p>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/noise_cutoff.png"><img alt="Noise Filtering Results" src="../_images/noise_cutoff.png" style="width: 90%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Figure 2: Noise Filtering Results</span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>From figure 2, it can be inferred that the noise model can be safely filtered as long as the specified threshold is low enough to not significantly affect the open quantum system evolution.</p>
+</section>
+<section id="mcwf-vs-density-matrix-simulation">
+<h2>MCWF Vs Density Matrix Simulation<a class="headerlink" href="#mcwf-vs-density-matrix-simulation" title="Link to this heading"></a></h2>
+<p>In this section, we compare the performance of the Monte Carlo Wave Function (MCWF) simulation method against the Density Matrix simulation method for varying circuit sizes and depths. The comparison is based on the Battacharyya Coefficient and the Jensen-Shannon Divergence metrics. For the MCWF simulations, we also compare the influence of different numbers of trajectories on the accuracy of the results to determine a reasonlable number of trajectories to use.</p>
+<div class="plot-grid docutils container">
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/BC_depth_1.svg"><img alt="BC comparison at depth 1" class="plot-img" src="../_images/BC_depth_1.svg" style="width: 45%;" />
+</a>
+<a class="plot-img reference internal image-reference" href="../_images/BC_depth_50.svg"><img alt="BC comparison at depth 50" class="plot-img" src="../_images/BC_depth_50.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/BC_depth_200.svg"><img alt="BC comparison at depth 200" class="plot-img" src="../_images/BC_depth_200.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-caption docutils container">
+<p>Figure 3: Battacharyya Coefficient Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.</p>
+</div>
+</div>
+<p>From figure 3, it can be observed that the MCWF simulation method achieves a high Battacharyya Coefficient compared to the Density Matrix simulation method across all circuit sizes and depths. The accuracy of the MCWF method improves with an increasing number of trajectories, with <span class="math notranslate nohighlight">\(1000\)</span> trajectories providing results that are very close to those of the Density Matrix method. This behaviour is consistant across the different depths tested. This is also reflected in the Jensen-Shannon Divergence results shown in figure 4.</p>
+<div class="plot-grid docutils container">
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/JS_Depth_1.svg"><img alt="JS comparison at depth 1" class="plot-img" src="../_images/JS_Depth_1.svg" style="width: 45%;" />
+</a>
+<a class="plot-img reference internal image-reference" href="../_images/JS_Depth_50.svg"><img alt="JS comparison at depth 50" class="plot-img" src="../_images/JS_Depth_50.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/JS_Depth_200.svg"><img alt="JS comparison at depth 200" class="plot-img" src="../_images/JS_Depth_200.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-caption docutils container">
+<p>Figure 4: JS Divergence Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.</p>
+</div>
+</div>
+<p>From both figure 3 and 4, it can be concluded that the MCWF simulation method is a viable alternative to the Density Matrix simulation method, especially for larger circuits where the computational resources required for Density Matrix simulations become prohibitive. The choice of the number of trajectories in the MCWF method is crucial for achieving a balance between accuracy and computational efficiency. From the above conducted experiments, using approximately <span class="math notranslate nohighlight">\(100\)</span> trajectories seems to provide a good trade-off for most scenarios, but more trajectories may be required at higher circuit depths for a larger qubit system size to maintain accuracy.</p>
+<p>Additionally, we also compare the execution time of both simulation methods as well as the memory consumption during the simulations. The results are summarized in figure 5 and 6 below.</p>
+<div class="plot-grid docutils container">
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/Runtime_Comparison_Depth_1.svg"><img alt="Runtime comparison at depth 1" class="plot-img" src="../_images/Runtime_Comparison_Depth_1.svg" style="width: 45%;" />
+</a>
+<a class="plot-img reference internal image-reference" href="../_images/Runtime_Comparison_Depth_50.svg"><img alt="Runtime comparison at depth 50" class="plot-img" src="../_images/Runtime_Comparison_Depth_50.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/Runtime_Comparison_Depth_200.svg"><img alt="Runtime comparison at depth 200" class="plot-img" src="../_images/Runtime_Comparison_Depth_200.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-caption docutils container">
+<p>Figure 5: Runtime Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.</p>
+</div>
+</div>
+<div class="plot-grid docutils container">
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/Memory_Comparison_Depth_1.svg"><img alt="Memory comparison at depth 1" class="plot-img" src="../_images/Memory_Comparison_Depth_1.svg" style="width: 45%;" />
+</a>
+<a class="plot-img reference internal image-reference" href="../_images/Memory_Comparison_Depth_50.svg"><img alt="Memory comparison at depth 50" class="plot-img" src="../_images/Memory_Comparison_Depth_50.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-row docutils container">
+<a class="plot-img reference internal image-reference" href="../_images/Memory_Comparison_Depth_200.svg"><img alt="Memory comparison at depth 200" class="plot-img" src="../_images/Memory_Comparison_Depth_200.svg" style="width: 45%;" />
+</a>
+</div>
+<div class="plot-caption docutils container">
+<p>Figure 6: Memory Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.</p>
+</div>
+</div>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h2>
+<p>From the comparisons conducted, it is evident that both noise filtering and the MCWF simulation method offer significant advantages in terms of computational efficiency without compromising accuracy. Noise filtering effectively reduces the complexity of the noise model, leading to faster simulations. The MCWF method provides a scalable alternative to Density Matrix simulations, particularly for larger circuits, while still maintaining high accuracy with an appropriate choice of trajectories. These methods are valuable tools for simulating noisy quantum circuits and can be tailored to specific requirements based on the desired balance between accuracy and computational resources.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quantum_simulator.html" class="btn btn-neutral float-left" title="Quantum Circuit Simulators" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hardware.html" class="btn btn-neutral float-right" title="Hardware Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

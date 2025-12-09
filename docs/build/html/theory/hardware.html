@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hardware Considerations &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="../tutorials.html" />
+    <link rel="prev" title="Method Comparisons" href="comparison.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quantum_computing.html">Quantum Computing 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_noise.html">Quantum Noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcwf_method.html">Monte-Carlo Wave Function (MCWF) Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_simulator.html">Quantum Circuit Simulators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comparison.html">Method Comparisons</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Hardware Considerations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basis-gates">Basis Gates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qubit-maps">Qubit Maps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
+      <li class="breadcrumb-item active">Hardware Considerations</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/theory/hardware.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hardware-considerations">
+<h1>Hardware Considerations<a class="headerlink" href="#hardware-considerations" title="Link to this heading"></a></h1>
+<p>The end goal of NoisyCircuits is to use realistic noise models derived from actual quantum hardware to simulate quantum circuits. Naturally, the next step is to run these circuits on real quantum hardware. This section discusses the hardware considerations and configurations necessary for effectively utilizing NoisyCircuits with IBM quantum devices (but can be extended to other backends by users).</p>
+<section id="basis-gates">
+<h2>Basis Gates<a class="headerlink" href="#basis-gates" title="Link to this heading"></a></h2>
+<p>Every hardware with a Quantum Processing Unit (QPU) has a specific set of basis gates that it natively supports. When designing quantum circuits, it is essential to ensure that the gates used in the circuit are compatible with the target hardware’s basis gates. In cases where the circuit contains gates not supported by the hardware, a process called gate decomposition is employed. Gate decomposition breaks down complex gates into sequences of simpler gates that are part of the hardware’s basis set. This decomposition is a crucial step to running circuits on real quantum devices, but the process of decomposition itself is not so straightforward and introduces additional errors due to the increased number of gates.</p>
+<p>There are various strategies for gate decomposition, and the choice of strategy can significantly impact the overall performance and fidelity of the quantum circuit when executed on hardware. Additionally, a simple gate decomposition for a single qubit gate may become very complex when extending the gate with a control operation. An example of this can be the Phase Gate which can be decomposed into a <span class="math notranslate nohighlight">\(R_z\)</span> rotation gate with an associated global phase as shown below:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align*}
+P(\theta) &amp;= \begin{pmatrix}1 &amp; 0 \\
+0 &amp; e^{i\theta}
+\end{pmatrix} \\ \\
+&amp;= e^{i\theta/2} R_z(\theta) \\ \\
+&amp;= e^{i\theta/2} \begin{pmatrix}
+e^{-i\theta/2} &amp; 0 \\
+0 &amp; e^{i\theta/2}
+\end{pmatrix}
+\end{align*}\end{split}\]</div>
+<p>However, when extending the Phase Gate to a controlled phase gate, the decomposition is not the controlled- <span class="math notranslate nohighlight">\(R_z\)</span> gate but rather a sequence of multiple single and two qubit gates. This is due to the fact that a simple controlled <span class="math notranslate nohighlight">\(Z\)</span> rotation causes the global phase in the single qubit decomposition to leak in as a relative phase which does have a significant influence on the measurements. This increases the complexity of gate decomposition for any arbitrary quantum gate.</p>
+<p>This package currently supports the IBM Heron <span class="math notranslate nohighlight">\(R.X\)</span> <span id="id1">[<a class="reference internal" href="../references.html#id15" title="Wikipedia contributors. Ibm heron — Wikipedia, the free encyclopedia. https://en.wikipedia.org/w/index.php?title=IBM_Heron&amp;oldid=1257804318, 2024. [Online; accessed 9-December-2025].">13</a>]</span> and Eagle <span class="math notranslate nohighlight">\(R.X\)</span> <span id="id2">[<a class="reference internal" href="../references.html#id16" title="Wikipedia contributors. Ibm eagle — Wikipedia, the free encyclopedia. 2025. [Online; accessed 9-December-2025]. URL: https://en.wikipedia.org/w/index.php?title=IBM_Eagle&amp;oldid=1314786628.">14</a>]</span> backends for noise modeling and circuit execution. A handful of single and two qubit gates are supported by the package that are decomposed in terms of the basis gates of these backends. The decomposition of the quantum gates are done in way that the resulting sequence of gates produces the exact unitary operation as the original gate without any global phase factors or other approximations. Hence, the list of supported gates are relatively low but are expanding with time. Users can also implement custom gate decompositions for unsupported gates if needed. To see how users can contribute to decomposition on new backends or gates, please refer to the <a class="reference internal" href="../contributing.html"><span class="doc">Contributing</span></a> section.</p>
+</section>
+<section id="qubit-maps">
+<h2>Qubit Maps<a class="headerlink" href="#qubit-maps" title="Link to this heading"></a></h2>
+<p>For two qubit gates, it is necessary to perform swap operations to connect the qubits before executing the intended gate operation followed by another set of swap operations to restore the original qubit mapping. Additionally, the directionality of two qubit gates must be taken into account as the directionality indicates which qubit can act as the control and which as the target qubit on the actual hardware. NoisyCircuits automatically handles these considerations when simulating circuits with two qubit gates. The package uses the coupling map of the target hardware to determine the optimal sequence of swap operations required to connect the qubits for two qubit gate operations. This ensures that the simulated circuits accurately reflect the constraints and capabilities of the target quantum hardware.</p>
+<p>In the figure below, the qubit map of the IBM Eagle QPU from the backend “IBM_Brisbane” (utilizing the FakeBrisbane <span id="id3">[<a class="reference internal" href="../references.html#id17" title="IBM Quantum. FakeBrisbane. https://quantum.cloud.ibm.com/docs/en/api/qiskit-ibm-runtime/fake-provider-fake-brisbane, 2024. [Online; accessed 9-December-2025].">15</a>]</span> as the original hardware is now retired) is shown. The arrows indicate the directionality of the two qubit gates, where the tail of the arrow represents the control qubit and the head represents the target qubit. For instance, a CNOT gate can be applied with qubit 1 as the control and qubit 0 as the target, but not vice versa without additional operations. And in cases where a two qubit operation between qubit 0 and qubit 4 is needed, swap operations must be performed to bring the qubits adjacent to each other in accordance with the coupling map.</p>
+<figure class="align-center" id="id7">
+<a class="reference internal image-reference" href="../_images/coupling_map_brisbane.svg"><img alt="Coupling Map of IBM Brisbane Eagle QPU" src="../_images/coupling_map_brisbane.svg" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Figure 1: Coupling Map of IBM Brisbane Eagle QPU using Qiskit <span id="id4">[<a class="reference internal" href="../references.html#id12" title="Ali Javadi-Abhari, Matthew Treinish, Kevin Krsulich, Christopher J. Wood, Jake Lishman, Julien Gacon, Simon Martiel, Paul D. Nation, Lev S. Bishop, Andrew W. Cross, Blake R. Johnson, and Jay M. Gambetta. Quantum computing with Qiskit. 2024. arXiv:2405.08810, doi:10.48550/arXiv.2405.08810.">16</a>]</span></span><a class="headerlink" href="#id7" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>Consider the simple example where a CNOT gate is to be applied between qubit <span class="math notranslate nohighlight">\(0\)</span> and qubit <span class="math notranslate nohighlight">\(4\)</span>. Then the sequence of operations would be as follows:</p>
+<div class="math notranslate nohighlight">
+\[\text{SWAP}(4,3) \rightarrow \text{SWAP}(3,2)
+\rightarrow \text{SWAP}(2,1) \rightarrow \text{op-CNOT}(1,0)\text{-op}
+\rightarrow \text{SWAP}(2,1) \rightarrow \text{SWAP}(3,2)
+\rightarrow \text{SWAP}(4,3)\]</div>
+<div class="math notranslate nohighlight">
+\[\text{SWAP}(4,3) \rightarrow \text{SWAP}(3,2) \rightarrow \text{SWAP}(2,1)\]</div>
+<div class="math notranslate nohighlight">
+\[\rightarrow \text{op} \rightarrow \text{CNOT}(1,0) \rightarrow \text{op}\]</div>
+<div class="math notranslate nohighlight">
+\[\rightarrow \text{SWAP}(2,1) \rightarrow \text{SWAP}(3,2) \rightarrow \text{SWAP}(4,3)\]</div>
+<p>The term <span class="math notranslate nohighlight">\(\text{op}\rightarrow\text{CNOT}(1,0)\rightarrow\text{op}\)</span> indicates that some additional operations are added to allow for swap of the control and target qubits to match the directionality of the <span class="math notranslate nohighlight">\(CNOT\)</span> gate as per the coupling map and then swapped back after the gate operation. This is generally done by changing the computational basis of the qubits, performing the two qubit operation and then reverting the basis change. This process also introduces additional errors due to the increased number of gates.</p>
+<p>The figure below shows the qubit map of the IBM Heron QPU from the backend “IBM_Fez” <span id="id5">[<a class="reference internal" href="../references.html#id18" title="IBM Quantum. IBM Fez. https://quantum.cloud.ibm.com/computers?system=ibm_fez, 2025. [Online; accessed 9-December-2025].">17</a>]</span>. Similar to the Eagle QPU, the arrows indicate the directionality of the two qubit gates. But the structure of the coupling map is different from that of the Eagle QPU. As seen from the figure, all two qubit gates are bidirectional in this hardware, meaning that either qubit can act as the control or target qubit without additional operations. This characteristic simplifies the implementation of two qubit gates on this hardware compared to the Eagle QPU. Additionally, the connectivity between qubits is different and with the hexagonal structure, certain qubit pairs are more directly connected than others. This affects the number of swap operations needed for two qubit gates between non-adjacent qubits.</p>
+<figure class="align-center" id="id8">
+<a class="reference internal image-reference" href="../_images/gate_map_heron.svg"><img alt="Gate Map of IBM Fez Heron QPU" src="../_images/gate_map_heron.svg" style="width: 700px;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Figure 2: Gate Map of IBM Fez Heron QPU using Qiskit <span id="id6">[<a class="reference internal" href="../references.html#id12" title="Ali Javadi-Abhari, Matthew Treinish, Kevin Krsulich, Christopher J. Wood, Jake Lishman, Julien Gacon, Simon Martiel, Paul D. Nation, Lev S. Bishop, Andrew W. Cross, Blake R. Johnson, and Jay M. Gambetta. Quantum computing with Qiskit. 2024. arXiv:2405.08810, doi:10.48550/arXiv.2405.08810.">16</a>]</span></span><a class="headerlink" href="#id8" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="comparison.html" class="btn btn-neutral float-left" title="Method Comparisons" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tutorials.html" class="btn btn-neutral float-right" title="Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

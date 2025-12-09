@@ -1,0 +1,513 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running Multiple Circuits on Hardware &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Quantum Neural Networks" href="quantum_neural_networks.html" />
+    <link rel="prev" title="Running Circuits on Hardware" href="run_on_hardware.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction to NoisyCircuits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_on_hardware.html">Running Circuits on Hardware</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Running Multiple Circuits on Hardware</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Import-all-Necessary-Libraries">Import all Necessary Libraries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Define-all-Necessary-Parameters">Define all Necessary Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Get-the-Noise-Model">Get the Noise Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Build-all-Quantum-Circuits">Build all Quantum Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Circuit-1:-SWAP-States">Circuit 1: SWAP States</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Circuit-2:-Parameterized-Circuit">Circuit 2: Parameterized Circuit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Setup-the-Circuits-for-Submission">Setup the Circuits for Submission</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Submit-the-Circuits">Submit the Circuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Query-Job-Status">Query Job Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Job-Cancellation">Job Cancellation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Get-Results">Get Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Compare-Results">Compare Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Shutdown-Circuit">Shutdown Circuit</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_neural_networks.html">Quantum Neural Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#downloads">Downloads</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Running Multiple Circuits on Hardware</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/examples/run_multiple_on_hardware.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Running-Multiple-Circuits-on-Hardware">
+<h1>Running Multiple Circuits on Hardware<a class="headerlink" href="#Running-Multiple-Circuits-on-Hardware" title="Link to this heading"></a></h1>
+<p>This tutorial shows how a quantum circuit can be run on actual quantum hardware.</p>
+<section id="Import-all-Necessary-Libraries">
+<h2>Import all Necessary Libraries<a class="headerlink" href="#Import-all-Necessary-Libraries" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.QuantumCircuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span> <span class="k">as</span> <span class="n">nqc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.GetNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.RunOnHardware</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunOnHardware</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-11-24 17:25:50,694 INFO util.py:154 -- Missing packages: [&#39;ipywidgets&#39;]. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.
+</pre></div></div>
+</div>
+</section>
+<section id="Define-all-Necessary-Parameters">
+<h2>Define all Necessary Parameters<a class="headerlink" href="#Define-all-Necessary-Parameters" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum API token</span>
+<span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_fez&quot;</span>
+<span class="n">shots</span> <span class="o">=</span> <span class="mi">2048</span>
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">jsonize</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_trajectories</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">qpu</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span> <span class="c1"># Only possible option for IBM backends at the moment</span>
+<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">50</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Get-the-Noise-Model">
+<h2>Get the Noise Model<a class="headerlink" href="#Get-the-Noise-Model" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span>
+    <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span>
+    <span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span>
+<span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+qiskit_runtime_service._discover_account:WARNING:2025-11-24 17:25:55,510: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service.__init__:WARNING:2025-11-24 17:25:58,542: Instance was not set at service instantiation. Free and trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and available plans: (open), the available account instances are: Open_Sys. If you need a specific instance set it explicitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService().
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:25:58,544: Using instance: Open_Sys, plan: open
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:25:58,931: Using instance: Open_Sys, plan: open
+</pre></div></div>
+</div>
+</section>
+<section id="Build-all-Quantum-Circuits">
+<h2>Build all Quantum Circuits<a class="headerlink" href="#Build-all-Quantum-Circuits" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">circuit</span> <span class="o">=</span> <span class="n">nqc</span><span class="p">(</span>
+    <span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
+    <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
+    <span class="n">backend_qpu_type</span><span class="o">=</span><span class="n">qpu</span><span class="p">,</span>
+    <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
+    <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
+    <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+<span class="p">)</span>
+
+<span class="c1"># List to store all probabilities from Pure State Simulation</span>
+<span class="n">probs_pure_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># List to store all probabilities from MCWF Simulations</span>
+<span class="n">probs_sim_list</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-11-24 17:26:12,833 INFO worker.py:2012 -- Started a local Ray instance.
+/Users/adam-ukj7r05xnu2fywx/miniconda3/envs/NoisyCircuits_New_Branch/lib/python3.10/site-packages/ray/_private/worker.py:2051: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+  warnings.warn(
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hardware_runner</span> <span class="o">=</span> <span class="n">RunOnHardware</span><span class="p">(</span>
+    <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span>
+    <span class="n">backend</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span>
+    <span class="n">shots</span><span class="o">=</span><span class="n">shots</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+qiskit_runtime_service._discover_account:WARNING:2025-11-24 17:26:16,285: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service.__init__:WARNING:2025-11-24 17:26:20,072: Instance was not set at service instantiation. Free and trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and available plans: (open), the available account instances are: Open_Sys. If you need a specific instance set it explicitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService().
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:26:20,075: Loading instance: Open_Sys, plan: open
+</pre></div></div>
+</div>
+</section>
+<section id="Circuit-1:-SWAP-States">
+<h2>Circuit 1: SWAP States<a class="headerlink" href="#Circuit-1:-SWAP-States" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">circuit</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="mf">1.4</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">circuit</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">circuit</span><span class="o">.</span><span class="n">SWAP</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">circuit</span><span class="o">.</span><span class="n">draw_circuit</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;mpl&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_run_multiple_on_hardware_10_0.png" src="../_images/examples_run_multiple_on_hardware_10_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hardware_runner</span><span class="o">.</span><span class="n">create_circuits</span><span class="p">(</span>
+    <span class="n">circuit</span><span class="o">=</span><span class="n">circuit</span><span class="p">,</span>
+    <span class="n">measure_qubits</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">probs_pure_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))))</span>
+<span class="n">probs_sim_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+[2025-11-24 17:26:43,519 E 723289 723652] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+</section>
+<section id="Circuit-2:-Parameterized-Circuit">
+<h2>Circuit 2: Parameterized Circuit<a class="headerlink" href="#Circuit-2:-Parameterized-Circuit" title="Link to this heading"></a></h2>
+<p>Set up a parameterized circuit with different set of parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parameter_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">circuit_num</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_set</span><span class="p">):</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">H</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">H</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">):</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="n">j</span><span class="p">],</span> <span class="n">j</span><span class="p">)</span>
+        <span class="n">circuit</span><span class="o">.</span><span class="n">CY</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">draw_circuit</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;mpl&quot;</span><span class="p">)</span>
+    <span class="n">probs_pure_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))))</span>
+    <span class="n">probs_sim_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))))</span>
+    <span class="n">hardware_runner</span><span class="o">.</span><span class="n">create_circuits</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">circuit</span><span class="p">,</span> <span class="n">measure_qubits</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_run_multiple_on_hardware_15_0.png" src="../_images/examples_run_multiple_on_hardware_15_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_run_multiple_on_hardware_15_1.png" src="../_images/examples_run_multiple_on_hardware_15_1.png" />
+</div>
+</div>
+</section>
+<section id="Setup-the-Circuits-for-Submission">
+<h2>Setup the Circuits for Submission<a class="headerlink" href="#Setup-the-Circuits-for-Submission" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hardware_runner</span><span class="o">.</span><span class="n">setup_circuits</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:28:02,593: Using instance: Open_Sys, plan: open
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:28:03,663: Using instance: Open_Sys, plan: open
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:28:04,973: Using instance: Open_Sys, plan: open
+</pre></div></div>
+</div>
+</section>
+<section id="Submit-the-Circuits">
+<h2>Submit the Circuits<a class="headerlink" href="#Submit-the-Circuits" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">job_id</span> <span class="o">=</span> <span class="n">hardware_runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+qiskit_runtime_service.backends:WARNING:2025-11-24 17:28:08,602: Using instance: Open_Sys, plan: open
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Job ID: d4i8f6ccdebc73f2qr30
+</pre></div></div>
+</div>
+</section>
+<section id="Query-Job-Status">
+<h2>Query Job Status<a class="headerlink" href="#Query-Job-Status" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hardware_runner</span><span class="o">.</span><span class="n">status</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;RUNNING&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Job-Cancellation">
+<h2>Job Cancellation<a class="headerlink" href="#Job-Cancellation" title="Link to this heading"></a></h2>
+<p>In the event the job hasn’t already been completed, they can be cancelled.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hardware_runner</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Get-Results">
+<h2>Get Results<a class="headerlink" href="#Get-Results" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">probs_hardware_list</span> <span class="o">=</span> <span class="n">hardware_runner</span><span class="o">.</span><span class="n">get_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Compare-Results">
+<h2>Compare Results<a class="headerlink" href="#Compare-Results" title="Link to this heading"></a></h2>
+<p>To compare the results we use the Battacharyya Coefficient defined for discrete probability distributions by: <span class="math">\begin{equation}
+BC(p, q) = \sum_{i=1}^N \sqrt{p_i q_i}
+\end{equation}</span></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">battacharyya_coefficient</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="n">q</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">probs_pure_list</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fidelity between Pure State Simulation and MCWF Simulation Results:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">battacharyya_coefficient</span><span class="p">(</span><span class="n">probs_pure_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">probs_sim_list</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fidelity between Pure State Simulation and Hardware Results:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">battacharyya_coefficient</span><span class="p">(</span><span class="n">probs_pure_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">probs_hardware_list</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fidelity between MCWF Simulation and Hardware Results:</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">battacharyya_coefficient</span><span class="p">(</span><span class="n">probs_sim_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">probs_hardware_list</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----------------------------------------------------------------------------------------------&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Fidelity between Pure State Simulation and MCWF Simulation Results:      0.9990601457708641
+Fidelity between Pure State Simulation and Hardware Results:     0.9999794003649861
+Fidelity between MCWF Simulation and Hardware Results:   0.9991502453660175
+----------------------------------------------------------------------------------------------
+Fidelity between Pure State Simulation and MCWF Simulation Results:      0.9998706676879365
+Fidelity between Pure State Simulation and Hardware Results:     0.9877721424774056
+Fidelity between MCWF Simulation and Hardware Results:   0.987522820023227
+----------------------------------------------------------------------------------------------
+Fidelity between Pure State Simulation and MCWF Simulation Results:      0.9930360306266686
+Fidelity between Pure State Simulation and Hardware Results:     0.9925720758757046
+Fidelity between MCWF Simulation and Hardware Results:   0.9917765564379074
+----------------------------------------------------------------------------------------------
+</pre></div></div>
+</div>
+</section>
+<section id="Shutdown-Circuit">
+<h2>Shutdown Circuit<a class="headerlink" href="#Shutdown-Circuit" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">circuit</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="run_on_hardware.html" class="btn btn-neutral float-left" title="Running Circuits on Hardware" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quantum_neural_networks.html" class="btn btn-neutral float-right" title="Quantum Neural Networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

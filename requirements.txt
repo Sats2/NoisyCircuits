@@ -1,12 +1,8 @@
+matplotlib
+pandoc
 pennylane
 qiskit
 qiskit-aer
-qiskit-ibm-provider
 qiskit-ibm-runtime
 matplotlib
-<<<<<<< HEAD
 ray
-=======
-ray
-pytest
->>>>>>> parent of b9c9302 (Merge pull request #3 from Sats2/heron_chip_extension)
