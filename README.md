@@ -151,8 +151,8 @@ NoisyCircuits/
 │   ├── README.md                               # Detailed documentation
 │   ├── introduction.ipynb                      # Getting started tutorial
 │   ├── quantum_neural_networks.ipynb           # ML application example
-│   └── run_on_hardware.ipynb                   # Tutorial to create, submit and retreive a quantum circuit from hardware
-│   └── run_multiple_on_hardware.ipynb          # Tutorial to create, submit and retreive multiple quantum circuits from hardware
+│   └── run_on_hardware.ipynb                   # Tutorial to create, submit and retrieve a quantum circuit from hardware
+│   └── run_multiple_on_hardware.ipynb          # Tutorial to create, submit and retrieve multiple quantum circuits from hardware
 │   └── design_study_single_feature.csv         # Sample dataset
 ├── validation/                                 # Validation suite
 │   ├── README.md                               # Detailed documentation
