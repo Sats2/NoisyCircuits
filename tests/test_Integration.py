@@ -11,7 +11,7 @@ circuit_list = []
 for qpu in qpus:
     file_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
     noise_model = pickle.load(open(file_path, "rb"))
-    circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 100, 50, True, False, 1e-6)))
+    circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 150, 4, True, False, 1e-6)))
 
 @pytest.fixture
 def circuit(request):
