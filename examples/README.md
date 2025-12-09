@@ -67,12 +67,8 @@ Before running the notebooks in this directory, ensure you have:
 
 ### Quick Start
 1. Begin with `introduction.ipynb` to understand basic library usage
-<<<<<<< HEAD
 2. Explore `quantum_neural_networks.ipynb` for practical applications
 3. Look into `run_on_hardware.ipynb` and `run_multiple_on_hardware.ipynb` for creating and submitting quantum circuits to quantum hardware.
-=======
-3. Explore `quantum_neural_networks.ipynb` for practical applications
->>>>>>> origin/main
 
 ### Configuration Notes
 - **IBM Backend:** Currently supports IBM Eagle / Heron chipset, but the Eagle QPU devices have been retired (API access to these devices is no longer possible).

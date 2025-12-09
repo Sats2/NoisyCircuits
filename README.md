@@ -3,14 +3,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
-A Python package for creating and simulating noisy quantum circuits using realistic error models from IBM Eagle R3 quantum hardware. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
+A Python package for creating and simulating noisy quantum circuits using error models from IBM (Heron RX / Eagle RX) quantum hardware calibration data. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
 
 ## 🎯 Overview
 
 NoisyCircuits enables researchers and developers to:
 
-- **Simulate realistic quantum noise** using calibration data from IBM Eagle R3 chipsets
-- **Perform efficient noisy simulations** with the Monte-Carlo Wave Function method
+- **Simulate realistic quantum noise** using calibration data from IBM QPU (Heron/Eagle) chipsets
+- **Perform efficient noisy statevector simulations** with the Monte-Carlo Wave Function method
 - **Validate quantum algorithms** under realistic hardware conditions  
 - **Develop noise-aware quantum machine learning** applications
 - **Compare quantum algorithms** between ideal and noisy regimes
@@ -19,15 +19,17 @@ NoisyCircuits enables researchers and developers to:
 
 ✨ **Hardware-Calibrated Noise Models**: Direct integration with IBM Quantum backend calibration data  
 🚀 **Parallel Monte-Carlo Simulation**: Multi-core trajectory execution for scalable performance  
-🎛️ **Flexible Gate Set**: Support for IBM Eagle R3 basis gates (X, √X, Rz, ECR)  
-📊 **Validation Framework**: Built-in comparison with exact density matrix methods  
+🎛️ **Gate Set**: Support for IBM Eagle QPU basis gates (X, √X, Rz, ECR) and Heron QPU basis gates (X, √X, Rz, Rx, CZ, RZZ)  
+📊 **Validation Framework**: Built-in comparison with the density matrix method  
 🔬 **Research Applications**: Ready-to-use examples for quantum machine learning and algorithm development  
 
 ### Supported Quantum Gates
 
-- **Single-qubit gates**: X, √X, Rz(θ), Hadamard, Y, Z, S, T, and parameterized rotations
-- **Two-qubit gates**: ECR (Echoed Cross-Resonance), CNOT, CZ, and controlled operations
-- **Multi-qubit gates**: Toffoli and other controlled operations
+The supported gated are fully decomposed into the hardware basis gates and this decomposition is applied to the circuit.
+
+- **Single-qubit gates**: X, Y, Z, √X, Hadamard, Rx(θ), Ry(θ), Rz(θ)
+- **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP, RZZ(θ), RXX(θ), RYY(θ)
+- **Unitary Operation**: Additionally, a unitary operator can be applied to the circuit. This unitary operator is not decomposed and is applied fully to the quantum circuit assuming a perfect implmenetation.
 
 ## 🛠️ Installation
 
@@ -71,34 +73,9 @@ Core dependencies are automatically installed:
 - **Ray**: Distributed computing for parallel execution
 - **NumPy, Matplotlib**: Scientific computing and visualization
 
-## 📁 Repository Structure
+## 🧪 Eamples and Validation
 
-```
-NoisyCircuits/
-├── src/NoisyCircuits/          # Main package source code
-│   ├── __init__.py
-│   ├── QuantumCircuit.py       # Core quantum circuit class
-│   └── utils/                  # Utility modules
-│       ├── GetNoiseModel.py    # IBM backend integration
-│       ├── BuildQubitGateModel.py
-│       ├── DensityMatrixSolver.py
-│       ├── PureStateSolver.py
-│       └── ParallelExecutor.py
-├── test/                       # Test suite and examples
-│   ├── README.md              # Detailed test documentation
-│   ├── introduction.ipynb     # Getting started tutorial
-│   ├── method_verification.ipynb  # Validation against exact methods
-│   ├── quantum_neural_networks.ipynb  # ML application example
-│   └── design_study_single_feature.csv  # Sample dataset
-├── environment.yml            # Conda environment specification
-├── setup.py                  # Package installation configuration
-├── requirements.txt          # Python dependencies
-└── LICENSE                   # MIT License
-```
-
-## 🧪 Testing and Validation
-
-The `test/` directory contains comprehensive validation and example notebooks:
+The `validation/` and `examples/` directories contains comprehensive validation and example notebooks:
 
 ### Validation Framework
 - **Method Verification**: Statistical comparison between MCWF and exact density matrix simulation
@@ -127,9 +104,10 @@ For detailed information about the example suite, see [`examples/README.md`](exa
 ## 📚 Examples
 
 ### Tutorials
-1. **[Introduction](test/introduction.ipynb)**: Basic usage and configuration
-2. **[Method Verification](test/method_verification.ipynb)**: Validation and accuracy testing  
-3. **[Quantum Neural Networks](test/quantum_neural_networks.ipynb)**: Machine learning applications
+1. **[Introduction](examples/introduction.ipynb)**: Basic usage and configuration
+2. **[Quantum Neural Networks](examples/quantum_neural_networks.ipynb)**: Machine learning applications
+3. **[Hardware Submission](examples/run_on_hardware.ipynb)**: Creating, submitting and retreiving results from IBM hardware.
+4. **[Multiple Hardware Submissions](examples/run_multiple_on_hardware.ipynb)**: Creating, submitting and retreiving multiple quantum circuits from IBM Hardware.
 
 ### Key Concepts
 - **Monte-Carlo Wave Function**: Efficient method for simulating open quantum systems
@@ -243,21 +221,6 @@ If you use NoisyCircuits in your research, please cite the software as follows:
 - **Author**: Sathyamurthy Hegde
 - **GitHub**: [@Sats2](https://github.com/Sats2)
 
-## 🙏 Acknowledgments
-
-- **IBM Quantum** for providing access to quantum hardware and calibration data
-- **PennyLane** team for the excellent quantum computing framework
-- **Qiskit** community for quantum software development tools
-- **Research Community** for feedback and contributions to quantum noise modeling
-
-## 📊 Performance Metrics
-
-Based on validation testing:
-- **Accuracy**: >99.99% fidelity compared to exact density matrix simulation
-- **Scalability**: Efficient parallel execution across multiple CPU cores
-- **Convergence**: Consistent results with as few as 100 Monte-Carlo trajectories
-- **Hardware Integration**: Seamless integration with IBM Eagle R3 chipset data
-
 ---
 
-*For more detailed information, examples, and tutorials, please refer to the documentation in the `test/` directory.*
+*For more detailed information, examples, and tutorials, please refer to the documentation in the `examples/` directory.*

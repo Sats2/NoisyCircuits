@@ -100,6 +100,16 @@ class BuildModel:
         self.num_qubits = num_qubits
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
+        self.basis_gates = basis_gates
+        self.qubit_coupling_map = []
+        self.verbose = verbose
+        self.logger = logging.getLogger(self.__class__.__name__)
+        handler = logging.StreamHandler()
+        self.logger.addHandler(handler)
+        if self.verbose:
+            self.logger.setLevel(logging.INFO)
+        else:
+            self.logger.setLevel(logging.WARNING)
 
     def _ensure_ctpt(self,
                     kraus_ops:list)->bool:
@@ -415,8 +425,18 @@ class BuildModel:
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
                     "probabilities" : probabilities,
-                    "kraus" : kraus_ops
+                    "kraus" : kraus_ops,
+                    "qubit_channel" : operators
                 }
+            for basis_gate in basis_gates:
+                if basis_gate not in qubit_errors.keys():
+                    qubit_errors[basis_gate] = {
+                        "kraus_operators" : np.eye(2**self.num_qubits, dtype=complex),
+                        "instructions" : ["id"],
+                        "probabilities" : [1.0],
+                        "kraus" : None,
+                        "qubit_channel" : [np.eye(2, dtype=complex), np.zeros((2,2), dtype=complex)]
+                    }
             single_qubit_errors_processed[qubit] = qubit_errors
         return single_qubit_errors_processed
 
@@ -543,112 +563,115 @@ class BuildModel:
             "K0" : np.array([[1, 0], [0, 0]]),
             "K1" : np.array([[0, 1], [0, 0]]),
             "i" : np.array([[1, 0], [0, 1]])
-        }                                   
-        for qpair, error_data in ecr_errors.items():
-            full_instructions = error_data["instructions"]
-            probabilities = error_data["probabilities"]
-            probabilities = np.array(probabilities)
-            probabilities /= np.sum(probabilities)
-            probabilities = probabilities.tolist()
-            kraus_ops = error_data["kraus"]
-            error_operators = []
-            for instruction,prob in zip(full_instructions, probabilities):
-                qubits = instruction[-1]
-                if len(instruction) > 2:
-                    major_inst = instruction[0]
-                    minor_inst = instruction[1]
-                else:
-                    major_inst = "II"
-                    minor_inst = instruction[0]
-                q0_ops = instruction_map[major_inst[0].lower()]
-                q1_ops = instruction_map[major_inst[1].lower()]
-                minor_ops = minor_inst.split("-")
-                if "kraus" not in minor_ops:
-                    if "reset" not in minor_ops:
-                        q0_ops = np.dot(instruction_map[minor_ops[0]], q0_ops)
-                        q1_ops = np.dot(instruction_map[minor_ops[1]], q1_ops)
-                        k_op = np.kron(q0_ops, q1_ops)
-                        error_operators.append(np.sqrt(prob) * k_op)
+        }
+        for two_qubit_gate in two_qubit_gate_errors.keys():    
+            two_qubit_gate_error_operators[two_qubit_gate] = {}
+            for qpair, error_data in two_qubit_gate_errors[two_qubit_gate].items():
+                full_instructions = error_data["instructions"]
+                probabilities = error_data["probabilities"]
+                probabilities = np.array(probabilities)
+                probabilities /= np.sum(probabilities)
+                probabilities = probabilities.tolist()
+                kraus_ops = error_data["kraus"]
+                error_operators = []
+                for instruction,prob in zip(full_instructions, probabilities):
+                    qubits = instruction[-1]
+                    if len(instruction) > 2:
+                        major_inst = instruction[0]
+                        minor_inst = instruction[1]
                     else:
-                        if minor_ops[0] == "reset" and minor_ops[1] == "reset":
-                            q0_ops1 = np.dot(instruction_map["K0"], q0_ops)
-                            q0_ops2 = np.dot(instruction_map["K1"], q0_ops)
-                            q1_ops1 = np.dot(instruction_map["K0"], q1_ops)
-                            q1_ops2 = np.dot(instruction_map["K1"], q1_ops)
-                            k_op1 = np.kron(q0_ops1, q1_ops1)
-                            k_op2 = np.kron(q0_ops2, q1_ops2)
-                            k_op3 = np.kron(q0_ops1, q1_ops2)
-                            k_op4 = np.kron(q0_ops2, q1_ops1)
-                            error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2, k_op3, k_op4])
-                        elif minor_ops[0] == "reset":
-                            q0_op1 = np.dot(instruction_map["K0"], q0_ops)
-                            q0_op2 = np.dot(instruction_map["K1"], q0_ops)
-                            q1_ops = np.dot(instruction_map[minor_ops[1]], q1_ops)
-                            k_op1 = np.kron(q0_op1, q1_ops)
-                            k_op2 = np.kron(q0_op2, q1_ops)
-                            error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
-                        else:
+                        major_inst = "II"
+                        minor_inst = instruction[0]
+                    q0_ops = instruction_map[major_inst[0].lower()]
+                    q1_ops = instruction_map[major_inst[1].lower()]
+                    minor_ops = minor_inst.split("-")
+                    if "kraus" not in minor_ops:
+                        if "reset" not in minor_ops:
                             q0_ops = np.dot(instruction_map[minor_ops[0]], q0_ops)
-                            q1_op1 = np.dot(instruction_map["K0"], q1_ops)
-                            q1_op2 = np.dot(instruction_map["K1"], q1_ops)
-                            k_op1 = np.kron(q0_ops, q1_op1)
-                            k_op2 = np.kron(q0_ops, q1_op2)
-                            error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
-                else:
-                    if minor_ops[0] == "kraus" and minor_ops[1] == "kraus":
-                        kraus_ops_for_q0 = kraus_ops[qubits[0]]
-                        kraus_ops_for_q1 = kraus_ops[qubits[1]]
-                        kraus_operations_for_q0 = []
-                        kraus_operations_for_q1 = []
-                        for kraus_op in kraus_ops_for_q0:
-                            kraus_operations_for_q0.append(np.dot(kraus_op, q0_ops))
-                        for kraus_op in kraus_ops_for_q1:
-                            kraus_operations_for_q1.append(np.dot(kraus_op, q1_ops))
-                        for kraus_op0 in kraus_operations_for_q0:
-                            for kraus_op1 in kraus_operations_for_q1:
-                                k_op = np.kron(kraus_op0, kraus_op1)
-                                error_operators.append(np.sqrt(prob) * k_op)
-                    elif minor_ops[0] == "kraus":
-                        kraus_ops_for_q0 = kraus_ops[qubits[0]]
-                        kraus_operations_for_q0 = []
-                        for kraus_op in kraus_ops_for_q0:
-                            kraus_operations_for_q0.append(np.dot(kraus_op, q0_ops))
-                        if minor_ops[1] == "reset":
-                            q1_op1 = np.dot(instruction_map["K0"], q1_ops)
-                            q1_op2 = np.dot(instruction_map["K1"], q1_ops)
-                            for kraus_op in kraus_operations_for_q0:
-                                k_op1 = np.kron(kraus_op, q1_op1)
-                                k_op2 = np.kron(kraus_op, q1_op2)
-                                error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
-                        else:
                             q1_ops = np.dot(instruction_map[minor_ops[1]], q1_ops)
-                            for kraus_op in kraus_operations_for_q0:
-                                k_op = np.kron(kraus_op, q1_ops)
-                                error_operators.append(np.sqrt(prob) * k_op)
+                            k_op = np.kron(q0_ops, q1_ops)
+                            error_operators.append(np.sqrt(prob) * k_op)
+                        else:
+                            if minor_ops[0] == "reset" and minor_ops[1] == "reset":
+                                q0_ops1 = np.dot(instruction_map["K0"], q0_ops)
+                                q0_ops2 = np.dot(instruction_map["K1"], q0_ops)
+                                q1_ops1 = np.dot(instruction_map["K0"], q1_ops)
+                                q1_ops2 = np.dot(instruction_map["K1"], q1_ops)
+                                k_op1 = np.kron(q0_ops1, q1_ops1)
+                                k_op2 = np.kron(q0_ops2, q1_ops2)
+                                k_op3 = np.kron(q0_ops1, q1_ops2)
+                                k_op4 = np.kron(q0_ops2, q1_ops1)
+                                error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2, k_op3, k_op4])
+                            elif minor_ops[0] == "reset":
+                                q0_op1 = np.dot(instruction_map["K0"], q0_ops)
+                                q0_op2 = np.dot(instruction_map["K1"], q0_ops)
+                                q1_ops = np.dot(instruction_map[minor_ops[1]], q1_ops)
+                                k_op1 = np.kron(q0_op1, q1_ops)
+                                k_op2 = np.kron(q0_op2, q1_ops)
+                                error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
+                            else:
+                                q0_ops = np.dot(instruction_map[minor_ops[0]], q0_ops)
+                                q1_op1 = np.dot(instruction_map["K0"], q1_ops)
+                                q1_op2 = np.dot(instruction_map["K1"], q1_ops)
+                                k_op1 = np.kron(q0_ops, q1_op1)
+                                k_op2 = np.kron(q0_ops, q1_op2)
+                                error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
                     else:
-                        kraus_ops_for_q1 = kraus_ops[qubits[1]]
-                        kraus_operations_for_q1 = []
-                        for kraus_op in kraus_ops_for_q1:
-                            kraus_operations_for_q1.append(np.dot(kraus_op, q1_ops))
-                        if minor_ops[0] == "reset":
-                            q0_op1 = np.dot(instruction_map["K0"], q0_ops)
-                            q0_op2 = np.dot(instruction_map["K1"], q0_ops)
-                            for kraus_op in kraus_operations_for_q1:
-                                k_op1 = np.kron(q0_op1, kraus_op)
-                                k_op2 = np.kron(q0_op2, kraus_op)
-                                error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
+                        if minor_ops[0] == "kraus" and minor_ops[1] == "kraus":
+                            kraus_ops_for_q0 = kraus_ops[qubits[0]]
+                            kraus_ops_for_q1 = kraus_ops[qubits[1]]
+                            kraus_operations_for_q0 = []
+                            kraus_operations_for_q1 = []
+                            for kraus_op in kraus_ops_for_q0:
+                                kraus_operations_for_q0.append(np.dot(kraus_op, q0_ops))
+                            for kraus_op in kraus_ops_for_q1:
+                                kraus_operations_for_q1.append(np.dot(kraus_op, q1_ops))
+                            for kraus_op0 in kraus_operations_for_q0:
+                                for kraus_op1 in kraus_operations_for_q1:
+                                    k_op = np.kron(kraus_op0, kraus_op1)
+                                    error_operators.append(np.sqrt(prob) * k_op)
+                        elif minor_ops[0] == "kraus":
+                            kraus_ops_for_q0 = kraus_ops[qubits[0]]
+                            kraus_operations_for_q0 = []
+                            for kraus_op in kraus_ops_for_q0:
+                                kraus_operations_for_q0.append(np.dot(kraus_op, q0_ops))
+                            if minor_ops[1] == "reset":
+                                q1_op1 = np.dot(instruction_map["K0"], q1_ops)
+                                q1_op2 = np.dot(instruction_map["K1"], q1_ops)
+                                for kraus_op in kraus_operations_for_q0:
+                                    k_op1 = np.kron(kraus_op, q1_op1)
+                                    k_op2 = np.kron(kraus_op, q1_op2)
+                                    error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
+                            else:
+                                q1_ops = np.dot(instruction_map[minor_ops[1]], q1_ops)
+                                for kraus_op in kraus_operations_for_q0:
+                                    k_op = np.kron(kraus_op, q1_ops)
+                                    error_operators.append(np.sqrt(prob) * k_op)
                         else:
-                            q0_ops = np.dot(instruction_map[minor_ops[0]], q0_ops)
-                            for kraus_op in kraus_operations_for_q1:
-                                k_op = np.kron(q0_ops, kraus_op)
-                                error_operators.append(np.sqrt(prob) * k_op)
-            error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
-            if not self._ensure_ctpt(error_operators_full_system):
-                print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
-            ecr_error_operators[qpair] = {
-                "operators": error_operators_full_system
-            }
-        return ecr_error_operators
+                            kraus_ops_for_q1 = kraus_ops[qubits[1]]
+                            kraus_operations_for_q1 = []
+                            for kraus_op in kraus_ops_for_q1:
+                                kraus_operations_for_q1.append(np.dot(kraus_op, q1_ops))
+                            if minor_ops[0] == "reset":
+                                q0_op1 = np.dot(instruction_map["K0"], q0_ops)
+                                q0_op2 = np.dot(instruction_map["K1"], q0_ops)
+                                for kraus_op in kraus_operations_for_q1:
+                                    k_op1 = np.kron(q0_op1, kraus_op)
+                                    k_op2 = np.kron(q0_op2, kraus_op)
+                                    error_operators.extend(np.sqrt(prob) * op for op in [k_op1, k_op2])
+                            else:
+                                q0_ops = np.dot(instruction_map[minor_ops[0]], q0_ops)
+                                for kraus_op in kraus_operations_for_q1:
+                                    k_op = np.kron(q0_ops, kraus_op)
+                                    error_operators.append(np.sqrt(prob) * k_op)
+                error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
+                if not self._ensure_ctpt(error_operators_full_system):
+                    self.logger.warning(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
+                two_qubit_gate_error_operators[two_qubit_gate][qpair] = {
+                    "operators": error_operators_full_system,
+                    "qubit_channel" : error_operators
+                }
+        return two_qubit_gate_error_operators
 
     def _create_connectivity_map(self, 
                                  two_qubit_gate_error_instructions:dict, 
@@ -744,23 +767,22 @@ class BuildModel:
         Returns:
             tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.
         """
-        basis_gates = ["x", "sx", "rz"]
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],
-            ["x", "sx", "rz"],
+            self.basis_gates[0],
             self.use_qubits
         )
         two_qubit_errors = self.extract_two_qubit_errors(
             self.noise_model["errors"],
-            self.use_qubits
+            self.use_qubits,
+            self.basis_gates[1]
         )
-        print("Completed Extraction of ECR Errors.\nStarting post-processing on Single Qubit Errors.")
-        single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors)
-        print("Completed post-processing on Single Qubit Errors.")
-        ecr_error_post_processed = self.post_process_ecr_errors(ecr_errors, self.threshold)
-        print("Building Noise Operators for ECR Errors.")
-        ecr_error_instructions = self.get_ecr_noise_operators(ecr_error_post_processed)
-        print("Completed building Noise Operators for ECR Errors.\nExtracting Measurement Errors.")
+        if single_qubit_errors == {} and all(two_qubit_errors[gate] == {} for gate in self.basis_gates[1]):
+            raise ValueError("Provided noise model does not contain information regarding the specified basis gates.")
+        if all(two_qubit_errors[gate] == {} for gate in self.basis_gates[1]) and len(self.use_qubits) > 1:
+            raise UserWarning("No information on two qubit gate errors were found.")
+        if single_qubit_errors == {} and not all(two_qubit_errors[gate]=={} for gate in self.basis_gates[1]):
+            raise UserWarning("No information on single qubit gate errors were found.")
         measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
                                                               self.use_qubits)
         self.logger.info("Completed Extraction of Measurement Errors.")
