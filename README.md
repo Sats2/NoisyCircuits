@@ -203,6 +203,19 @@ NoisyCircuits/
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Citing NoisyCircuits
+
+If you use NoisyCircuits in your research, please cite the software as follows:
+```
+@software{NoisyCircuits2025,
+   author = {Hegde, Sathyamurthy},
+   title = {NoisyCircuits},
+   year = {2025},
+   url = {https://github.com/Sats2/NoisyCircuits},
+   version = {1.1.0},
+}
+```
+
 ## 📞 Support and Contact
 
 - **Author**: Sathyamurthy Hegde
