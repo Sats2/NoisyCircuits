@@ -12,6 +12,15 @@ from qiskit_ibm_runtime import QiskitRuntimeService
 class GetNoiseModel:
     """
     A class to retrieve the noise model of a specified IBM Quantum backend.
+
+    Args:
+        backend_name (str): The name of the IBM Quantum backend.
+        token (str): The IBM Quantum API token.
+        channel (str): The IBM Quantum channel to use. Default is "ibm_quantum_platform".
+
+    Raises:
+        TypeError: If backend_name, token or channel is not a string.
+        ValueError: If channel is not one of the accepted values.
     """
     def __init__(self,
                  backend_name:str,
@@ -19,15 +28,6 @@ class GetNoiseModel:
                  channel:str="ibm_quantum_platform")->None:
         """
         Constructor for GetNoiseModel class.
-        
-        Args:
-            backend_name (str): The name of the IBM Quantum backend.
-            token (str): The IBM Quantum API token.
-            channel (str): The IBM Quantum channel to use. Default is "ibm_quantum_platform".
-
-        Raises:
-            TypeError: If backend_name, token or channel is not a string.
-            ValueError: If channel is not one of the accepted values.
         """
         if not isinstance(backend_name, str):
             raise TypeError("backend_name must be a string")

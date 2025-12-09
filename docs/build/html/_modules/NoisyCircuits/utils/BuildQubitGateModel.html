@@ -1,0 +1,944 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoisyCircuits.utils.BuildQubitGateModel &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NoisyCircuits.utils.BuildQubitGateModel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NoisyCircuits.utils.BuildQubitGateModel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module allows users to generate the noise operators for single qubit and two qubit gates from the noise model dictionary obtained from the the calibration data from IBM Hardware using the class BuildModel.</span>
+
+<span class="sd">The module allows users to filter out noise instructions that have a certain user-defined probability of occurrance (called threshold). The output from the module are the noise operators for single and two qubit gates, the connectivity chart for the specified device and the error operators on the measurement operation.</span>
+
+<span class="sd">The connectivity chart is created from the two qubit gate instruction set where the directionality and the connection between qubits in the hardware is considered. An example usage is as follows:</span>
+
+<span class="sd">Example:</span>
+<span class="sd">    &gt;&gt;&gt; from NoisyCircuits.utils.BuildQubitGateModel import BuildModel</span>
+<span class="sd">    &gt;&gt;&gt; model = BuildModel(noise_model=noise_model, num_qubits=num_qubits, threshold=1e-6, basis_gates=[[&quot;u1&quot;], [&quot;cx&quot;]], verbose=True)</span>
+<span class="sd">    &gt;&gt;&gt; single_qubit_noise, two_qubit_noise, connectivity, measurement_noise = model.build_qubit_gate_model()</span>
+
+<span class="sd">Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pennylane</span><span class="w"> </span><span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_map_instruction_qubits</span><span class="p">(</span><span class="n">instrs</span><span class="p">,</span> <span class="n">gate_qubits</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maps the qubits in the instructions to the specified gate qubits.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        instrs (list): List of instructions to map. </span>
+<span class="sd">        gate_qubits (dict): Mapping of qubit indices to gate qubits.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of mapped instructions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapped</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">instrs</span><span class="p">:</span>
+        <span class="n">mapped_inst</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">mapped_inst</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">gate_qubits</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]]</span>
+        <span class="n">mapped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapped_inst</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mapped</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_kraus</span><span class="p">(</span><span class="n">instrs</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts the Kraus operators from the instructions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        instrs (list): List of instructions to extract Kraus operators from.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: List of Kraus operators, or None if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">instrs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;kraus&quot;</span><span class="p">:</span>
+            <span class="n">ops_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="nb">complex</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span>
+            <span class="p">]</span>
+            <span class="n">ops_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops_list</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">ops_list</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BuildModel">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BuildModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Module that generates the noise operators for each gate on each qubit from the noise model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.</span>
+<span class="sd">        num_qubits (int): The number of qubits in the model.</span>
+<span class="sd">        threshold (float, optional): The threshold for noise. Defaults to 1e-12.</span>
+<span class="sd">        basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.</span>
+<span class="sd">        verbose (bool): Flag to indicate whether logging is required or not. Defaults to True.</span>
+<span class="sd">               </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If noise_model is not a dictionary or num_qubits is not an integer.</span>
+<span class="sd">        ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.</span>
+<span class="sd">        TypeError: If threshold is not a float or int.</span>
+<span class="sd">        ValueError: If basis_gates is None or not a list of lists of strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">noise_model</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
+                 <span class="n">num_qubits</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
+                 <span class="n">threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span>
+                 <span class="n">basis_gates</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the BuildModel with a noise model, number of qubits, and an optional threshold.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noise_model</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Noise model must be a dictionary.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Number of qubits must be an integer.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_qubits</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of qubits must be a positive integer.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Threshold must be a float or int.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Threshold must be between 0 and 1.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">basis_gates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Basis gates must be provided as a list of lists of strings.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">basis_gates</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">bg</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">bg</span><span class="p">)</span> <span class="k">for</span> <span class="n">bg</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Basis gates must be a list of lists of strings.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">noise_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span> <span class="o">=</span> <span class="n">num_qubits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_qubits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span> <span class="o">=</span> <span class="n">basis_gates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qubit_coupling_map</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_ctpt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">kraus_ops</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensures that the given Kraus operators form a CPTP map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kraus_ops (list): List of Kraus operators to check.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Warning: If the Kraus operators do not form a CPTP map.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the Kraus operators form a CPTP map, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">kraus_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">kraus_ops</span><span class="p">:</span>
+            <span class="n">mat</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="BuildModel.extract_single_qubit_qerrors">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_single_qubit_qerrors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_single_qubit_qerrors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">data</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                                    <span class="n">target_ops</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                                    <span class="n">allowed_qubits</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts single-qubit quantum errors for the specified gates and qubits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (list): List of Noise model entries from Qiskit JSON.</span>
+<span class="sd">            target_ops (list[str]): Gate operations to include.</span>
+<span class="sd">            allowed_qubits (list[int]): Qubits to include in output.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Nested dictionary of format: single_qubit_instructions[q][op] = {instructions, probabilities, kraus}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allowed_qubits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">allowed_qubits</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;instructions&quot;</span> <span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;probabilities&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;kraus&quot;</span> <span class="p">:</span> <span class="kc">None</span>
+        <span class="p">}))</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;qerror&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">op</span> <span class="ow">in</span> <span class="n">target_ops</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;operations&quot;</span><span class="p">,</span> <span class="p">[])):</span>
+                <span class="k">continue</span>
+            <span class="n">operations</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;operations&quot;</span><span class="p">]</span>
+            <span class="n">probabilities</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;probabilities&quot;</span><span class="p">]</span>
+            <span class="n">instruction_list</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span>
+            <span class="n">gate_qubits_list</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gate_qubits&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operations</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">op</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target_ops</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">gate_qubits</span> <span class="ow">in</span> <span class="n">gate_qubits_list</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">prob</span><span class="p">,</span> <span class="n">instrs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">probabilities</span><span class="p">,</span> <span class="n">instruction_list</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">gate_qubits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">mapped_instrs</span> <span class="o">=</span> <span class="n">instrs</span>
+                            <span class="n">qubits</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">q</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">instrs</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">g</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">mapped_instrs</span> <span class="o">=</span> <span class="n">_map_instruction_qubits</span><span class="p">(</span><span class="n">instrs</span><span class="p">,</span> <span class="n">gate_qubits</span><span class="p">)</span>
+                            <span class="n">qubits</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">q</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">mapped_instrs</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">g</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_qubits</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">q</span> <span class="o">=</span> <span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">instr_names</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">mapped_instrs</span><span class="p">)</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="n">op</span><span class="p">][</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instr_names</span><span class="p">)</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="n">op</span><span class="p">][</span><span class="s2">&quot;probabilities&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="n">op</span><span class="p">][</span><span class="s2">&quot;kraus&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">kraus_matrices</span> <span class="o">=</span> <span class="n">_extract_kraus</span><span class="p">(</span><span class="n">mapped_instrs</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">kraus_matrices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">result</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="n">op</span><span class="p">][</span><span class="s2">&quot;kraus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kraus_matrices</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="BuildModel.extract_two_qubit_errors">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_two_qubit_errors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_two_qubit_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">data</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> 
+                           <span class="n">allowed_qubits</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                           <span class="n">basis_gates</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts ECR errors from the noise model data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (list): List of Noise model entries from Qiskit JSON.</span>
+<span class="sd">            allowed_qubits (list[int]): List of allowed qubits.</span>
+<span class="sd">            basis_gates (list[str]): List of basis gates to consider.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary of extracted ECR errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allowed_qubits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">allowed_qubits</span><span class="p">)</span>
+        <span class="n">two_qubit_errors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">basis_gate</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">:</span>
+            <span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">basis_gate</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;qerror&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">two_qubit_operator</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;operations&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">two_qubit_operator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">probabilities</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;probabilities&quot;</span><span class="p">]</span>
+            <span class="n">instructions_list</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span>
+            <span class="n">gate_qubits_list</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gate_qubits&quot;</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">gate_qubits</span> <span class="ow">in</span> <span class="n">gate_qubits_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gate_qubits</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">gate_qubits</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">allowed_qubits</span><span class="p">):</span>
+                    <span class="c1"># Only include valid 2 qubit gate pairs within allowed qubits</span>
+                    <span class="k">continue</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qubit_coupling_map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">gate_qubits</span><span class="p">))</span>
+                <span class="n">qpair</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gate_qubits</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">prob</span><span class="p">,</span> <span class="n">instrs</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">probabilities</span><span class="p">,</span> <span class="n">instructions_list</span><span class="p">):</span>
+                    <span class="n">mapped_instrs</span> <span class="o">=</span> <span class="n">_map_instruction_qubits</span><span class="p">(</span><span class="n">instrs</span><span class="p">,</span> <span class="n">gate_qubits</span><span class="p">)</span>
+                    <span class="n">kraus</span> <span class="o">=</span> <span class="n">_extract_kraus</span><span class="p">(</span><span class="n">mapped_instrs</span><span class="p">)</span>
+                    <span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">two_qubit_operator</span><span class="p">][</span><span class="n">qpair</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s2">&quot;instructions&quot;</span> <span class="p">:</span> <span class="n">mapped_instrs</span><span class="p">,</span>
+                        <span class="s2">&quot;probability&quot;</span> <span class="p">:</span> <span class="n">prob</span><span class="p">,</span>
+                        <span class="s2">&quot;kraus&quot;</span> <span class="p">:</span> <span class="n">kraus</span>
+                    <span class="p">})</span>
+        <span class="k">for</span> <span class="n">basis_gate</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">:</span>
+            <span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">basis_gate</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">basis_gate</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">two_qubit_errors</span></div>
+
+    
+<div class="viewcode-block" id="BuildModel.build_full_matrix">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_full_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">P</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                          <span class="n">n</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> 
+                          <span class="n">system</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extends a single-qubit operator P to a full system operator by applying P to the nth qubit and identity to all others.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            P (np.ndarray): The single-qubit operator to extend.</span>
+<span class="sd">            n (int): The index of the qubit to which P is applied.</span>
+<span class="sd">            system (int): The total number of qubits in the system.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The full system operator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">op_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">system</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">op_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">op_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="n">full_op</span> <span class="o">=</span> <span class="n">op_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">op_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">full_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">full_op</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">full_op</span></div>
+
+    
+<div class="viewcode-block" id="BuildModel.extend_kraus_to_system">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extend_kraus_to_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                               <span class="n">kraus_ops</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> 
+                               <span class="n">qubit_idx</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extends Kraus operators to the full system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kraus_ops (list): List of Kraus operators for the subsystem.</span>
+<span class="sd">            qubit_idx (int): Index of the qubit to which the operators are applied.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of extended Kraus operators for the full system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">system_qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span>
+        <span class="n">extended_kraus</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">kraus_ops</span><span class="p">:</span>
+            <span class="n">extended_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_full_matrix</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">qubit_idx</span><span class="p">,</span> <span class="n">system_qubits</span><span class="p">)</span>
+            <span class="n">extended_kraus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extended_op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">extended_kraus</span></div>
+
+    
+<div class="viewcode-block" id="BuildModel.build_full_matrix_2qubit">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix_2qubit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_full_matrix_2qubit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">P</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                 <span class="n">qubit_pair</span><span class="p">:</span><span class="nb">tuple</span><span class="p">,</span>
+                                 <span class="n">system</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extends a 2 qubit operator P to a full system operator by applying P to the specified qubit pair and identity to all others.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            P (np.ndarray): The two-qubit operator to extend (4x4 matrix).</span>
+<span class="sd">            qubit_pairt (tuple): Tuple of qubit indices to which P is applied.</span>
+<span class="sd">            system (int): Total number of qubits in the system.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The full system operator (2^system x 2^system matrix). </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="n">qubit_pair</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">system</span>
+        <span class="n">full_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
+                <span class="n">state_i</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="n">k</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">system</span><span class="p">)]</span>
+                <span class="n">state_j</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span> <span class="o">&gt;&gt;</span> <span class="n">k</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">system</span><span class="p">)]</span>
+                <span class="n">i_q0</span><span class="p">,</span> <span class="n">i_q1</span> <span class="o">=</span> <span class="n">state_i</span><span class="p">[</span><span class="n">q0</span><span class="p">],</span> <span class="n">state_i</span><span class="p">[</span><span class="n">q1</span><span class="p">]</span>
+                <span class="n">j_q0</span><span class="p">,</span> <span class="n">j_q1</span> <span class="o">=</span> <span class="n">state_j</span><span class="p">[</span><span class="n">q0</span><span class="p">],</span> <span class="n">state_j</span><span class="p">[</span><span class="n">q1</span><span class="p">]</span>
+                <span class="n">other_qubits_same</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">state_i</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">state_j</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">system</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">other_qubits_same</span><span class="p">:</span>
+                    <span class="n">i_2q</span> <span class="o">=</span> <span class="n">i_q0</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i_q1</span>
+                    <span class="n">j_2q</span> <span class="o">=</span> <span class="n">j_q0</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">j_q1</span>
+                    <span class="n">full_op</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">i_2q</span><span class="p">,</span> <span class="n">j_2q</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">full_op</span></div>
+
+
+<div class="viewcode-block" id="BuildModel.extend_kraus_to_system_multiqubit">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system_multiqubit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extend_kraus_to_system_multiqubit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kraus_ops</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">qubit_pair</span><span class="p">:</span><span class="nb">tuple</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extends Kraus operators for a two-qubit gate to the full system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kraus_ops (list): List of Kraus operators for the two-qubit gate.</span>
+<span class="sd">            qubit_pair (tuple): Tuple of qubit indices for which the Kraus operators are defined.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of extended Kraus operators for the full system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">system_qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span>
+        <span class="n">extended_kraus</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">kraus_ops</span><span class="p">:</span>
+            <span class="n">extended_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_full_matrix_2qubit</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">qubit_pair</span><span class="p">,</span> <span class="n">system_qubits</span><span class="p">)</span>
+            <span class="n">extended_kraus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extended_op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">extended_kraus</span>        </div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_drop_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">probabilities</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                     <span class="n">instructions</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                     <span class="n">threshold</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Filters out errors based on a probability threshold for single qubit error models.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            probabilities (list): List of error probabilities.</span>
+<span class="sd">            instructions (list): List of error instructions.</span>
+<span class="sd">            threshold (float): Probability threshold for filtering.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[list, list]: Filtered probabilities and instructions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span>
+        <span class="n">instrs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">instructions</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">probs</span> <span class="o">&gt;=</span> <span class="n">threshold</span>
+        <span class="n">filtered_probs</span> <span class="o">=</span> <span class="n">probs</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">filtered_instrs</span> <span class="o">=</span> <span class="n">instrs</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">filtered_probs</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">filtered_probs</span><span class="p">)</span>
+        <span class="n">filtered_instrs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">filtered_instrs</span><span class="p">))</span>
+        <span class="n">filtered_probs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">filtered_probs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filtered_probs</span><span class="p">,</span> <span class="n">filtered_instrs</span>
+    
+<div class="viewcode-block" id="BuildModel.post_process_single_qubit_errors">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_single_qubit_errors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post_process_single_qubit_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">single_qubit_errors</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
+                                         <span class="n">basis_gates</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without further processing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            single_qubit_errors (dict): The dictionary of single-qubit errors extracted from the noise model.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary of post-processed single-qubit errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">single_qubit_errors_processed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">instruction_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span>
+            <span class="s2">&quot;x&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;y&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;z&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]),</span>
+            <span class="s2">&quot;K0&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;K1&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">single_qubit_errors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">qubit_errors</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">single_qubit_errors</span><span class="p">[</span><span class="n">qubit</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">instructions</span> <span class="o">=</span> <span class="n">single_qubit_errors</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="n">gate</span><span class="p">][</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span>
+                <span class="n">probabilities</span> <span class="o">=</span> <span class="n">single_qubit_errors</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="n">gate</span><span class="p">][</span><span class="s2">&quot;probabilities&quot;</span><span class="p">]</span>
+                <span class="n">kraus_ops</span> <span class="o">=</span> <span class="n">single_qubit_errors</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="n">gate</span><span class="p">][</span><span class="s2">&quot;kraus&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">probabilities</span><span class="p">,</span> <span class="n">instructions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_drop_errors</span><span class="p">(</span>
+                                                        <span class="n">probabilities</span><span class="p">,</span> <span class="n">instructions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span>
+                                                        <span class="p">)</span>
+                    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">instructions</span><span class="p">),</span> <span class="s2">&quot;Probabilities and instructions must have the same length after filtering.&quot;</span>
+                    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">probabilities</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;Filtered probabilities must sum to 1.&quot;</span>
+                <span class="n">operators</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">ops</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">use_ops</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">instr</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">instructions</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">):</span>
+                    <span class="n">instruction</span> <span class="o">=</span> <span class="n">instr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+                    <span class="n">op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">instruction</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="s2">&quot;kraus&quot;</span><span class="p">]:</span>
+                            <span class="n">op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">op</span><span class="p">)</span>
+                            <span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;reset&quot;</span><span class="p">:</span>
+                            <span class="n">op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">op</span><span class="p">)</span>
+                            <span class="n">op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">op</span><span class="p">)</span>
+                            <span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">op1</span><span class="p">,</span> <span class="n">op2</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;kraus&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">ops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">use_ops</span> <span class="o">=</span> <span class="p">[]</span>
+                                <span class="k">for</span> <span class="n">kop</span> <span class="ow">in</span> <span class="n">kraus_ops</span><span class="p">:</span>
+                                    <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+                                        <span class="n">use_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kop</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                                        <span class="n">use_ops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">use_op</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">use_ops</span> <span class="o">=</span> <span class="p">[]</span>
+                                <span class="k">for</span> <span class="n">kop</span> <span class="ow">in</span> <span class="n">kraus_ops</span><span class="p">:</span>
+                                    <span class="n">use_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kop</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                                    <span class="n">use_ops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">use_op</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">use_ops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">use_ops</span><span class="p">:</span>
+                            <span class="n">operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+                            <span class="n">operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_ctpt</span><span class="p">(</span><span class="n">operators</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Original Kraus operators for qubit </span><span class="si">{</span><span class="n">qubit</span><span class="si">}</span><span class="s2"> do not form a CPTP map.&quot;</span><span class="p">)</span>
+                    <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operators</span><span class="p">:</span>
+                        <span class="n">mat</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
+                <span class="n">kraus_operators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_kraus_to_system</span><span class="p">(</span><span class="n">operators</span><span class="p">,</span> <span class="n">qubit</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_ctpt</span><span class="p">(</span><span class="n">kraus_operators</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Extended Kraus operators for qubit </span><span class="si">{</span><span class="n">qubit</span><span class="si">}</span><span class="s2"> do not form a CPTP map.&quot;</span><span class="p">)</span>
+                <span class="n">qubit_errors</span><span class="p">[</span><span class="n">gate</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;kraus_operators&quot;</span> <span class="p">:</span> <span class="n">kraus_operators</span><span class="p">,</span>
+                    <span class="s2">&quot;instructions&quot;</span> <span class="p">:</span> <span class="n">instructions</span><span class="p">,</span>
+                    <span class="s2">&quot;probabilities&quot;</span> <span class="p">:</span> <span class="n">probabilities</span><span class="p">,</span>
+                    <span class="s2">&quot;kraus&quot;</span> <span class="p">:</span> <span class="n">kraus_ops</span><span class="p">,</span>
+                    <span class="s2">&quot;qubit_channel&quot;</span> <span class="p">:</span> <span class="n">operators</span>
+                <span class="p">}</span>
+            <span class="k">for</span> <span class="n">basis_gate</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">basis_gate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">qubit_errors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">qubit_errors</span><span class="p">[</span><span class="n">basis_gate</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;kraus_operators&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">),</span>
+                        <span class="s2">&quot;instructions&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;probabilities&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">],</span>
+                        <span class="s2">&quot;kraus&quot;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="s2">&quot;qubit_channel&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)]</span>
+                    <span class="p">}</span>
+            <span class="n">single_qubit_errors_processed</span><span class="p">[</span><span class="n">qubit</span><span class="p">]</span> <span class="o">=</span> <span class="n">qubit_errors</span>
+        <span class="k">return</span> <span class="n">single_qubit_errors_processed</span></div>
+
+
+<div class="viewcode-block" id="BuildModel.post_process_two_qubit_errors">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_two_qubit_errors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">post_process_two_qubit_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">two_qubit_errors</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
+                                <span class="n">threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Post-processes the ECR errors to create a dictionary of instructions, probabilities, and Kraus operators for each qubit pair.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            two_qubit_errors (dict): The two-qubit gate errors to process.</span>
+<span class="sd">            threshold (float, optional): The probability threshold for filtering errors. Defaults to 1e-12.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary containing the processed two-qubit errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processed_errors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processing two-qubit gate errors.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">two_qubit_gate</span> <span class="ow">in</span> <span class="n">two_qubit_errors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">gate_error_processed</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">qpair</span><span class="p">,</span> <span class="n">error_list</span> <span class="ow">in</span> <span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">two_qubit_gate</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">instructions</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">probabilities</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">kraus_ops</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">kraus_qubits</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="n">unique_kraus_per_qubit</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># qubit -&gt; unique kraus operators</span>
+                <span class="n">filtered_count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">total_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">error_list</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">error_entry</span> <span class="ow">in</span> <span class="n">error_list</span><span class="p">:</span>
+                    <span class="n">prob</span> <span class="o">=</span> <span class="n">error_entry</span><span class="p">[</span><span class="s2">&quot;probability&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">prob</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+                        <span class="n">filtered_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">continue</span>
+                    <span class="n">probabilities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+                    <span class="n">pauli_instruction</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">pauli_qubits</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">gate_instructions</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">error_entry</span><span class="p">[</span><span class="s2">&quot;instructions&quot;</span><span class="p">]:</span>
+                        <span class="n">inst_name</span> <span class="o">=</span> <span class="n">inst</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+                        <span class="n">inst_qubits</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;qubits&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                        <span class="k">if</span> <span class="n">inst_name</span> <span class="o">==</span> <span class="s2">&quot;pauli&quot;</span><span class="p">:</span>
+                            <span class="n">params</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;II&quot;</span><span class="p">])</span>
+                            <span class="n">pauli_instruction</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">params</span> <span class="k">else</span> <span class="s2">&quot;II&quot;</span>
+                            <span class="n">pauli_qubits</span> <span class="o">=</span> <span class="n">inst_qubits</span>
+                        <span class="k">elif</span> <span class="n">inst_name</span> <span class="o">==</span> <span class="s2">&quot;kraus&quot;</span><span class="p">:</span>
+                            <span class="n">kraus_params</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                            <span class="k">if</span> <span class="n">kraus_params</span> <span class="ow">and</span> <span class="n">inst_qubits</span><span class="p">:</span>
+                                <span class="n">qubit</span> <span class="o">=</span> <span class="n">inst_qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="n">qubit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_kraus_per_qubit</span><span class="p">:</span>
+                                    <span class="n">unique_kraus_per_qubit</span><span class="p">[</span><span class="n">qubit</span><span class="p">]</span> <span class="o">=</span> <span class="n">kraus_params</span>
+                                    <span class="n">kraus_qubits</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">qubit</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">inst_qubits</span><span class="p">:</span>
+                                <span class="n">gate_instructions</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst_name</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">inst_qubits</span><span class="p">:</span>
+                                <span class="n">gate_instructions</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">inst_name</span>
+                    <span class="n">final_instruction</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">qubits_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">qpair</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">pauli_instruction</span> <span class="ow">and</span> <span class="n">pauli_qubits</span><span class="p">:</span>
+                        <span class="n">pauli_map</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pauli_qubits</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pauli_instruction</span><span class="p">):</span>
+                                <span class="n">pauli_map</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">pauli_instruction</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">reordered_pauli</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">qubits_list</span><span class="p">:</span>
+                            <span class="n">reordered_pauli</span> <span class="o">+=</span> <span class="n">pauli_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">)</span>
+                        <span class="n">final_instruction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reordered_pauli</span><span class="p">)</span>
+                    <span class="n">gate_parts</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">qubits_list</span><span class="p">:</span>
+                        <span class="n">gate_name</span> <span class="o">=</span> <span class="n">gate_instructions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">)</span>
+                        <span class="n">gate_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gate_name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">gate_parts</span><span class="p">:</span>
+                        <span class="n">combined_gate</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gate_parts</span><span class="p">)</span>
+                        <span class="n">final_instruction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">combined_gate</span><span class="p">)</span>
+                    <span class="n">final_instruction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qubits_list</span><span class="p">)</span>
+                    <span class="n">instructions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final_instruction</span><span class="p">)</span>
+                    <span class="n">kraus_ops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">instructions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">unique_kraus_per_qubit</span><span class="p">:</span>
+                        <span class="n">unique_kraus_per_qubit_value</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_extract_kraus_op</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span> <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="n">unique_kraus_per_qubit</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+                        <span class="n">unique_kraus_operators</span> <span class="o">=</span> <span class="p">{</span><span class="n">q</span><span class="p">:</span> <span class="n">ops</span> <span class="k">for</span> <span class="n">q</span><span class="p">,</span> <span class="n">ops</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">unique_kraus_per_qubit</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">unique_kraus_per_qubit_value</span><span class="p">)}</span>
+                        <span class="n">probabilities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span>
+                        <span class="n">probabilities</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">unique_kraus_operators</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">gate_error_processed</span><span class="p">[</span><span class="n">qpair</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;instructions&quot;</span><span class="p">:</span> <span class="n">instructions</span><span class="p">,</span>
+                        <span class="s2">&quot;probabilities&quot;</span><span class="p">:</span> <span class="n">probabilities</span><span class="p">,</span>
+                        <span class="s2">&quot;kraus&quot;</span><span class="p">:</span> <span class="n">unique_kraus_operators</span><span class="p">,</span>
+                        <span class="s2">&quot;kraus_qubit&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">kraus_qubits</span><span class="p">)</span>
+                    <span class="p">}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Qubit pair </span><span class="si">{</span><span class="n">qpair</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">instructions</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">total_count</span><span class="si">}</span><span class="s2"> errors above threshold &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">filtered_count</span><span class="si">}</span><span class="s2"> filtered out)&quot;</span><span class="p">)</span>
+            <span class="n">processed_errors</span><span class="p">[</span><span class="n">two_qubit_gate</span><span class="p">]</span> <span class="o">=</span> <span class="n">gate_error_processed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Two Qubit Gate errors processed.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">processed_errors</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_extract_kraus_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">kraus_op_list</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">:</span>
+        <span class="n">ops_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="nb">complex</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">matrix</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="n">kraus_op_list</span>
+            <span class="p">]</span>
+        <span class="n">ops_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ops_list</span>
+        
+<div class="viewcode-block" id="BuildModel.get_two_qubit_gate_noise_operators">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.get_two_qubit_gate_noise_operators">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_two_qubit_gate_noise_operators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                           <span class="n">two_qubit_gate_errors</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs the Error Operators for the two-qubit gates from the processed error instructions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            two_qubit_gate_errors (dict): The processed two-qubit gate errors.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary of two-qubit gate error operators.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">two_qubit_gate_error_operators</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">instruction_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span>
+            <span class="s2">&quot;x&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;y&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;z&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]),</span>
+            <span class="s2">&quot;K0&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;K1&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+            <span class="s2">&quot;i&quot;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">two_qubit_gate</span> <span class="ow">in</span> <span class="n">two_qubit_gate_errors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>    
+            <span class="n">two_qubit_gate_error_operators</span><span class="p">[</span><span class="n">two_qubit_gate</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">qpair</span><span class="p">,</span> <span class="n">error_data</span> <span class="ow">in</span> <span class="n">two_qubit_gate_errors</span><span class="p">[</span><span class="n">two_qubit_gate</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">full_instructions</span> <span class="o">=</span> <span class="n">error_data</span><span class="p">[</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span>
+                <span class="n">probabilities</span> <span class="o">=</span> <span class="n">error_data</span><span class="p">[</span><span class="s2">&quot;probabilities&quot;</span><span class="p">]</span>
+                <span class="n">probabilities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span>
+                <span class="n">probabilities</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span>
+                <span class="n">probabilities</span> <span class="o">=</span> <span class="n">probabilities</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">kraus_ops</span> <span class="o">=</span> <span class="n">error_data</span><span class="p">[</span><span class="s2">&quot;kraus&quot;</span><span class="p">]</span>
+                <span class="n">error_operators</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">instruction</span><span class="p">,</span><span class="n">prob</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">full_instructions</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">):</span>
+                    <span class="n">qubits</span> <span class="o">=</span> <span class="n">instruction</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">instruction</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">major_inst</span> <span class="o">=</span> <span class="n">instruction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">minor_inst</span> <span class="o">=</span> <span class="n">instruction</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">major_inst</span> <span class="o">=</span> <span class="s2">&quot;II&quot;</span>
+                        <span class="n">minor_inst</span> <span class="o">=</span> <span class="n">instruction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">q0_ops</span> <span class="o">=</span> <span class="n">instruction_map</span><span class="p">[</span><span class="n">major_inst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+                    <span class="n">q1_ops</span> <span class="o">=</span> <span class="n">instruction_map</span><span class="p">[</span><span class="n">major_inst</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+                    <span class="n">minor_ops</span> <span class="o">=</span> <span class="n">minor_inst</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="s2">&quot;kraus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minor_ops</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s2">&quot;reset&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">minor_ops</span><span class="p">:</span>
+                            <span class="n">q0_ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                            <span class="n">q1_ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">minor_ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                            <span class="n">k_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops</span><span class="p">,</span> <span class="n">q1_ops</span><span class="p">)</span>
+                            <span class="n">error_operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">k_op</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;reset&quot;</span> <span class="ow">and</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;reset&quot;</span><span class="p">:</span>
+                                <span class="n">q0_ops1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="n">q0_ops2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="n">q1_ops1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">q1_ops2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">k_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops1</span><span class="p">,</span> <span class="n">q1_ops1</span><span class="p">)</span>
+                                <span class="n">k_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops2</span><span class="p">,</span> <span class="n">q1_ops2</span><span class="p">)</span>
+                                <span class="n">k_op3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops1</span><span class="p">,</span> <span class="n">q1_ops2</span><span class="p">)</span>
+                                <span class="n">k_op4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops2</span><span class="p">,</span> <span class="n">q1_ops1</span><span class="p">)</span>
+                                <span class="n">error_operators</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k_op1</span><span class="p">,</span> <span class="n">k_op2</span><span class="p">,</span> <span class="n">k_op3</span><span class="p">,</span> <span class="n">k_op4</span><span class="p">])</span>
+                            <span class="k">elif</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;reset&quot;</span><span class="p">:</span>
+                                <span class="n">q0_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="n">q0_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="n">q1_ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">minor_ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">k_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_op1</span><span class="p">,</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">k_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_op2</span><span class="p">,</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">error_operators</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k_op1</span><span class="p">,</span> <span class="n">k_op2</span><span class="p">])</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">q0_ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="n">q1_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">q1_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">k_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops</span><span class="p">,</span> <span class="n">q1_op1</span><span class="p">)</span>
+                                <span class="n">k_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops</span><span class="p">,</span> <span class="n">q1_op2</span><span class="p">)</span>
+                                <span class="n">error_operators</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k_op1</span><span class="p">,</span> <span class="n">k_op2</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;kraus&quot;</span> <span class="ow">and</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;kraus&quot;</span><span class="p">:</span>
+                            <span class="n">kraus_ops_for_q0</span> <span class="o">=</span> <span class="n">kraus_ops</span><span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                            <span class="n">kraus_ops_for_q1</span> <span class="o">=</span> <span class="n">kraus_ops</span><span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                            <span class="n">kraus_operations_for_q0</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="n">kraus_operations_for_q1</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_ops_for_q0</span><span class="p">:</span>
+                                <span class="n">kraus_operations_for_q0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q0_ops</span><span class="p">))</span>
+                            <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_ops_for_q1</span><span class="p">:</span>
+                                <span class="n">kraus_operations_for_q1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q1_ops</span><span class="p">))</span>
+                            <span class="k">for</span> <span class="n">kraus_op0</span> <span class="ow">in</span> <span class="n">kraus_operations_for_q0</span><span class="p">:</span>
+                                <span class="k">for</span> <span class="n">kraus_op1</span> <span class="ow">in</span> <span class="n">kraus_operations_for_q1</span><span class="p">:</span>
+                                    <span class="n">k_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">kraus_op0</span><span class="p">,</span> <span class="n">kraus_op1</span><span class="p">)</span>
+                                    <span class="n">error_operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">k_op</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;kraus&quot;</span><span class="p">:</span>
+                            <span class="n">kraus_ops_for_q0</span> <span class="o">=</span> <span class="n">kraus_ops</span><span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                            <span class="n">kraus_operations_for_q0</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_ops_for_q0</span><span class="p">:</span>
+                                <span class="n">kraus_operations_for_q0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q0_ops</span><span class="p">))</span>
+                            <span class="k">if</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;reset&quot;</span><span class="p">:</span>
+                                <span class="n">q1_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="n">q1_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_operations_for_q0</span><span class="p">:</span>
+                                    <span class="n">k_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q1_op1</span><span class="p">)</span>
+                                    <span class="n">k_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q1_op2</span><span class="p">)</span>
+                                    <span class="n">error_operators</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k_op1</span><span class="p">,</span> <span class="n">k_op2</span><span class="p">])</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">q1_ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">minor_ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_operations_for_q0</span><span class="p">:</span>
+                                    <span class="n">k_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q1_ops</span><span class="p">)</span>
+                                    <span class="n">error_operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">k_op</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">kraus_ops_for_q1</span> <span class="o">=</span> <span class="n">kraus_ops</span><span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                            <span class="n">kraus_operations_for_q1</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_ops_for_q1</span><span class="p">:</span>
+                                <span class="n">kraus_operations_for_q1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kraus_op</span><span class="p">,</span> <span class="n">q1_ops</span><span class="p">))</span>
+                            <span class="k">if</span> <span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;reset&quot;</span><span class="p">:</span>
+                                <span class="n">q0_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="n">q0_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="s2">&quot;K1&quot;</span><span class="p">],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_operations_for_q1</span><span class="p">:</span>
+                                    <span class="n">k_op1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_op1</span><span class="p">,</span> <span class="n">kraus_op</span><span class="p">)</span>
+                                    <span class="n">k_op2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_op2</span><span class="p">,</span> <span class="n">kraus_op</span><span class="p">)</span>
+                                    <span class="n">error_operators</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k_op1</span><span class="p">,</span> <span class="n">k_op2</span><span class="p">])</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">q0_ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">instruction_map</span><span class="p">[</span><span class="n">minor_ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">q0_ops</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">kraus_op</span> <span class="ow">in</span> <span class="n">kraus_operations_for_q1</span><span class="p">:</span>
+                                    <span class="n">k_op</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">q0_ops</span><span class="p">,</span> <span class="n">kraus_op</span><span class="p">)</span>
+                                    <span class="n">error_operators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span> <span class="o">*</span> <span class="n">k_op</span><span class="p">)</span>
+                <span class="n">error_operators_full_system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_kraus_to_system_multiqubit</span><span class="p">(</span><span class="n">error_operators</span><span class="p">,</span> <span class="n">qpair</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_ctpt</span><span class="p">(</span><span class="n">error_operators_full_system</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Kraus operators for qubit pair </span><span class="si">{</span><span class="n">qpair</span><span class="si">}</span><span class="s2"> do not form a CPTP map.&quot;</span><span class="p">)</span>
+                <span class="n">two_qubit_gate_error_operators</span><span class="p">[</span><span class="n">two_qubit_gate</span><span class="p">][</span><span class="n">qpair</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;operators&quot;</span><span class="p">:</span> <span class="n">error_operators_full_system</span><span class="p">,</span>
+                    <span class="s2">&quot;qubit_channel&quot;</span> <span class="p">:</span> <span class="n">error_operators</span>
+                <span class="p">}</span>
+        <span class="k">return</span> <span class="n">two_qubit_gate_error_operators</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_connectivity_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                 <span class="n">two_qubit_gate_error_instructions</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> 
+                                 <span class="n">use_qubits</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a connectivity map from Two Qubit Gate error instructions showing which qubits are connected.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            two_qubit_gate_error_instructions (dict): Dictionary of Two Qubit Gate error instructions with qubit pairs as keys.</span>
+<span class="sd">            use_qubits (list): List of qubits being used in the system.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Connectivity map showing which qubits are connected to each other.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connectivity_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">qubit</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">use_qubits</span><span class="p">}</span>
+        
+        <span class="k">for</span> <span class="n">qubit_pair</span> <span class="ow">in</span> <span class="n">two_qubit_gate_error_instructions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qubit_pair</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubit_pair</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span> <span class="o">=</span> <span class="n">qubit_pair</span>
+                <span class="k">if</span> <span class="n">q0</span> <span class="ow">in</span> <span class="n">use_qubits</span> <span class="ow">and</span> <span class="n">q1</span> <span class="ow">in</span> <span class="n">use_qubits</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">q1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">connectivity_map</span><span class="p">[</span><span class="n">q0</span><span class="p">]:</span>
+                        <span class="n">connectivity_map</span><span class="p">[</span><span class="n">q0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">q0</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">connectivity_map</span><span class="p">[</span><span class="n">q1</span><span class="p">]:</span>
+                        <span class="n">connectivity_map</span><span class="p">[</span><span class="n">q1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q0</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">connectivity_map</span>
+
+<div class="viewcode-block" id="BuildModel.extract_measurement_errors">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_measurement_errors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_measurement_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">data</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                                    <span class="n">extract_qubits</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts the measurement errors from the noise model data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (list): List of Noise model entries from Qiskit JSON.</span>
+<span class="sd">            extract_qubits (list[int]): List of qubits for which to extract measurement errors.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If requested qubit index exceeds available qubit indices in measurement error data.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary of measurement errors for the specified qubits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">roerror_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;roerror&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">operations</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;operations&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">target_ops</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;measure&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">target_ops</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">op</span> <span class="ow">in</span> <span class="n">target_ops</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operations</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">gate_qubits_list</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gate_qubits&quot;</span><span class="p">,</span> <span class="p">[])</span> 
+            <span class="n">prob_matrices</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;probabilities&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">for</span> <span class="n">gate_qubits</span><span class="p">,</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gate_qubits_list</span><span class="p">,</span> <span class="n">prob_matrices</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gate_qubits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">qubit</span> <span class="o">=</span> <span class="n">gate_qubits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">roerror_map</span><span class="p">[</span><span class="n">qubit</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;operation&quot;</span><span class="p">:</span> <span class="s2">&quot;measure&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;matrix&quot;</span><span class="p">:</span> <span class="n">matrix</span>
+                    <span class="p">}</span>
+        <span class="n">measurement_errors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Available qubits in roerror_map: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">roerror_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Requested qubits: </span><span class="si">{</span><span class="n">extract_qubits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">qubit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">roerror_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">extract_qubits</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: No measurement error data found for the requested qubits. Using identity matrices for all.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">extract_qubits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">roerror_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: Requested qubit index (indices) exceeds available qubit indices in measurement error data.&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">extract_qubits</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">qubit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">roerror_map</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: No measurement error data found for qubit </span><span class="si">{</span><span class="n">qubit</span><span class="si">}</span><span class="s2">. Using identity matrix.&quot;</span><span class="p">)</span>
+                <span class="c1"># Use identity matrix (no error) if measurement error data is not available</span>
+                <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+                <span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">roerror_map</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="s2">&quot;matrix&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">roerror_map</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="s2">&quot;matrix&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">roerror_map</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="s2">&quot;matrix&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">roerror_map</span><span class="p">[</span><span class="n">qubit</span><span class="p">][</span><span class="s2">&quot;matrix&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">measurement_errors</span><span class="p">[</span><span class="n">qubit</span><span class="p">]</span> <span class="o">=</span> <span class="n">matrix</span>
+        <span class="k">return</span> <span class="n">measurement_errors</span></div>
+
+
+<div class="viewcode-block" id="BuildModel.build_qubit_gate_model">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_qubit_gate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates). Default is 1e-12, which means no filtering as lowest recorded probabilities are approximately 1e-11.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the noise model does not contain information regarding the specified basis gates.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">single_qubit_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_single_qubit_qerrors</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise_model</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_qubits</span>
+        <span class="p">)</span>
+        <span class="n">two_qubit_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_two_qubit_errors</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">noise_model</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_qubits</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">single_qubit_errors</span> <span class="o">==</span> <span class="p">{}</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">gate</span><span class="p">]</span> <span class="o">==</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Provided noise model does not contain information regarding the specified basis gates.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">gate</span><span class="p">]</span> <span class="o">==</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_qubits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="s2">&quot;No information on two qubit gate errors were found.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">single_qubit_errors</span> <span class="o">==</span> <span class="p">{}</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">two_qubit_errors</span><span class="p">[</span><span class="n">gate</span><span class="p">]</span><span class="o">==</span><span class="p">{}</span> <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">UserWarning</span><span class="p">(</span><span class="s2">&quot;No information on single qubit gate errors were found.&quot;</span><span class="p">)</span>
+        <span class="n">measurement_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_measurement_errors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_model</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">],</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">use_qubits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed Extraction of Measurement Errors.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed Extraction of two-qubit gate Errors.</span><span class="se">\n</span><span class="s2">Starting post-processing on Single Qubit Errors.&quot;</span><span class="p">)</span>
+        <span class="n">single_qubit_error_instructions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process_single_qubit_errors</span><span class="p">(</span><span class="n">single_qubit_errors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed post-processing on Single Qubit Errors.&quot;</span><span class="p">)</span>
+        <span class="n">two_qubit_error_post_processed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_process_two_qubit_errors</span><span class="p">(</span><span class="n">two_qubit_errors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Building Noise Operators for Two Qubit Gate Errors.&quot;</span><span class="p">)</span>
+        <span class="n">two_qubit_gate_error_instructions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_two_qubit_gate_noise_operators</span><span class="p">(</span><span class="n">two_qubit_error_post_processed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Completed building Noise Operators for Two Qubit Gate Errors.</span><span class="se">\n</span><span class="s2">Extracting Measurement Errors.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Preparing Qubit Connectivity Map for Requested Qubits&quot;</span><span class="p">)</span>
+        <span class="n">connectivity_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_connectivity_map</span><span class="p">(</span><span class="n">two_qubit_gate_error_instructions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_qubits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Qubit Connectivity Map Prepared.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">single_qubit_error_instructions</span><span class="p">,</span> <span class="n">two_qubit_gate_error_instructions</span><span class="p">,</span> <span class="n">measurement_errors</span><span class="p">,</span> <span class="n">connectivity_map</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

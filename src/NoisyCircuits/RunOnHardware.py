@@ -30,23 +30,26 @@ import numpy as np
 
 
 class RunOnHardware:
+    """
+    A class to run quantum circuits on IBM Quantum Hardware.
+
+    Args:
+        token (str): IBM Quantum token.
+        backend (str): Backend name.
+        shots (int): Number of shots.
+    
+    Raises:
+        ValueError: When the token, backend or shots are not provided.
+        TypeError: When the token, backend or shots are not of the expected type -> (str, str, int) respectively.
+        ValueError: When the shots are less than or equal to zero.
+        ValueError: When the backend is not available.
+    """
     def __init__(self,
                  token:str=None,
                  backend:str=None,
                  shots:int=None):
         """
         Initialize the RunOnHardware class.
-
-        Args:
-            token (str): IBM Quantum token.
-            backend (str): Backend name.
-            shots (int): Number of shots.
-        
-        Raises:
-            ValueError: When the token, backend or shots are not provided.
-            TypeError: When the token, backend or shots are not of the expected type -> (str, str, int) respectively.
-            ValueError: When the shots are less than or equal to zero.
-            ValueError: When the backend is not available.
         """
         if token is None:
             raise ValueError("Please provide your IBM Quantum token.")

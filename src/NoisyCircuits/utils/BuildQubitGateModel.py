@@ -59,6 +59,19 @@ def _extract_kraus(instrs)->list:
 class BuildModel:
     """
     Module that generates the noise operators for each gate on each qubit from the noise model.
+
+    Args:
+        noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
+        num_qubits (int): The number of qubits in the model.
+        threshold (float, optional): The threshold for noise. Defaults to 1e-12.
+        basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.
+        verbose (bool): Flag to indicate whether logging is required or not. Defaults to True.
+               
+    Raises:
+        TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
+        ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
+        TypeError: If threshold is not a float or int.
+        ValueError: If basis_gates is None or not a list of lists of strings.
     """
     def __init__(self,
                  noise_model:dict,
@@ -68,19 +81,6 @@ class BuildModel:
                  verbose:bool=True)->None:
         """
         Initializes the BuildModel with a noise model, number of qubits, and an optional threshold.
-
-        Args:
-            noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
-            num_qubits (int): The number of qubits in the model.
-            threshold (float, optional): The threshold for noise. Defaults to 1e-12.
-            basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.
-            verbose (bool): Flag to indicate whether logging is required or not. Defaults to True.
-               
-        Raises:
-            TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
-            ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
-            TypeError: If threshold is not a float or int.
-            ValueError: If basis_gates is None or not a list of lists of strings.
         """
         if not isinstance(noise_model, dict):
             raise TypeError("Noise model must be a dictionary.")

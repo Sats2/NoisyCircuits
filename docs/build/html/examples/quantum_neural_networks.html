@@ -1,0 +1,787 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Neural Networks &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributing" href="../contributing.html" />
+    <link rel="prev" title="Running Multiple Circuits on Hardware" href="run_multiple_on_hardware.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction to NoisyCircuits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_on_hardware.html">Running Circuits on Hardware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Quantum Neural Networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Install-Necessary-Libraries">Install Necessary Libraries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Import-Necessary-Libraries">Import Necessary Libraries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Import-and-Pre-process-Data">Import and Pre-process Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Initialize-Quantum-Circuit-Instance-with-Noise">Initialize Quantum Circuit Instance with Noise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Running-the-QNN">Running the QNN</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Build-Quantum-Circuit-for-Quantum-Neural-Network">Build Quantum Circuit for Quantum Neural Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Define-Functions">Define Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Run-the-QNN">Run the QNN</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Run-the-QNN-with-Pure-Statevector-Simulation">Run the QNN with Pure Statevector Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Run-the-QNN-with-MCWF-Method-for-Noisy-Simulation">Run the QNN with MCWF Method for Noisy Simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Visualize-the-Results">Visualize the Results</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Pre-Processing-Training-and-Validation-Data">Pre-Processing Training and Validation Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Visualize-the-Data">Visualize the Data</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Shutdown-Parallel-Initialization">Shutdown Parallel Initialization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#downloads">Downloads</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Quantum Neural Networks</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/examples/quantum_neural_networks.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Quantum-Neural-Networks">
+<h1>Quantum Neural Networks<a class="headerlink" href="#Quantum-Neural-Networks" title="Link to this heading"></a></h1>
+<p>A Quantum Neural Network is built for a 2D CFD problem of determining the lift coefficient for varying angles of attack, <span class="math notranslate nohighlight">\(\alpha\in[0,15\degree]\)</span>. The tutorial below shows for a single feature (soon to be extended to multiple features).</p>
+<section id="Install-Necessary-Libraries">
+<h2>Install Necessary Libraries<a class="headerlink" href="#Install-Necessary-Libraries" title="Link to this heading"></a></h2>
+<p>Depending the environment manager, change the first command word to “mamba”/”conda”/”micromamba” for mamba users, miniconda/anaconda users and micromamba users respectively.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>conda<span class="w"> </span>install<span class="w"> </span>pandas<span class="w"> </span>scipy<span class="w"> </span>scikit-learn<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>-y
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Import-Necessary-Libraries">
+<h2>Import Necessary Libraries<a class="headerlink" href="#Import-Necessary-Libraries" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span> <span class="k">as</span> <span class="n">QC</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">root_mean_squared_error</span><span class="p">,</span> <span class="n">r2_score</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.GetNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2025-11-24 14:25:04,330 INFO util.py:154 -- Missing packages: [&#39;ipywidgets&#39;]. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.
+</pre></div></div>
+</div>
+</section>
+<section id="Import-and-Pre-process-Data">
+<h2>Import and Pre-process Data<a class="headerlink" href="#Import-and-Pre-process-Data" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;design_study_single_feature.csv&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x_train</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">x_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">beta_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+<span class="n">beta_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">x_train</span> <span class="o">=</span> <span class="n">x_train</span> <span class="o">/</span> <span class="n">beta_x</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y_train</span> <span class="o">/</span> <span class="n">beta_y</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">x_test</span> <span class="o">/</span> <span class="n">beta_x</span>
+<span class="n">y_test</span> <span class="o">=</span> <span class="n">y_test</span> <span class="o">/</span> <span class="n">beta_y</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Initialize-Quantum-Circuit-Instance-with-Noise">
+<h2>Initialize Quantum Circuit Instance with Noise<a class="headerlink" href="#Initialize-Quantum-Circuit-Instance-with-Noise" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum token</span>
+<span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_fez&quot;</span>
+<span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">num_trajectories</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mf">1e-4</span>
+<span class="n">jsonize</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">qpu_type</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>Run the code below to get the latest calibration data from IBM hardware</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+qiskit_runtime_service._discover_account:WARNING:2025-11-24 14:25:18,508: Loading account with the given token. A saved account will not be used.
+qiskit_runtime_service.__init__:WARNING:2025-11-24 14:25:22,942: Instance was not set at service instantiation. Free and trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and available plans: (open), the available account instances are: Open_Sys. If you need a specific instance set it explicitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService().
+qiskit_runtime_service.backends:WARNING:2025-11-24 14:25:22,944: Using instance: Open_Sys, plan: open
+qiskit_runtime_service.backends:WARNING:2025-11-24 14:25:23,137: Using instance: Open_Sys, plan: open
+</pre></div></div>
+</div>
+<p>Run the code below to use a sample noise model from IBM Hardware</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;eagle&quot;</span><span class="p">:</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../noise_models/Noise_Model_Eagle_QPU.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">elif</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;heron&quot;</span><span class="p">:</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../noise_models/Noise_Model_Heron_QPU.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported qpu_type. Supported types are &#39;eagle&#39; and &#39;heron&#39;.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nqc</span> <span class="o">=</span> <span class="n">QC</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
+         <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
+         <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
+         <span class="n">backend_qpu_type</span><span class="o">=</span><span class="s2">&quot;heron&quot;</span><span class="p">,</span>
+         <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
+         <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+         <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
+         <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Completed Extraction of two-qubit gate Errors.
+Starting post-processing on Single Qubit Errors.
+Completed post-processing on Single Qubit Errors.
+Processing two-qubit gate errors.
+Qubit pair (0, 1): 18/48 errors above threshold (30 filtered out)
+Qubit pair (1, 0): 18/48 errors above threshold (30 filtered out)
+Qubit pair (1, 2): 18/48 errors above threshold (30 filtered out)
+Qubit pair (2, 1): 18/48 errors above threshold (30 filtered out)
+Two Qubit Gate errors processed.
+Building Noise Operators for Two Qubit Gate Errors.
+Completed building Noise Operators for Two Qubit Gate Errors.
+Extracting Measurement Errors.
+Available qubits in roerror_map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]
+Requested qubits: [0, 1, 2]
+Completed Extraction of Measurement Errors.
+Preparing Qubit Connectivity Map for Requested Qubits
+Qubit Connectivity Map Prepared.
+Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.
+2025-11-24 14:25:36,575 INFO worker.py:2012 -- Started a local Ray instance.
+/Users/adam-ukj7r05xnu2fywx/miniconda3/envs/NoisyCircuits_New_Branch/lib/python3.10/site-packages/ray/_private/worker.py:2051: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+  warnings.warn(
+</pre></div></div>
+</div>
+</section>
+<section id="Running-the-QNN">
+<h2>Running the QNN<a class="headerlink" href="#Running-the-QNN" title="Link to this heading"></a></h2>
+<section id="Build-Quantum-Circuit-for-Quantum-Neural-Network">
+<h3>Build Quantum Circuit for Quantum Neural Network<a class="headerlink" href="#Build-Quantum-Circuit-for-Quantum-Neural-Network" title="Link to this heading"></a></h3>
+<p>Here, the original circuit is modified and the single feature is embedded across <span class="math notranslate nohighlight">\(3\)</span> qubits.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">quantum_circuit_pure</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">x_value</span><span class="p">):</span>
+    <span class="c1"># Reset the quantum circuit</span>
+    <span class="n">nqc</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+    <span class="c1"># Build the trainable layers</span>
+    <span class="n">total_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
+    <span class="k">for</span> <span class="n">layers</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_layers</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">):</span>
+            <span class="n">nqc</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">layers</span> <span class="o">+</span> <span class="n">q</span><span class="p">],</span> <span class="n">qubit</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">nqc</span><span class="o">.</span><span class="n">CX</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">q</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">):</span>
+            <span class="n">nqc</span><span class="o">.</span><span class="n">RX</span><span class="p">(</span><span class="n">x_value</span><span class="p">,</span> <span class="n">qubit</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
+    <span class="c1"># Execute the circuit</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">nqc</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">))</span>
+    <span class="c1"># Obtain the expectation value from the output probability distribution</span>
+    <span class="n">exp_val</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">):</span>
+        <span class="n">binary_val</span> <span class="o">=</span> <span class="nb">bin</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">)</span>
+        <span class="n">exp_val</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">binary_val</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">exp_val</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">quantum_circuit_noisy</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">x_value</span><span class="p">):</span>
+    <span class="n">nqc</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+    <span class="n">total_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
+    <span class="c1"># Build the trainable layers</span>
+    <span class="n">total_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
+    <span class="k">for</span> <span class="n">layers</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_layers</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">):</span>
+            <span class="n">nqc</span><span class="o">.</span><span class="n">RY</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">layers</span> <span class="o">+</span> <span class="n">q</span><span class="p">],</span> <span class="n">qubit</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">nqc</span><span class="o">.</span><span class="n">CX</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">q</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">):</span>
+            <span class="n">nqc</span><span class="o">.</span><span class="n">RX</span><span class="p">(</span><span class="n">x_value</span><span class="p">,</span> <span class="n">qubit</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
+    <span class="c1"># Execute circuit</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">),</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">exp_val</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">):</span>
+        <span class="n">binary_val</span> <span class="o">=</span> <span class="nb">bin</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">num_qubits</span><span class="p">)</span>
+        <span class="n">exp_val</span> <span class="o">+=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">binary_val</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">exp_val</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-Functions">
+<h3>Define Functions<a class="headerlink" href="#Define-Functions" title="Link to this heading"></a></h3>
+<p>Next we define the functions for predictions, loss function and accuracy functions</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">:</span><span class="nb">callable</span><span class="p">,</span>
+            <span class="n">x_array</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">weights</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[</span><span class="n">circuit_builder</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x_array</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">loss_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">:</span><span class="nb">callable</span><span class="p">,</span>
+                  <span class="n">x_array</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span>
+                  <span class="n">y_array</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span>
+                  <span class="n">weights</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">float</span><span class="p">:</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">,</span> <span class="n">x_array</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">cost_mse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">predictions</span> <span class="o">-</span> <span class="n">y_array</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta_y</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">cost_mse</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">accuracy_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">:</span><span class="nb">callable</span><span class="p">,</span>
+                      <span class="n">x_array</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="n">x_test</span><span class="p">,</span>
+                      <span class="n">y_array</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="n">y_test</span><span class="p">,</span>
+                      <span class="n">weights</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">predict</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">,</span> <span class="n">x_array</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta_y</span>
+    <span class="n">rmse</span> <span class="o">=</span> <span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y_array</span><span class="o">*</span><span class="n">beta_y</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">y_array</span><span class="o">*</span><span class="n">beta_y</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">rmse</span><span class="p">,</span> <span class="n">r2</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">cost_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">:</span><span class="nb">callable</span><span class="p">,</span>
+                  <span class="n">weights_init</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                  <span class="n">max_iter</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+    <span class="n">cost_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">accuracy_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">objective</span><span class="p">(</span><span class="n">weights</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                <span class="n">circuit_builder</span><span class="p">:</span><span class="nb">callable</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">float</span><span class="p">:</span>
+        <span class="k">global</span> <span class="n">iteration</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+        <span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+        <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch: </span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="se">\t</span><span class="s2">Loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">}</span><span class="se">\t</span><span class="s2">RMSE: </span><span class="si">{</span><span class="n">accuracy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="se">\t</span><span class="s2">R2: </span><span class="si">{</span><span class="n">accuracy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">cost_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">accuracy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">accuracy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+
+    <span class="n">opt</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">objective</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">weights_init</span><span class="p">,</span>
+                   <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">circuit_builder</span><span class="p">,),</span>
+                   <span class="n">method</span><span class="o">=</span><span class="s2">&quot;COBYLA&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="n">max_iter</span><span class="p">})</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">x</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">cost_list</span><span class="p">,</span> <span class="n">accuracy_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Run-the-QNN">
+<h2>Run the QNN<a class="headerlink" href="#Run-the-QNN" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">max_iter</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">num_layers</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">weights_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">*</span><span class="n">num_layers</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<section id="Run-the-QNN-with-Pure-Statevector-Simulation">
+<h3>Run the QNN with Pure Statevector Simulation<a class="headerlink" href="#Run-the-QNN-with-Pure-Statevector-Simulation" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">weights_pure</span><span class="p">,</span> <span class="n">cost_list_pure</span><span class="p">,</span> <span class="n">accuracy_list_pure</span> <span class="o">=</span> <span class="n">cost_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="o">=</span><span class="n">quantum_circuit_pure</span><span class="p">,</span>
+                                                                 <span class="n">weights_init</span><span class="o">=</span><span class="n">weights_init</span><span class="p">,</span>
+                                                                 <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch: 1        Loss: 3.454830909866049 RMSE: 1.9319106692028563        R2: -12.10339292059022
+Epoch: 2        Loss: 3.56994646458306  RMSE: 1.8946492544731053        R2: -11.602808255908469
+Epoch: 3        Loss: 4.704595233082039 RMSE: 2.3111165559432707        R2: -17.752249796348806
+Epoch: 4        Loss: 1.5483990197469788        RMSE: 1.480529052657062 R2: -6.695618858920884
+Epoch: 5        Loss: 1.230861973443168 RMSE: 1.3097994910528221        R2: -5.02308950335461
+Epoch: 6        Loss: 0.8551616038549804        RMSE: 1.0769189623423494        R2: -3.0716996091622804
+Epoch: 7        Loss: 1.2299945336077205        RMSE: 1.1561609938013857        R2: -3.6929541215934574
+Epoch: 8        Loss: 7.587313545229364 RMSE: 2.8000260649703717        R2: -26.525412141771408
+Epoch: 9        Loss: 0.7649561844164641        RMSE: 0.9754169686126138        R2: -2.3403370837269435
+Epoch: 10       Loss: 7.163772498614188 RMSE: 2.6949164339599285        R2: -24.49765777264604
+Epoch: 11       Loss: 3.0285161043769917        RMSE: 1.8033118435729605        R2: -10.41698294204521
+Epoch: 12       Loss: 1.0242159765622816        RMSE: 1.0385662795563428        R2: -2.7868501294488155
+Epoch: 13       Loss: 1.335088461069967 RMSE: 1.2645779620308404        R2: -4.614368319269251
+Epoch: 14       Loss: 0.9366643705370558        RMSE: 1.053335384511039 R2: -2.895319001575558
+Epoch: 15       Loss: 6.231598193369522 RMSE: 2.5605844173731622        R2: -22.019075567609725
+Epoch: 16       Loss: 0.6154104892756028        RMSE: 0.8411046836509448        R2: -1.483760893179432
+Epoch: 17       Loss: 0.6998947410456751        RMSE: 0.872802054157493 R2: -1.6744913744227237
+Epoch: 18       Loss: 2.949219630444034 RMSE: 1.7761230877274934        R2: -10.075307717144266
+Epoch: 19       Loss: 0.6525411263708176        RMSE: 0.7626686510775494        R2: -1.0421210075446292
+Epoch: 20       Loss: 2.726157438499308 RMSE: 1.6489325285396754        R2: -8.545868623689815
+Epoch: 21       Loss: 0.6269884221128723        RMSE: 0.8865096719642375        R2: -1.7591584318983626
+Epoch: 22       Loss: 0.6458591024323003        RMSE: 0.851860295585678 R2: -1.5476891380103552
+Epoch: 23       Loss: 0.5470675621326417        RMSE: 0.7534372201135788        R2: -0.9929840527628158
+Epoch: 24       Loss: 0.5522826463632788        RMSE: 0.7236028189758574        R2: -0.8382737360891499
+Epoch: 25       Loss: 0.6704205651174191        RMSE: 0.8408904743989827        R2: -1.4824959452512916
+Epoch: 26       Loss: 0.816584461520833 RMSE: 0.8332335502723088        R2: -1.437491889435519
+Epoch: 27       Loss: 0.4536442948959086        RMSE: 0.6924552517683559        R2: -0.683422428363567
+Epoch: 28       Loss: 0.5992607005120077        RMSE: 0.8182939291566015        R2: -1.3508685205682056
+Epoch: 29       Loss: 0.600900445992263 RMSE: 0.7628754822973148        R2: -1.0432287799724502
+Epoch: 30       Loss: 0.4119806022248366        RMSE: 0.6426429074957799        R2: -0.4499369577761789
+Epoch: 31       Loss: 0.4954768832841895        RMSE: 0.6370017715100803        R2: -0.42459351295283754
+Epoch: 32       Loss: 0.4446023715565923        RMSE: 0.6810587913781464        R2: -0.6284667248702926
+Epoch: 33       Loss: 0.48128616763939996       RMSE: 0.7045724600128702        R2: -0.7428540081723609
+Epoch: 34       Loss: 0.43277878531800473       RMSE: 0.609959857107424 R2: -0.3062075515013727
+Epoch: 35       Loss: 0.33898733147641574       RMSE: 0.5653905131270343        R2: -0.12229419422938959
+Epoch: 36       Loss: 0.3776335045500049        RMSE: 0.5973654318518545        R2: -0.25282340138500126
+Epoch: 37       Loss: 0.3991345532905464        RMSE: 0.6546626623598668        R2: -0.5046823504812312
+Epoch: 38       Loss: 0.4425487984577849        RMSE: 0.5613661562143281        R2: -0.10637444178566313
+Epoch: 39       Loss: 0.3614891333676637        RMSE: 0.570367873927123 R2: -0.14214118911875517
+Epoch: 40       Loss: 0.33988340045279225       RMSE: 0.5721806939005638        R2: -0.14941294063239208
+Epoch: 41       Loss: 0.34566158435458855       RMSE: 0.5270810701182012        R2: 0.02464094507532144
+Epoch: 42       Loss: 0.3534240044132843        RMSE: 0.5774901116468184        R2: -0.17084333101654336
+Epoch: 43       Loss: 0.3719815928931941        RMSE: 0.6173249553274578        R2: -0.33794219215637966
+Epoch: 44       Loss: 0.3501318048303204        RMSE: 0.5934233202166461        R2: -0.23634278977695433
+Epoch: 45       Loss: 0.3612881737019873        RMSE: 0.5748811375803633        R2: -0.16028799996612197
+Epoch: 46       Loss: 0.3358425580729827        RMSE: 0.5549818341777581        R2: -0.08135232408808979
+Epoch: 47       Loss: 0.3345176311218297        RMSE: 0.5412160426888981        R2: -0.02837380359969366
+Epoch: 48       Loss: 0.34693788998463715       RMSE: 0.5448494404917984        R2: -0.04222791395770398
+Epoch: 49       Loss: 0.3197780614479029        RMSE: 0.534405831223226 R2: -0.002656235105902738
+Epoch: 50       Loss: 0.29340856870280085       RMSE: 0.5182335364909233        R2: 0.05711069345625441
+Epoch: 51       Loss: 0.29283340396634816       RMSE: 0.5206060218914643        R2: 0.0484577929572767
+Epoch: 52       Loss: 0.3167495046590898        RMSE: 0.5529135653017508        R2: -0.07330752064132873
+Epoch: 53       Loss: 0.2584196306579488        RMSE: 0.4720050283091485        R2: 0.2178267977949795
+Epoch: 54       Loss: 0.2492765419892794        RMSE: 0.4720186320648859        R2: 0.21778171079003283
+Epoch: 55       Loss: 0.24481998834866683       RMSE: 0.4640249050823212        R2: 0.24405140651743662
+Epoch: 56       Loss: 0.23142637182695702       RMSE: 0.4384980855369535        R2: 0.32493578714929605
+Epoch: 57       Loss: 0.2223836225081187        RMSE: 0.3944329724700463        R2: 0.45379445200665935
+Epoch: 58       Loss: 0.22762503303655177       RMSE: 0.3974511401091375        R2: 0.4454034336663878
+Epoch: 59       Loss: 0.21220352569363013       RMSE: 0.3868389815855555        R2: 0.4746241027486118
+Epoch: 60       Loss: 0.23160176089297665       RMSE: 0.39869007724519373       R2: 0.4419404610173887
+Epoch: 61       Loss: 0.18971075918157962       RMSE: 0.3674857944840039        R2: 0.5258772513126664
+Epoch: 62       Loss: 0.18849953277009013       RMSE: 0.38452543516951737       R2: 0.4808894839558715
+Epoch: 63       Loss: 0.19113888624202  RMSE: 0.3944582143990479        R2: 0.45372454039283927
+Epoch: 64       Loss: 0.19892460330370235       RMSE: 0.403138352349255 R2: 0.42941819945254633
+Epoch: 65       Loss: 0.19081572847536085       RMSE: 0.3882726608079417        R2: 0.4707226537536333
+Epoch: 66       Loss: 0.20783276994826538       RMSE: 0.4199326350365055        R2: 0.380888406919038
+Epoch: 67       Loss: 0.2176140586631784        RMSE: 0.4335795888891794        R2: 0.33999482519130186
+Epoch: 68       Loss: 0.17579683789462086       RMSE: 0.3705177240051115        R2: 0.518021509233527
+Epoch: 69       Loss: 0.18150341154384797       RMSE: 0.3792064957191684        R2: 0.495151327802023
+Epoch: 70       Loss: 0.16663773127568748       RMSE: 0.32495256907208075       R2: 0.6292769138153168
+Epoch: 71       Loss: 0.1922275774707447        RMSE: 0.34758739247231396       R2: 0.5758321838235272
+Epoch: 72       Loss: 0.16111284864884595       RMSE: 0.3175657482251095        R2: 0.6459398972149903
+Epoch: 73       Loss: 0.14001824668967194       RMSE: 0.29427913540627454       R2: 0.6959614693633644
+Epoch: 74       Loss: 0.12511537457309305       RMSE: 0.2767694217159076        R2: 0.7310658864158199
+Epoch: 75       Loss: 0.12180506365362875       RMSE: 0.27635817575357174       R2: 0.7318644999329416
+Epoch: 76       Loss: 0.1141791390965006        RMSE: 0.27284116803529335       R2: 0.7386458008001024
+Epoch: 77       Loss: 0.11004694738488796       RMSE: 0.2735821567166276        R2: 0.7372242889455987
+Epoch: 78       Loss: 0.11356302935705102       RMSE: 0.2788121412984755        R2: 0.7270814558807582
+Epoch: 79       Loss: 0.09648604208365107       RMSE: 0.2551001549092286        R2: 0.7715289767100363
+Epoch: 80       Loss: 0.10203393527108641       RMSE: 0.26956178279507725       R2: 0.7448906817477166
+Epoch: 81       Loss: 0.11975168572629656       RMSE: 0.30355872782540394       R2: 0.676484472217411
+Epoch: 82       Loss: 0.08600898539968825       RMSE: 0.23897039007110454       R2: 0.799507621923048
+Epoch: 83       Loss: 0.0807548012520005        RMSE: 0.21451732466976617       R2: 0.8384397835636548
+Epoch: 84       Loss: 0.0798689409156635        RMSE: 0.21540898409808995       R2: 0.8370939148104753
+Epoch: 85       Loss: 0.09157773466094543       RMSE: 0.23250044074404666       R2: 0.8102170280947152
+Epoch: 86       Loss: 0.08031230772973856       RMSE: 0.21894268268388867       R2: 0.8317052561153515
+Epoch: 87       Loss: 0.12943204484853676       RMSE: 0.2996724713261647        R2: 0.6847149479491917
+Epoch: 88       Loss: 0.07520070728589184       RMSE: 0.20209881643713704       R2: 0.8566039387513187
+Epoch: 89       Loss: 0.08333843275464221       RMSE: 0.23510220260345477       R2: 0.8059457860534259
+Epoch: 90       Loss: 0.06636486705802135       RMSE: 0.1887215770699945        R2: 0.8749588968782656
+Epoch: 91       Loss: 0.07226459938248148       RMSE: 0.20696620589265233       R2: 0.8496136015595523
+Epoch: 92       Loss: 0.06774257018665532       RMSE: 0.1935452583281801        R2: 0.8684851620539171
+Epoch: 93       Loss: 0.0669397843612362        RMSE: 0.1890619596742546        R2: 0.8745074360573037
+Epoch: 94       Loss: 0.07383894350001129       RMSE: 0.21015155513341857       R2: 0.8449488832812037
+Epoch: 95       Loss: 0.06466897818595048       RMSE: 0.20068768176515606       R2: 0.8585994448023888
+Epoch: 96       Loss: 0.05405044615195179       RMSE: 0.1731267371255912        R2: 0.8947703877012373
+Epoch: 97       Loss: 0.04722691741984433       RMSE: 0.15404570343673263       R2: 0.9166877503769604
+Epoch: 98       Loss: 0.04351141610090064       RMSE: 0.14513566180737764       R2: 0.9260466320190165
+Epoch: 99       Loss: 0.045452131910265134      RMSE: 0.15117982788955098       R2: 0.9197588073083582
+Epoch: 100      Loss: 0.04400466532045673       RMSE: 0.1474884156593906        R2: 0.9236295230334725
+</pre></div></div>
+</div>
+</section>
+<section id="Run-the-QNN-with-MCWF-Method-for-Noisy-Simulation">
+<h3>Run the QNN with MCWF Method for Noisy Simulation<a class="headerlink" href="#Run-the-QNN-with-MCWF-Method-for-Noisy-Simulation" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">weights_noisy</span><span class="p">,</span> <span class="n">cost_list_noisy</span><span class="p">,</span> <span class="n">accuracy_list_noisy</span> <span class="o">=</span> <span class="n">cost_function</span><span class="p">(</span><span class="n">circuit_builder</span><span class="o">=</span><span class="n">quantum_circuit_noisy</span><span class="p">,</span>
+                                                                    <span class="n">weights_init</span><span class="o">=</span><span class="n">weights_init</span><span class="p">,</span>
+                                                                    <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+[2025-11-24 14:26:07,259 E 300206 300667] core_worker_process.cc:825: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Epoch: 1        Loss: 3.266844387752497 RMSE: 1.8742097832330815        R2: -11.33235685641193
+Epoch: 2        Loss: 3.363545096169023 RMSE: 1.8405661225802445        R2: -10.893578147399278
+Epoch: 3        Loss: 4.390450160124443 RMSE: 2.22103099674839  R2: -16.318844840720477
+Epoch: 4        Loss: 1.4851914490096139        RMSE: 1.4383280596805075        R2: -6.26315961226783
+Epoch: 5        Loss: 1.1791834487258788        RMSE: 1.2771894530335783        R2: -4.726909618460066
+Epoch: 6        Loss: 0.8132642933446546        RMSE: 1.0498983430258648        R2: -2.8699395639894814
+Epoch: 7        Loss: 1.2347498963035797        RMSE: 1.1598222496732873        R2: -3.7227238708193022
+Epoch: 8        Loss: 6.6481137419742975        RMSE: 2.624018978095908 R2: -23.173727691881346
+Epoch: 9        Loss: 0.7004953128825561        RMSE: 0.9500615511929945        R2: -2.16893380511014
+Epoch: 10       Loss: 6.085330064276107 RMSE: 2.48676509682838  R2: -20.71096906342106
+Epoch: 11       Loss: 2.0819982132095096        RMSE: 1.5330390932464533        R2: -7.251181524258245
+Epoch: 12       Loss: 0.7486046534360822        RMSE: 0.9198658526801025        R2: -1.970699182216233
+Epoch: 13       Loss: 1.137414079648382 RMSE: 1.1779922254537862        R2: -3.8718569805679506
+Epoch: 14       Loss: 0.7936900442990965        RMSE: 0.9958003185561167        R2: -2.4814022359684054
+Epoch: 15       Loss: 4.464438097563924 RMSE: 2.188979675040727 R2: -15.82260084404242
+Epoch: 16       Loss: 0.5526382485263999        RMSE: 0.818242732063185 R2: -1.3505743625258635
+Epoch: 17       Loss: 0.5235672431856587        RMSE: 0.7665294989750235        R2: -1.062848947340032
+Epoch: 18       Loss: 0.4493433176475171        RMSE: 0.6815819164659286        R2: -0.6309693545422899
+Epoch: 19       Loss: 0.6657371072489658        RMSE: 0.8871147389757695        R2: -1.762926118886774
+Epoch: 20       Loss: 0.9239142201751714        RMSE: 0.9998790749104924        R2: -2.509979998200954
+Epoch: 21       Loss: 0.4126043603975162        RMSE: 0.6404750210160135        R2: -0.44017104609740665
+Epoch: 22       Loss: 0.5902078159873211        RMSE: 0.603937424018628 R2: -0.2805412315136522
+Epoch: 23       Loss: 0.36143714585336  RMSE: 0.5788248470663782        R2: -0.17626185514385173
+Epoch: 24       Loss: 0.31999263788630905       RMSE: 0.5475300077781221        R2: -0.05250831166683034
+Epoch: 25       Loss: 0.27725025387601127       RMSE: 0.4098948953483506        R2: 0.4101321830006476
+Epoch: 26       Loss: 0.26232704603924417       RMSE: 0.3961995517508561        R2: 0.44889082429549754
+Epoch: 27       Loss: 0.25323737908444277       RMSE: 0.377581967670286 R2: 0.4994676255869269
+Epoch: 28       Loss: 0.254549165438136 RMSE: 0.3781190021941607        R2: 0.49804279946878527
+Epoch: 29       Loss: 0.2381172156065067        RMSE: 0.39003114697908675       R2: 0.4659176050420679
+Epoch: 30       Loss: 0.24998940172998527       RMSE: 0.3830043752023009        R2: 0.48498823245510503
+Epoch: 31       Loss: 0.2263125121283105        RMSE: 0.3839404788672394        R2: 0.4824676682438087
+Epoch: 32       Loss: 0.2278356044322623        RMSE: 0.4217044911924847        R2: 0.3756528482722169
+Epoch: 33       Loss: 0.22666592404790012       RMSE: 0.3863595215984063        R2: 0.4759256293718501
+Epoch: 34       Loss: 0.2635175886716787        RMSE: 0.44224610667985864       R2: 0.3133463724763915
+Epoch: 35       Loss: 0.23085413811548836       RMSE: 0.42552683787379636       R2: 0.3642833378694601
+Epoch: 36       Loss: 0.2249345601921247        RMSE: 0.3854287648894202        R2: 0.4784476233221595
+Epoch: 37       Loss: 0.2289134946771691        RMSE: 0.39479547067866816       R2: 0.45279002524505707
+Epoch: 38       Loss: 0.2262977473268631        RMSE: 0.3775069716538324        R2: 0.4996664391398743
+Epoch: 39       Loss: 0.22341887307372324       RMSE: 0.4078370907045363        R2: 0.41603996975667834
+Epoch: 40       Loss: 0.2348083737531108        RMSE: 0.42835309380535674       R2: 0.3558107130491933
+Epoch: 41       Loss: 0.23157440184399758       RMSE: 0.4205959405757274        R2: 0.37893102402293166
+Epoch: 42       Loss: 0.21678021423204505       RMSE: 0.39706942520754984       R2: 0.44646819908966506
+Epoch: 43       Loss: 0.19805787626513233       RMSE: 0.3610270399072095        R2: 0.5423967046575318
+Epoch: 44       Loss: 0.1886013417732241        RMSE: 0.33801340205642094       R2: 0.5988770389785454
+Epoch: 45       Loss: 0.18133312279983863       RMSE: 0.3246791240950596        R2: 0.6299005723021938
+Epoch: 46       Loss: 0.19364185731748734       RMSE: 0.3304935542497459        R2: 0.6165262243262759
+Epoch: 47       Loss: 0.18859518778101153       RMSE: 0.32740824155364884       R2: 0.6236526201413183
+Epoch: 48       Loss: 0.17226369452425666       RMSE: 0.3217335817495856        R2: 0.636585317179033
+Epoch: 49       Loss: 0.17209442146579132       RMSE: 0.32282621823591456       R2: 0.6341127471719998
+Epoch: 50       Loss: 0.17220153407955205       RMSE: 0.32795766539236215       R2: 0.6223884631055495
+Epoch: 51       Loss: 0.17169034855369736       RMSE: 0.3198528295308426        R2: 0.6408217119379673
+Epoch: 52       Loss: 0.18342725667032064       RMSE: 0.3226220399640414        R2: 0.6345754270783843
+Epoch: 53       Loss: 0.1689053485535207        RMSE: 0.3129493588404121        R2: 0.6561588787062528
+Epoch: 54       Loss: 0.1592067987600531        RMSE: 0.3214465622577361        R2: 0.6372334346101689
+Epoch: 55       Loss: 0.15055148883507768       RMSE: 0.31439148699303415       R2: 0.6529826109758431
+Epoch: 56       Loss: 0.17161692084712246       RMSE: 0.35914324205221027       R2: 0.5471596892467001
+Epoch: 57       Loss: 0.14980619303649467       RMSE: 0.3149451523210467        R2: 0.6517592911153738
+Epoch: 58       Loss: 0.13852305851205937       RMSE: 0.29503391832922543       R2: 0.6943998405662617
+Epoch: 59       Loss: 0.12970536975208627       RMSE: 0.27671545324423286       R2: 0.7311707574520133
+Epoch: 60       Loss: 0.11842243157870445       RMSE: 0.2640613290064243        R2: 0.7551955592520777
+Epoch: 61       Loss: 0.11455231132102556       RMSE: 0.2659572785631038        R2: 0.75166756736815
+Epoch: 62       Loss: 0.10897564712854695       RMSE: 0.2599532822885837        R2: 0.762753238439373
+Epoch: 63       Loss: 0.11175156353536124       RMSE: 0.2704391979978452        R2: 0.7432272331477519
+Epoch: 64       Loss: 0.11381742271542243       RMSE: 0.27227963094471375       R2: 0.7397204850459356
+Epoch: 65       Loss: 0.11188544159032149       RMSE: 0.26888549654052685       R2: 0.7461691308119016
+Epoch: 66       Loss: 0.10602351411146393       RMSE: 0.2493657841270646        R2: 0.7816850844992499
+Epoch: 67       Loss: 0.109680714767362 RMSE: 0.2468013489962528        R2: 0.7861522227405973
+Epoch: 68       Loss: 0.10578926679519744       RMSE: 0.24686771606801985       R2: 0.786037196148755
+Epoch: 69       Loss: 0.10652871843894514       RMSE: 0.25980600502989704       R2: 0.763021987919217
+Epoch: 70       Loss: 0.10770578280860785       RMSE: 0.25057075057580924       R2: 0.7795701373836834
+Epoch: 71       Loss: 0.11250627407148653       RMSE: 0.25769451109624436       R2: 0.7668582680058188
+Epoch: 72       Loss: 0.10999727355508263       RMSE: 0.24996231045722977       R2: 0.7806393406901015
+Epoch: 73       Loss: 0.10564922451288872       RMSE: 0.24586627607229397       R2: 0.7877695920136245
+Epoch: 74       Loss: 0.1049483991882473        RMSE: 0.24808940930622075       R2: 0.7839142477749833
+Epoch: 75       Loss: 0.10668383688833415       RMSE: 0.25101499509975433       R2: 0.7787878308610592
+Epoch: 76       Loss: 0.10053982678988581       RMSE: 0.23563059824888824       R2: 0.8050725264442262
+Epoch: 77       Loss: 0.1014281520758018        RMSE: 0.23601186962502999       R2: 0.8044411959204231
+Epoch: 78       Loss: 0.10256098401876422       RMSE: 0.23699692367539346       R2: 0.8028053629482489
+Epoch: 79       Loss: 0.0952688470201282        RMSE: 0.2314992515642193        R2: 0.8118479888917132
+Epoch: 80       Loss: 0.0914529340589813        RMSE: 0.22415868982768042       R2: 0.8235909580833313
+Epoch: 81       Loss: 0.08922295128865297       RMSE: 0.2216721070568305        R2: 0.827483046230383
+Epoch: 82       Loss: 0.08773978570317084       RMSE: 0.2214796087999558        R2: 0.8277825407767865
+Epoch: 83       Loss: 0.09199110405861648       RMSE: 0.23703490805536098       R2: 0.802742147644391
+Epoch: 84       Loss: 0.087345952344309 RMSE: 0.21969777582314465       R2: 0.8305424189779957
+Epoch: 85       Loss: 0.08752569539686267       RMSE: 0.21956062675167018       R2: 0.830753924948671
+Epoch: 86       Loss: 0.08826887350401184       RMSE: 0.22305343841535247       R2: 0.825326297109075
+Epoch: 87       Loss: 0.08414974755646161       RMSE: 0.21121422025513947       R2: 0.8433768368580995
+Epoch: 88       Loss: 0.08605436892741852       RMSE: 0.21136530918833707       R2: 0.8431526806392777
+Epoch: 89       Loss: 0.08297355217929117       RMSE: 0.20642236812237874       R2: 0.8504028932260352
+Epoch: 90       Loss: 0.08412561747244789       RMSE: 0.20591507513712798       R2: 0.8511372740242812
+Epoch: 91       Loss: 0.08371038084619434       RMSE: 0.20634343334234576       R2: 0.8505172815753956
+Epoch: 92       Loss: 0.08072620072465783       RMSE: 0.20378390253625178       R2: 0.8542027166106824
+Epoch: 93       Loss: 0.08133713291634324       RMSE: 0.2043093971309739        R2: 0.8534498164329092
+Epoch: 94       Loss: 0.08071987516290147       RMSE: 0.20399739090993896       R2: 0.8538970758934733
+Epoch: 95       Loss: 0.07928839614697542       RMSE: 0.2027820890490812        R2: 0.8556326888432345
+Epoch: 96       Loss: 0.07857479896347148       RMSE: 0.2025720517787334        R2: 0.8559315989925895
+Epoch: 97       Loss: 0.07863326215260154       RMSE: 0.20360892991112767       R2: 0.8544529776095688
+Epoch: 98       Loss: 0.07691867267717464       RMSE: 0.20098207619257596       R2: 0.8581842915909759
+Epoch: 99       Loss: 0.07786731056998854       RMSE: 0.20676429652677084       R2: 0.8499068823969117
+Epoch: 100      Loss: 0.07635463865591638       RMSE: 0.19966342662542913       R2: 0.8600391012589674
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Visualize-the-Results">
+<h2>Visualize the Results<a class="headerlink" href="#Visualize-the-Results" title="Link to this heading"></a></h2>
+<section id="Pre-Processing-Training-and-Validation-Data">
+<h3>Pre-Processing Training and Validation Data<a class="headerlink" href="#Pre-Processing-Training-and-Validation-Data" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Segregate the different metrics for quick and easy visualization.</p></li>
+<li><p>Cap the values of the <span class="math notranslate nohighlight">\(R^2\)</span> Score to lie between <span class="math notranslate nohighlight">\([-1,1]\)</span> for clean visualization, where an <span class="math notranslate nohighlight">\(R^2\)</span> Score of <span class="math notranslate nohighlight">\(-1\)</span>.</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">accuracy_data_pure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">accuracy_list_pure</span><span class="p">)</span>
+<span class="n">accuracy_data_noisy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">accuracy_list_noisy</span><span class="p">)</span>
+<span class="n">cost_data_pure</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cost_list_pure</span><span class="p">)</span>
+<span class="n">cost_data_noisy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cost_list_noisy</span><span class="p">)</span>
+<span class="n">rmse_pure</span> <span class="o">=</span> <span class="n">accuracy_data_pure</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">rmse_noisy</span> <span class="o">=</span> <span class="n">accuracy_data_noisy</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">r2_score_pure</span> <span class="o">=</span> <span class="n">accuracy_data_pure</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">r2_score_noisy</span> <span class="o">=</span> <span class="n">accuracy_data_noisy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">r2_score_pure_filtered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">r2_score_pure</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">r2_score_noisy_filtered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">r2_score_noisy</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">epoch_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Visualize-the-Data">
+<h3>Visualize the Data<a class="headerlink" href="#Visualize-the-Data" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">cost_data_pure</span><span class="p">,</span> <span class="n">rmse_pure</span><span class="p">,</span> <span class="n">r2_score_pure_filtered</span><span class="p">],</span> <span class="p">[</span><span class="n">cost_data_noisy</span><span class="p">,</span> <span class="n">rmse_noisy</span><span class="p">,</span> <span class="n">r2_score_noisy_filtered</span><span class="p">])):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epoch_list</span><span class="p">,</span> <span class="n">metric</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Pure Simulation&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epoch_list</span><span class="p">,</span> <span class="n">metric</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Noisy Simulation&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Epochs&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">([</span><span class="s2">&quot;Training Cost (MSE)&quot;</span><span class="p">,</span> <span class="s2">&quot;RMSE&quot;</span><span class="p">,</span> <span class="s2">&quot;$R^2$ Score&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">([</span><span class="s2">&quot;Training Loss (MSE)&quot;</span><span class="p">,</span> <span class="s2">&quot;Validation Loss (RMSE)&quot;</span><span class="p">,</span> <span class="s2">&quot;Validation Score: $R^2$&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_quantum_neural_networks_31_0.png" src="../_images/examples_quantum_neural_networks_31_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Shutdown-Parallel-Initialization">
+<h2>Shutdown Parallel Initialization<a class="headerlink" href="#Shutdown-Parallel-Initialization" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nqc</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="run_multiple_on_hardware.html" class="btn btn-neutral float-left" title="Running Multiple Circuits on Hardware" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

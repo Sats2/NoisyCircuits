@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="References" href="references.html" />
+    <link rel="prev" title="Quantum Neural Networks" href="examples/quantum_neural_networks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#development-workflow">Development Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing-guidelines">Contributing Guidelines</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#repository-structure">Repository Structure</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-new-qpus">Adding New QPUs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-help">Getting Help</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/contributing.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h1>
+<p>We welcome contributions to NoisyCircuits! If you would like to contribute, here’s how you can help:</p>
+<ul class="simple">
+<li><p><strong>Bug Reports</strong>: Report issues or unexpected behavior on our Github Issues page.</p></li>
+<li><p><strong>Feature Requests</strong>: Suggest new features or improvements by opening a feature request on our Github repository.</p></li>
+<li><p><strong>Documentation:</strong> Improvements to tutorials, examples or API documentation are always welcome.</p></li>
+<li><p><strong>Testing:</strong> Add test cases or improve validation coverage for existing features.</p></li>
+<li><p><strong>Code Contributions:</strong> Implement new features or optimize existing code.</p></li>
+</ul>
+<section id="development-workflow">
+<h2>Development Workflow<a class="headerlink" href="#development-workflow" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Fork the repository on GitHub.</p></li>
+</ol>
+<ol class="arabic simple" start="2">
+<li><p>Setup a development environment:</p></li>
+</ol>
+<ol class="arabic simple" start="3">
+<li><p>Make your changes and commit them with clear messages. Add tests for new features.</p></li>
+<li><p>Run the unit tests to ensure everything works as expected:</p></li>
+</ol>
+<ol class="arabic simple" start="5">
+<li><p>Run the Validation suite to ensure compliance with existing functionality</p></li>
+</ol>
+<ol class="arabic simple" start="6">
+<li><p>Push your changes to your fork and open a Pull Request against the main repository with a detailed description of your changes.</p></li>
+</ol>
+</section>
+<section id="contributing-guidelines">
+<h2>Contributing Guidelines<a class="headerlink" href="#contributing-guidelines" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Code Style:</strong> Follow PEP 8 python coding style guidelines.</p></li>
+<li><p>Maintain the existing repository structure (as shown below).</p></li>
+<li><p><strong>Documentation:</strong> Ensure all new features are well-documented with docstrings and examples.</p></li>
+<li><p><strong>Testing:</strong> Include unit tests for new features and ensure existing tests pass.</p></li>
+<li><p><strong>Backwards Compatibility:</strong> Maintain Compatibility with existing APIs unless there is a strong reason to break them.</p></li>
+</ul>
+<section id="repository-structure">
+<h3>Repository Structure<a class="headerlink" href="#repository-structure" title="Link to this heading"></a></h3>
+<p>The repository is organized as follows</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>NoisyCircuits/
+├── docs/                                           # Documentation source files
+│   ├── source/                                     # Sphinx documentation source (do not edit for API changes. Use docstrings)
+│   ├── build/                                      # Built documentation (files generated by Sphinx)
+├── src/NoisyCircuits/                              # Main package source code
+│   ├── __init__.py
+│   ├── QuantumCircuit.py                           # Core quantum circuit class
+│   ├── RunOnHardware.py                            # Module to create, submit and retreive quantum circuits from IBM Quantum hardware
+│   └── utils/                                      # Utility modules
+│       └── __init__.py
+│       ├── GetNoiseModel.py                        # IBM backend integration to retreive Calibration Data
+│       ├── BuildQubitGateModel.py                  # Module to generate the noise operators
+│       ├── DensityMatrixSolver.py                  # Module to simulate a circuit with the density matrix method
+│       ├── PureStateSolver.py                      # Module to simulate a circuit without noise (statevector simulator)
+│       └── ParallelExecutor.py                     # Module to simulate a circuit with the MCWF method
+│       └── Decomposition.py                        # Abstract class for QPU based gate decomposition
+│       └── EagleDecomposition.py                   # Gate Decomposition for Eagle QPU
+│       └── HeronDecomposition.py                   # Gate Decomposition for Heron QPU
+│       └── SwapSequence.py                         # Module that ensures correct qubit coupling
+├── tests/                                          # Unit test suite
+│   ├── test_BuildQubitGateModel_error_handling.py  # Unit tests for BuildQubitGateModel module
+│   ├── test_Decomposition_error_handling.py        # Unit tests for Decomposition module&#39;s error handling.
+|   ├── test_GateDecomposition.py                   # Unit tests for Gate Decomposition modules for all QPU implementations.
+│   ├── test_GetNoiseModel_error_handling.py        # Unit tests for GetNoiseModel module&#39;s error handling.
+|   ├── test_Integration.py                         # Integration tests for multiple modules working together.
+│   ├── test_QuantumCircuit_error_handling.py       # Unit tests for QuantumCircuit class
+│   ├── test_RunOnHardware_error_handling.py        # Unit tests for RunOnHardware class.
+├── noise_models/                                   # Directory with sample noise models
+│   ├── README.md                                   # Detailed documentation
+│   ├── Noise_Model_Eagle_QPU.pkl                   # Sample Noise Model for the Eagle QPU taken from IBM Brisbane calibration data
+│   ├── Noise_Model_Heron_QPU.pkl                   # Sample Noise Model for the Heron QPU taken from IBM Fez calibration data
+├── examples/                                       # Example suite and examples
+│   ├── README.md                                   # Detailed documentation
+│   ├── introduction.ipynb                          # Getting started tutorial
+│   ├── quantum_neural_networks.ipynb               # ML application example
+│   └── run_on_hardware.ipynb                       # Tutorial to create, submit and retreive a quantum circuit from hardware
+│   └── run_multiple_on_hardware.ipynb              # Tutorial to create, submit and retreive multiple quantum circuits from hardware
+│   └── design_study_single_feature.csv             # Sample dataset
+├── validation/                                     # Validation suite
+│   ├── README.md                                   # Detailed documentation
+│   ├── method_verification.ipynb                   # Validation against exact methods
+│   ├── Results_Log_File.txt                        # Results of the validation study compiled in a single log file
+├── environment.yml                                 # Conda environment specification
+├── setup.py                                        # Package installation configuration
+├── requirements.txt                                # Python dependencies
+└── LICENSE                                         # License information
+</pre></div>
+</div>
+</section>
+</section>
+<section id="adding-new-qpus">
+<h2>Adding New QPUs<a class="headerlink" href="#adding-new-qpus" title="Link to this heading"></a></h2>
+<p>To add support for a new QPU architecture, follow these steps:</p>
+<ol class="arabic simple">
+<li><p>Create a new decomposition module in <cite>src/NoisyCircuits/utils/</cite> that inherits from the <cite>Decomposition</cite> abstract class with the name of the QPU. For example, if the QPU is named “QuantumX”, create a file named <cite>QuantumXDecomposition.py</cite> which has a class <cite>QuantumXDecomposition(Decomposition)</cite>.</p></li>
+<li><p>Implement the required methods for gate decomposition specific to the new QPU architecture. Refer to existing implementations like <cite>EagleDecomposition.py</cite> and <cite>HeronDecomposition.py</cite> for guidance. Ensure that all implemented gates are covered in the decomposition and that the gate decomposition exactly matches the behavior of the original gates (i.e., no global phase differences).</p></li>
+<li><p>Update the method names in <cite>QuantumCircuit.py</cite> to include the new QPU architecture where necessary (as shown below):</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the new decomposition module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.QuantumXDecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumXDecomposition</span>
+<span class="o">...</span>
+<span class="c1"># Update the QPU information within the QuantumCircuit class attribute `basis_gates_set`</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuantumCircuit</span><span class="p">:</span>
+    <span class="o">...</span>
+    <span class="n">basis_gates_set</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;eagle&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;basis_gates&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ecr&quot;</span><span class="p">]],</span>
+            <span class="s2">&quot;gate_decomposition&quot;</span> <span class="p">:</span> <span class="n">EagleDecomposition</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;heron&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;basis_gates&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cz&quot;</span><span class="p">,</span> <span class="s2">&quot;rzz&quot;</span><span class="p">]],</span>
+            <span class="s2">&quot;gate_decomposition&quot;</span> <span class="p">:</span> <span class="n">HeronDecomposition</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;quantumx&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;basis_gates&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cx&quot;</span><span class="p">]],</span>
+            <span class="s2">&quot;gate_decomposition&quot;</span> <span class="p">:</span> <span class="n">QuantumXDecomposition</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Run the unit tests to ensure everything works as expected:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>Update the documentation to include information about the new QPU support.</p></li>
+<li><p>Submit a Pull Request with your changes and a detailed description of the new QPU support.</p></li>
+</ol>
+</section>
+<section id="getting-help">
+<h2>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading"></a></h2>
+<p>If you need assistance or have questions about contributing, feel free to reach out via our GitHub Discussions page or open an issue.</p>
+<ul class="simple">
+<li><p><strong>Author</strong>: Sathyamurthy Hegde</p></li>
+<li><p><strong>GitHub</strong>: <a class="reference external" href="https://github.com/Sats2">&#64;Sats2</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples/quantum_neural_networks.html" class="btn btn-neutral float-left" title="Quantum Neural Networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="references.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

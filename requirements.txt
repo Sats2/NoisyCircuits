@@ -1,7 +1,12 @@
+matplotlib
+pandoc
 pennylane
 qiskit
 qiskit-aer
 qiskit-ibm-runtime
-matplotlib
 ray
 pytest
+sphinx
+sphinx-rtd-theme
+nbsphinx
+phinxcontrib-bibtex

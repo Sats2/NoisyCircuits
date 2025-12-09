@@ -1,7 +1,7 @@
 """
-This module allows users to create and simulate quantum circuits with noise models based on IBM quantum machines. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors.
+This module allows users to create and simulate quantum circuits with noise models based on IBM quantum machines. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors.\n
 
-Example:
+Example:\n
     >>> from NoisyCircuits.QuantumCircuit import QuantumCircuit
     >>> circuit = QuantumCircuit(num_qubits=3, noise_model=my_noise_model, backend_qpu_type='Heron', num_trajectories=1000)
     >>> circuit.h(0)
@@ -13,6 +13,7 @@ Example:
     [0.39748485, 0.0037614 , 0.09168292, 0.00799886, 0.00746056, 0.09156762, 0.00367236, 0.39637143]
     >>> circuit.run_pure_state(qubits=[0, 1, 2]) # Executes the circuit using the pure state solver
     [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
+    >>> circuit.shutdown() # Shutdown the Ray parallel execution environment
 """
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -32,8 +33,35 @@ import ray
 
 
 class QuantumCircuit:
-    """
-    This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses RZ, SX and X gates for single qubit operations and ECR gate for two qubit operations as the basis gates.
+    r"""
+    This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)` and :math:`ECR`) / Heron (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)`, :math:`R_X(\theta)`, :math:`CZ` and :math:`RZZ(\theta)`) QPUs.
+
+    Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates, please refer to the Decomposition :func:`NoisyCircuits.utils.Decomposition` class documentation. 
+
+    Args:
+        num_qubits (int): The number of qubits in the circuit.
+        noise_model (dict): The noise model to be used for the circuit.
+        backend_qpu_type (str): The IBM Backend Architecture type to be used (Eagle or Heron).
+        num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.
+        num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.
+        jsonize (bool, optional): If True, the circuit will be serialized to JSON format. Defaults to False.
+        verbose (bool, optional): If False, suppresses detailed output during initialization. Defaults to True.
+        threshold (float, optional): The threshold for noise application. Defaults to 1e-12.
+
+    Raises:
+        TypeError: If num_qubits is not an integer.
+        ValueError: If num_qubits is less than 1.
+        TypeError: If the noise_model is not a dictionary.
+        TypeError: If the backend_qpu_type is not a string.
+        ValueError: If the backend_qpu_type is not one of ['Eagle', 'Heron'].
+        TypeError: If num_trajectories is not an integer.
+        ValueError: If num_trajectories is less than 1.
+        TypeError: If threshold is not a float.
+        ValueError: If threshold is not between 0 and 1 (exclusive).
+        TypeError: If num_cores is not an integer.
+        ValueError: If num_cores is less than 1.
+        TypeError: If jsonize is not a boolean.
+        TypeError: If verbose is not a boolean.
     """
 
     # Update QPU Basis Gates Here!
@@ -59,31 +87,6 @@ class QuantumCircuit:
                  threshold:float=1e-12)->None:
         """
         Initializes the QuantumCircuit with the specified number of qubits, noise model, number of trajectories for Monte-Carlo simulation, and threshold for noise application.
-
-        Args:
-            num_qubits (int): The number of qubits in the circuit.
-            noise_model (dict): The noise model to be used for the circuit.
-            backend_qpu_type (str): The IBM Backend Architecture type to be used (Eagle or Heron).
-            num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.
-            num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.
-            jsonize (bool, optional): If True, the circuit will be serialized to JSON format. Defaults to False.
-            verbose (bool, optional): If False, suppresses detailed output during initialization. Defaults to True.
-            threshold (float, optional): The threshold for noise application. Defaults to 1e-12.
-
-        Raises:
-            TypeError: If num_qubits is not an integer.
-            ValueError: If num_qubits is less than 1.
-            TypeError: If the noise_model is not a dictionary.
-            TypeError: If the backend_qpu_type is not a string.
-            ValueError: If the backend_qpu_type is not one of ['Eagle', 'Heron'].
-            TypeError: If num_trajectories is not an integer.
-            ValueError: If num_trajectories is less than 1.
-            TypeError: If threshold is not a float.
-            ValueError: If threshold is not between 0 and 1 (exclusive).
-            TypeError: If num_cores is not an integer.
-            ValueError: If num_cores is less than 1.
-            TypeError: If jsonize is not a boolean.
-            TypeError: If verbose is not a boolean.
         """
         if not isinstance(num_qubits, int):
             raise TypeError("Number of qubits must be an integer.")

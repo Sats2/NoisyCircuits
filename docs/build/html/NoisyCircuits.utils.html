@@ -1,0 +1,1031 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoisyCircuits.utils package &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Theory" href="theory.html" />
+    <link rel="prev" title="User Guide" href="NoisyCircuits.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="NoisyCircuits.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="NoisyCircuits.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">NoisyCircuits.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.BuildQubitGateModel">NoisyCircuits.utils.BuildQubitGateModel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.Decomposition">NoisyCircuits.utils.Decomposition module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.GetNoiseModel">NoisyCircuits.utils.GetNoiseModel module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.html#module-NoisyCircuits.QuantumCircuit">QuantumCircuit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.html#module-NoisyCircuits.RunOnHardware">RunOnHardware</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="NoisyCircuits.html">User Guide</a></li>
+      <li class="breadcrumb-item active">NoisyCircuits.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/NoisyCircuits.utils.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="noisycircuits-utils-package">
+<h1>NoisyCircuits.utils package<a class="headerlink" href="#noisycircuits-utils-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-NoisyCircuits.utils.BuildQubitGateModel">
+<span id="noisycircuits-utils-buildqubitgatemodel-module"></span><h2>NoisyCircuits.utils.BuildQubitGateModel module<a class="headerlink" href="#module-NoisyCircuits.utils.BuildQubitGateModel" title="Link to this heading"></a></h2>
+<p>This module allows users to generate the noise operators for single qubit and two qubit gates from the noise model dictionary obtained from the the calibration data from IBM Hardware using the class BuildModel.</p>
+<p>The module allows users to filter out noise instructions that have a certain user-defined probability of occurrance (called threshold). The output from the module are the noise operators for single and two qubit gates, the connectivity chart for the specified device and the error operators on the measurement operation.</p>
+<p>The connectivity chart is created from the two qubit gate instruction set where the directionality and the connection between qubits in the hardware is considered. An example usage is as follows:</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.BuildQubitGateModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuildModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BuildModel</span><span class="p">(</span><span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span> <span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">basis_gates</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;u1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cx&quot;</span><span class="p">]],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">single_qubit_noise</span><span class="p">,</span> <span class="n">two_qubit_noise</span><span class="p">,</span> <span class="n">connectivity</span><span class="p">,</span> <span class="n">measurement_noise</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build_qubit_gate_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.BuildQubitGateModel.</span></span><span class="sig-name descname"><span class="pre">BuildModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Module that generates the noise operators for each gate on each qubit from the noise model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise_model</strong> (<em>dict</em>) – The noise model to use. Provided as a JSON-ised dictionary.</p></li>
+<li><p><strong>num_qubits</strong> (<em>int</em>) – The number of qubits in the model.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The threshold for noise. Defaults to 1e-12.</p></li>
+<li><p><strong>basis_gates</strong> (<em>list</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of basis gates for single qubit and two qubit operators.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Flag to indicate whether logging is required or not. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If noise_model is not a dictionary or num_qubits is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If num_qubits is not a positive integer or threshold is not between 0 and 1.</p></li>
+<li><p><strong>TypeError</strong> – If threshold is not a float or int.</p></li>
+<li><p><strong>ValueError</strong> – If basis_gates is None or not a list of lists of strings.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix">
+<span class="sig-name descname"><span class="pre">build_full_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_full_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix" title="Link to this definition"></a></dt>
+<dd><p>Extends a single-qubit operator P to a full system operator by applying P to the nth qubit and identity to all others.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>P</strong> (<em>np.ndarray</em>) – The single-qubit operator to extend.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – The index of the qubit to which P is applied.</p></li>
+<li><p><strong>system</strong> (<em>int</em>) – The total number of qubits in the system.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The full system operator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix_2qubit">
+<span class="sig-name descname"><span class="pre">build_full_matrix_2qubit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit_pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_full_matrix_2qubit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix_2qubit" title="Link to this definition"></a></dt>
+<dd><p>Extends a 2 qubit operator P to a full system operator by applying P to the specified qubit pair and identity to all others.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>P</strong> (<em>np.ndarray</em>) – The two-qubit operator to extend (4x4 matrix).</p></li>
+<li><p><strong>qubit_pairt</strong> (<em>tuple</em>) – Tuple of qubit indices to which P is applied.</p></li>
+<li><p><strong>system</strong> (<em>int</em>) – Total number of qubits in the system.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The full system operator (2^system x 2^system matrix).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model">
+<span class="sig-name descname"><span class="pre">build_qubit_gate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_qubit_gate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model" title="Link to this definition"></a></dt>
+<dd><p>Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>threshold</strong> (<em>float</em>) – cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates). Default is 1e-12, which means no filtering as lowest recorded probabilities are approximately 1e-11.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the noise model does not contain information regarding the specified basis gates.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[dict, dict, dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system">
+<span class="sig-name descname"><span class="pre">extend_kraus_to_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kraus_ops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extend_kraus_to_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system" title="Link to this definition"></a></dt>
+<dd><p>Extends Kraus operators to the full system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kraus_ops</strong> (<em>list</em>) – List of Kraus operators for the subsystem.</p></li>
+<li><p><strong>qubit_idx</strong> (<em>int</em>) – Index of the qubit to which the operators are applied.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of extended Kraus operators for the full system.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system_multiqubit">
+<span class="sig-name descname"><span class="pre">extend_kraus_to_system_multiqubit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kraus_ops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit_pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extend_kraus_to_system_multiqubit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system_multiqubit" title="Link to this definition"></a></dt>
+<dd><p>Extends Kraus operators for a two-qubit gate to the full system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kraus_ops</strong> (<em>list</em>) – List of Kraus operators for the two-qubit gate.</p></li>
+<li><p><strong>qubit_pair</strong> (<em>tuple</em>) – Tuple of qubit indices for which the Kraus operators are defined.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of extended Kraus operators for the full system.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_measurement_errors">
+<span class="sig-name descname"><span class="pre">extract_measurement_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extract_measurement_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_measurement_errors" title="Link to this definition"></a></dt>
+<dd><p>Extracts the measurement errors from the noise model data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em>) – List of Noise model entries from Qiskit JSON.</p></li>
+<li><p><strong>extract_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of qubits for which to extract measurement errors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If requested qubit index exceeds available qubit indices in measurement error data.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary of measurement errors for the specified qubits.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_single_qubit_qerrors">
+<span class="sig-name descname"><span class="pre">extract_single_qubit_qerrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_ops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extract_single_qubit_qerrors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_single_qubit_qerrors" title="Link to this definition"></a></dt>
+<dd><p>Extracts single-qubit quantum errors for the specified gates and qubits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em>) – List of Noise model entries from Qiskit JSON.</p></li>
+<li><p><strong>target_ops</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – Gate operations to include.</p></li>
+<li><p><strong>allowed_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Qubits to include in output.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nested dictionary of format: single_qubit_instructions[q][op] = {instructions, probabilities, kraus}</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_two_qubit_errors">
+<span class="sig-name descname"><span class="pre">extract_two_qubit_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extract_two_qubit_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_two_qubit_errors" title="Link to this definition"></a></dt>
+<dd><p>Extracts ECR errors from the noise model data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em>) – List of Noise model entries from Qiskit JSON.</p></li>
+<li><p><strong>allowed_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of allowed qubits.</p></li>
+<li><p><strong>basis_gates</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of basis gates to consider.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of extracted ECR errors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.get_two_qubit_gate_noise_operators">
+<span class="sig-name descname"><span class="pre">get_two_qubit_gate_noise_operators</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">two_qubit_gate_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.get_two_qubit_gate_noise_operators"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.get_two_qubit_gate_noise_operators" title="Link to this definition"></a></dt>
+<dd><p>Constructs the Error Operators for the two-qubit gates from the processed error instructions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>two_qubit_gate_errors</strong> (<em>dict</em>) – The processed two-qubit gate errors.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of two-qubit gate error operators.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_single_qubit_errors">
+<span class="sig-name descname"><span class="pre">post_process_single_qubit_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">single_qubit_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.post_process_single_qubit_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_single_qubit_errors" title="Link to this definition"></a></dt>
+<dd><p>Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without further processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>single_qubit_errors</strong> (<em>dict</em>) – The dictionary of single-qubit errors extracted from the noise model.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of post-processed single-qubit errors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_two_qubit_errors">
+<span class="sig-name descname"><span class="pre">post_process_two_qubit_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">two_qubit_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.post_process_two_qubit_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_two_qubit_errors" title="Link to this definition"></a></dt>
+<dd><p>Post-processes the ECR errors to create a dictionary of instructions, probabilities, and Kraus operators for each qubit pair.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>two_qubit_errors</strong> (<em>dict</em>) – The two-qubit gate errors to process.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The probability threshold for filtering errors. Defaults to 1e-12.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the processed two-qubit errors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NoisyCircuits.utils.Decomposition">
+<span id="noisycircuits-utils-decomposition-module"></span><h2>NoisyCircuits.utils.Decomposition module<a class="headerlink" href="#module-NoisyCircuits.utils.Decomposition" title="Link to this heading"></a></h2>
+<p>This module provides the skeleton for users/developers to add custom decompositions for the different gates. This module only contains abstract classes and methods, providing error handling to the specific backend decomposition classes.</p>
+<p>This module includes the following classes:</p>
+<ul class="simple">
+<li><p><cite>Decomposition</cite> - Abstract class that acts as a template to the specific QPU decompositions.</p></li>
+<li><p><cite>ShapeMismatchError</cite> - Execption handling for errors in dimensionality mismatch to the size of the unitary matrix to the applied qubits.</p></li>
+<li><p><cite>NonSquareMatrixError</cite> - Execption handling for errors where the unitary matrix is not of size (N,N)</p></li>
+<li><p><cite>NonUnitaryMatrixError</cite> - Execption handling for errors where the input matrix is not a unitary matrix.</p></li>
+</ul>
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.Decomposition.</span></span><span class="sig-name descname"><span class="pre">Decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different QPUs with varying basis gates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_qubits</strong> (<em>int</em>) – The number of qubits in the quantum circuit.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.CRX">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CRX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.CRX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.CRX" title="Link to this definition"></a></dt>
+<dd><p>Applies the CRX (Controlled RX) gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}CRX(\theta, q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; \cos(\theta/2) &amp; -i\sin(\theta/2) \\
+0 &amp; 0 &amp; -i\sin(\theta/2) &amp; \cos(\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The rotation angle.</p></li>
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.CRY">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CRY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.CRY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.CRY" title="Link to this definition"></a></dt>
+<dd><p>Applies the CRY (Controlled RY) gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}CRY(\theta, q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; \cos(\theta/2) &amp; \sin(\theta/2) \\
+0 &amp; 0 &amp; \sin(\theta/2) &amp; \cos(\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The rotation angle.</p></li>
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.CRZ">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CRZ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.CRZ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.CRZ" title="Link to this definition"></a></dt>
+<dd><p>Applies the CRZ (Controlled RZ) gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}CRZ(\theta, q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; \exp(-i\theta/2) &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; \exp(i\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The rotation angle.</p></li>
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.CX">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.CX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.CX" title="Link to this definition"></a></dt>
+<dd><p>Applies the CX (CNOT) gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}CX(q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1 \\
+0 &amp; 0 &amp; 1 &amp; 0
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.CY">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.CY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.CY" title="Link to this definition"></a></dt>
+<dd><p>Applies the CY gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}CY(q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; -i \\
+0 &amp; 0 &amp; i &amp; 0
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.CZ">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CZ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.CZ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.CZ" title="Link to this definition"></a></dt>
+<dd><p>Applies the CZ gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}CZ(q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; -1
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.ECR">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ECR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.ECR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.ECR" title="Link to this definition"></a></dt>
+<dd><p>Applies the ECR (Echoed Cross Resonance) gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}ECR(q_0, q_1) = \frac{1}{\sqrt{2}}\begin{pmatrix}
+0 &amp; 0 &amp; 1 &amp; i \\
+0 &amp; 0 &amp; i &amp; 1 \\
+1 &amp; -i &amp; 0 &amp; 0 \\
+-i &amp; 1 &amp; 0 &amp; 0
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>control</strong> (<em>int</em>) – The control qubit.</p></li>
+<li><p><strong>target</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If control/target is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If control/target is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.H">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.H" title="Link to this definition"></a></dt>
+<dd><p>Applies the H gate which is a Hadamard gate. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}H = \frac{1}{\sqrt{2}}\begin{pmatrix}
+1 &amp; 1 \\
+1 &amp; -1
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.RX">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.RX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.RX" title="Link to this definition"></a></dt>
+<dd><p>Applies the RX gate which is a rotation around the X-axis by an angle of <span class="math notranslate nohighlight">\(\theta\)</span>. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}RX(\theta) = \begin{pmatrix}
+\cos(\theta/2) &amp; -i\sin(\theta/2) \\
+-i\sin(\theta/2) &amp; \cos(\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The rotation angle.</p></li>
+<li><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.RXX">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RXX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.RXX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.RXX" title="Link to this definition"></a></dt>
+<dd><p>Applies the RXX Coupling Gate (Ising XX) <span class="math notranslate nohighlight">\(XX(\theta)\)</span> which effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}XX(\theta) = \begin{pmatrix}
+\cos(\theta/2) &amp; 0 &amp; 0 &amp; -i\sin(\theta/2) \\
+0 &amp; \cos(\theta/2) &amp; -i\sin(\theta/2) &amp; 0 \\
+0 &amp; -i\sin(\theta/2) &amp; \cos(\theta/2) &amp; 0 \\
+-i\sin(\theta/2) &amp; 0 &amp; 0 &amp; \cos(\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The angle of rotation.</p></li>
+<li><p><strong>qubit1</strong> (<em>int</em>) – The first qubit.</p></li>
+<li><p><strong>qubit2</strong> (<em>int</em>) – The second qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If qubit1/qubit2 is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit1/qubit2 is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.RY">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.RY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.RY" title="Link to this definition"></a></dt>
+<dd><p>Applies the RY gate which is a rotation around the Y-axis by an angle of <span class="math notranslate nohighlight">\(\theta\)</span>. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}RY(\theta) = \begin{pmatrix}
+\cos(\theta/2) &amp; -\sin(\theta/2) \\
+\sin(\theta/2) &amp; \cos(\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The rotation angle.</p></li>
+<li><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.RYY">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RYY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.RYY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.RYY" title="Link to this definition"></a></dt>
+<dd><p>Applies the RYY Coupling Gate (Ising YY) <span class="math notranslate nohighlight">\(YY(\theta)\)</span> which effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}YY(\theta) = \begin{pmatrix}
+\cos(\theta/2) &amp; 0 &amp; 0 &amp; i\sin(\theta/2) \\
+0 &amp; \cos(\theta/2) &amp; -i\sin(\theta/2) &amp; 0 \\
+0 &amp; -i\sin(\theta/2) &amp; \cos(\theta/2) &amp; 0 \\
+i\sin(\theta/2) &amp; 0 &amp; 0 &amp; \cos(\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The angle of rotation.</p></li>
+<li><p><strong>qubit1</strong> (<em>int</em>) – The first qubit.</p></li>
+<li><p><strong>qubit2</strong> (<em>int</em>) – The second qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If qubit1/qubit2 is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit1/qubit2 is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.RZ">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RZ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.RZ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.RZ" title="Link to this definition"></a></dt>
+<dd><p>Applies the RZ gate which is a rotation around the Z-axis by an angle of <span class="math notranslate nohighlight">\(\theta\)</span>. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}RZ(\theta) = \begin{pmatrix}
+e^{-i\theta/2} &amp; 0 \\
+0 &amp; e^{i\theta/2}
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The rotation angle.</p></li>
+<li><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.RZZ">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RZZ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.RZZ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.RZZ" title="Link to this definition"></a></dt>
+<dd><p>Applies the RZZ Coupling Gate (Ising ZZ) <span class="math notranslate nohighlight">\(ZZ(\theta)\)</span> which effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}ZZ(\theta) = \begin{pmatrix}
+\exp(-i\theta/2) &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; \exp(i\theta/2) &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; \exp(i\theta/2) &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; \exp(-i\theta/2)
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>int</em><em> | </em><em>float</em>) – The angle of rotation.</p></li>
+<li><p><strong>qubit1</strong> (<em>int</em>) – The first qubit.</p></li>
+<li><p><strong>qubit2</strong> (<em>int</em>) – The second qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If theta is not an integer or float.</p></li>
+<li><p><strong>TypeError</strong> – If qubit1/qubit2 is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit1/qubit2 is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.SWAP">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SWAP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.SWAP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.SWAP" title="Link to this definition"></a></dt>
+<dd><p>Applies the SWAP gate between two qubits. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}SWAP(q_0, q_1) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 1 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qubit1</strong> (<em>int</em>) – The first qubit.</p></li>
+<li><p><strong>qubit2</strong> (<em>int</em>) – The second qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit1/qubit2 is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit1/qubit2 is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.SX">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.SX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.SX" title="Link to this definition"></a></dt>
+<dd><p>Applies the SX gate which is a square root of the X gate. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}SX = \frac{1}{2}\begin{pmatrix}
+1+i &amp; 1-i \\
+1-i &amp; 1+i
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.X">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">X</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.X"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.X" title="Link to this definition"></a></dt>
+<dd><p>Applies the X gate which is a Pauli-X gate. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}X = \begin{pmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.Y">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.Y"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.Y" title="Link to this definition"></a></dt>
+<dd><p>Applies the Y gate which is a Pauli-Y gate. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}Y = \begin{pmatrix}
+0 &amp; -i \\
+i &amp; 0
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.Z">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.Z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.Z" title="Link to this definition"></a></dt>
+<dd><p>Applies the Z gate which is a Pauli-Z gate. Effectively applies the unitary:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}Z = \begin{pmatrix}
+1 &amp; 0 \\
+0 &amp; -1
+\end{pmatrix}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubit</strong> (<em>int</em>) – The target qubit.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If the qubit is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.apply_swap_decomposition">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_swap_decomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubit1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.apply_swap_decomposition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.apply_swap_decomposition" title="Link to this definition"></a></dt>
+<dd><p>Applies the SWAP decomposition to the circuit for every SWAP call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qubit1</strong> (<em>int</em>) – The first qubit.</p></li>
+<li><p><strong>qubit2</strong> (<em>int</em>) – The second qubit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubit1/qubit2 is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If qubit1/qubit2 is out of range.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.Decomposition.apply_unitary">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply_unitary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unitary_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#Decomposition.apply_unitary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.Decomposition.apply_unitary" title="Link to this definition"></a></dt>
+<dd><p>Applies a unitary operation to the specified qubits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unitary_matrix</strong> (<em>np.ndarray</em>) – The unitary matrix to apply.</p></li>
+<li><p><strong>qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – The list of qubits to which the unitary matrix will be applied.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If unitary_matrix is not a numpy ndarray.</p></li>
+<li><p><strong>TypeError</strong> – If any qubit in the qubits list is not an integer or if qubits is not a list.</p></li>
+<li><p><strong>ValueError</strong> – If any qubit in the qubits list is out of range.</p></li>
+<li><p><a class="reference internal" href="#NoisyCircuits.utils.Decomposition.NonSquareMatrixError" title="NoisyCircuits.utils.Decomposition.NonSquareMatrixError"><strong>NonSquareMatrixError</strong></a> – If the unitary matrix is not square.</p></li>
+<li><p><a class="reference internal" href="#NoisyCircuits.utils.Decomposition.ShapeMismatchError" title="NoisyCircuits.utils.Decomposition.ShapeMismatchError"><strong>ShapeMismatchError</strong></a> – If the shape of the unitary matrix does not match the state of the qubits for the provided number of qubits.</p></li>
+<li><p><a class="reference internal" href="#NoisyCircuits.utils.Decomposition.NonUnitaryMatrixError" title="NoisyCircuits.utils.Decomposition.NonUnitaryMatrixError"><strong>NonUnitaryMatrixError</strong></a> – If the matrix is not unitary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.NonSquareMatrixError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.Decomposition.</span></span><span class="sig-name descname"><span class="pre">NonSquareMatrixError</span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#NonSquareMatrixError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.NonSquareMatrixError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors in the shape of input arrays.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.NonUnitaryMatrixError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.Decomposition.</span></span><span class="sig-name descname"><span class="pre">NonUnitaryMatrixError</span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#NonUnitaryMatrixError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.NonUnitaryMatrixError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors in the shape of input arrays.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.Decomposition.ShapeMismatchError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.Decomposition.</span></span><span class="sig-name descname"><span class="pre">ShapeMismatchError</span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#ShapeMismatchError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.ShapeMismatchError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised for errors in the shape of input arrays.</p>
+</dd></dl>
+
+</section>
+<section id="module-NoisyCircuits.utils.GetNoiseModel">
+<span id="noisycircuits-utils-getnoisemodel-module"></span><h2>NoisyCircuits.utils.GetNoiseModel module<a class="headerlink" href="#module-NoisyCircuits.utils.GetNoiseModel" title="Link to this heading"></a></h2>
+<p>This module allows the user to get the raw noise model dictionary from the calibration data of IBM quantum hardware (user’s choice) using their IBM token. This raw noise model can be provided to the QuantumCircuit or BuildQubitGateModel modules for post-processing. The BuildQubitGateModel module returns the post-processed noise operators for each standardized gate on each qubit whereas the QuantumCircuit module uses the post-processed noise model to perform quantum circuit simulations under noise.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.GetNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.GetNoiseModel.GetNoiseModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.GetNoiseModel.</span></span><span class="sig-name descname"><span class="pre">GetNoiseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ibm_quantum_platform'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/GetNoiseModel.html#GetNoiseModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.GetNoiseModel.GetNoiseModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to retrieve the noise model of a specified IBM Quantum backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>backend_name</strong> (<em>str</em>) – The name of the IBM Quantum backend.</p></li>
+<li><p><strong>token</strong> (<em>str</em>) – The IBM Quantum API token.</p></li>
+<li><p><strong>channel</strong> (<em>str</em>) – The IBM Quantum channel to use. Default is “ibm_quantum_platform”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If backend_name, token or channel is not a string.</p></li>
+<li><p><strong>ValueError</strong> – If channel is not one of the accepted values.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.GetNoiseModel.GetNoiseModel.get_noise_model">
+<span class="sig-name descname"><span class="pre">get_noise_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/GetNoiseModel.html#GetNoiseModel.get_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.GetNoiseModel.GetNoiseModel.get_noise_model" title="Link to this definition"></a></dt>
+<dd><p>Method to retrieve the noise model from the specified backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the backend_name is invalid or not found in the user’s account,
+    or if there is an issue connecting to the IBM Quantum Runtime Service.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The noise model of the specified backend in dictionary format.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="NoisyCircuits.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="theory.html" class="btn btn-neutral float-right" title="Theory" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,10 +1,11 @@
-name: NoisyCircuits_New_Branch
+name: NoisyCircuits_test
 channels:
   - conda-forge
 dependencies:
   - python=3.10.14
   - joblib
   - pip
+  - pandoc
   - matplotlib
   - pip:
     - pennylane
@@ -13,3 +14,8 @@ dependencies:
     - qiskit-ibm-runtime
     - ray
     - pytest
+    - sphinx
+    - sphinx-rtd-theme
+    - nbsphinx
+    - sphinxcontrib-bibtex
+    - ipykernel

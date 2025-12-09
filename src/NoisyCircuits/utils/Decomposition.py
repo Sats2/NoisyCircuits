@@ -29,14 +29,14 @@ class NonUnitaryMatrixError(Exception):
 class Decomposition(ABC):
     """
     Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different QPUs with varying basis gates.
+
+    Args:
+        num_qubits (int): The number of qubits in the quantum circuit.
     """
     def __init__(self,
                  num_qubits:int)->None:
         """
         Initializes the Decomposition class.
-
-        Args:
-            num_qubits (int): The number of qubits in the quantum circuit.
         """
         self.num_qubits = num_qubits
 
