@@ -73,40 +73,13 @@ class DensityMatrixSolver:
 
         @qml.qnode(dev_mixed)
         def run_circuit():
-            # Define gate execution functions
-            gate_executors = {
-                "x": lambda params, qubits: qml.X(qubits),
-                "sx": lambda params, qubits: qml.SX(qubits),
-                "rz": lambda params, qubits: qml.RZ(params, qubits),
-                "rx": lambda params, qubits: qml.RX(params, qubits),
-                "ecr": lambda params, qubits: qml.ECR(qubits),
-                "cz": lambda params, qubits: qml.CZ(qubits),
-                "rzz": lambda params, qubits: qml.IsingZZ(params, qubits),
-                "unitary": lambda params, qubits: qml.QubitUnitary(params, qubits),
+            instruction_map = {
+                "x": lambda q: qml.X(q),
+                "sx": lambda q: qml.SX(q),
+                "rz": lambda t, q: qml.RZ(t, q),
+                "ecr": lambda q: qml.ECR(q),
+                "unitary": lambda p, q: qml.QubitUnitary(p, q),
             }
-            
-            # Define noise application functions
-            def apply_two_qubit_noise(gate, qubits):
-                qml.QubitChannel(self.two_qubit_noise[gate][tuple(qubits)]["qubit_channel"], wires=qubits)
-            
-            def apply_single_qubit_noise(gate, qubits):
-                qml.QubitChannel(self.single_qubit_noise[qubits[0]][gate]["qubit_channel"], wires=qubits)
-            
-            def no_noise(qubits):
-                pass  # No noise applied
-            
-            # Direct lookup mapping for noise handlers - no conditionals needed
-            noise_handlers = {
-                "x": lambda qubits: apply_single_qubit_noise("x", qubits),
-                "sx": lambda qubits: apply_single_qubit_noise("sx", qubits),
-                "rz": lambda qubits: apply_single_qubit_noise("rz", qubits),
-                "rx": lambda qubits: apply_single_qubit_noise("rx", qubits),
-                "ecr": lambda qubits:apply_two_qubit_noise("ecr", qubits),
-                "cz": lambda qubits: apply_two_qubit_noise("cz", qubits),
-                "rzz": lambda qubits: apply_two_qubit_noise("rzz", qubits),
-                "unitary": no_noise,
-            }
-            
             for entry in self.instruction_list:
                 gate_instruction = entry[0]
                 qubit_added = entry[1]
