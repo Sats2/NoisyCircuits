@@ -6,6 +6,7 @@ qiskit-aer
 qiskit-ibm-runtime
 ray
 pytest
+pytest-cov
 sphinx
 sphinx-rtd-theme
 nbsphinx
