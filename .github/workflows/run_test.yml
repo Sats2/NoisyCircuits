@@ -37,15 +37,31 @@ jobs:
 
       - name: Extract Coverage Percentage
         id: coverage
+        if: always()
         run: |
-          if [ -f coverage.xml ]; then
-            COVERAGE=$(grep -Po 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf "%.0f", $1*100}')
-            echo "Coverage extracted: $COVERAGE%"
-          else
-            COVERAGE=0
-            echo "No coverage.xml found, defaulting to 0%"
-          fi
-          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          python << 'EOF'
+          import xml.etree.ElementTree as ET
+          import os
+          
+          coverage_file = 'coverage.xml'
+          if os.path.exists(coverage_file):
+              try:
+                  tree = ET.parse(coverage_file)
+                  root = tree.getroot()
+                  line_rate = float(root.get('line-rate', 0))
+                  coverage_int = int(line_rate * 100)
+                  print(f"Coverage: {coverage_int}%")
+                  with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                      fh.write(f'coverage={coverage_int}')
+              except Exception as e:
+                  print(f"Error parsing coverage.xml: {e}")
+                  with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                      fh.write('coverage=0')
+          else:
+              print("coverage.xml not found")
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+                  fh.write('coverage=0')
+          EOF
 
       - name: Generate Coverage Badge
         run: |
