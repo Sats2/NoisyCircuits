@@ -1,4 +1,4 @@
-name: NoisyCircuits_test
+name: NoisyCircuits
 channels:
   - conda-forge
 dependencies:
