@@ -2,9 +2,12 @@ name: Generate Documentation Pages
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    workflow_run:
+      workflow: ["Run Tests"]
+      types:
+        - completed
+      branches:
+        - main
   workflow_dispatch:
 
 jobs:
