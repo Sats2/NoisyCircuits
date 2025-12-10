@@ -2,7 +2,7 @@ name: Generate Documentation Pages
 
 on:
   workflow_run:
-      workflow: ["Run Tests"]
+      workflows: ["Run Tests"]
       types:
         - completed
       branches:
@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout Repository

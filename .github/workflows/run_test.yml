@@ -33,13 +33,18 @@ jobs:
       - name: Run Tests With Coverage
         continue-on-error: true
         run: |
-          pytest -m "not localonly" --cov=my_package --cov-report=term --cov-report=xml
+          pytest -m "not localonly" --cov=NoisyCircuits --cov-report=term --cov-report=xml
 
       - name: Extract Coverage Percentage
         id: coverage
         run: |
-          # Extract total line coverage as an integer (e.g., 82)
-          COVERAGE=$(grep -Po 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf "%.0f", $1*100}')
+          if [ -f coverage.xml ]; then
+            COVERAGE=$(grep -Po 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf "%.0f", $1*100}')
+            echo "Coverage extracted: $COVERAGE%"
+          else
+            COVERAGE=0
+            echo "No coverage.xml found, defaulting to 0%"
+          fi
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
 
       - name: Generate Coverage Badge
