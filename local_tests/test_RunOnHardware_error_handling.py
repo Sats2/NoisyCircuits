@@ -127,20 +127,20 @@ def test_create_circuits_invalid_measure_qubits():
     with pytest.raises(ValueError):
         runner.create_circuits(circuit=circuit, measure_qubits=[-1, 0])
 
-# def test_run_max_circuit_eval():
-#     """
-#     Test that a ValueError is raised when exceeding maximum circuit evaluation limit (no.of circuits * no. of shots).
-#     """
-#     runner.shots = 10_500_000
-#     circuit.H(0)
-#     circuit.CX(0, 1)
-#     runner.create_circuits(circuit=circuit, measure_qubits=[0, 1])
-#     runner.setup_circuits()
-#     with pytest.raises(ValueError):
-#         runner.run()
-#     circuit.refresh()
-#     runner.shots = 1024
-#     runner.circuit_list = []
+def test_run_max_circuit_eval():
+    """
+    Test that a ValueError is raised when exceeding maximum circuit evaluation limit (no.of circuits * no. of shots).
+    """
+    runner.shots = 10_500_000
+    circuit.H(0)
+    circuit.CX(0, 1)
+    runner.create_circuits(circuit=circuit, measure_qubits=[0, 1])
+    runner.setup_circuits()
+    with pytest.raises(ValueError):
+        runner.run()
+    circuit.refresh()
+    runner.shots = 1024
+    runner.circuit_list = []
 
 def test_status_jobid_type():
     """
