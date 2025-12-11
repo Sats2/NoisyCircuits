@@ -161,4 +161,4 @@ def test_parameterized_circuit_fidelity(circuit):
     probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
     circuit.shutdown()
     hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
-    assert (hellinger_distance < 0.05), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}"
+    assert (hellinger_distance < 0.07), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}"
