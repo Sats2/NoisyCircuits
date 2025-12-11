@@ -41,6 +41,7 @@ jobs:
           pip install .
 
       - name: Generate Documentation
+        shell: bash -l {0}
         working-directory: docs
         run: |
           make clean

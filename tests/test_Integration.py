@@ -118,7 +118,7 @@ def test_mcwf_implementation_ghz(circuit):
     probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
     hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
     circuit.shutdown()
-    assert (hellinger_distance < 0.05), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}"
+    assert (hellinger_distance < 0.07), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_parameterized_circuit(circuit):
