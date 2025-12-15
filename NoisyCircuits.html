@@ -1,0 +1,500 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Guide &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="NoisyCircuits.utils package" href="NoisyCircuits.utils.html" />
+    <link rel="prev" title="NoisyCircuits" href="intro.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="NoisyCircuits.utils.html">NoisyCircuits.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-NoisyCircuits.QuantumCircuit">QuantumCircuit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.basis_gates_set"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.basis_gates_set</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.draw_circuit"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.draw_circuit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.execute"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.execute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.refresh"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.refresh()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.run_pure_state"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.run_pure_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.run_with_density_matrix"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.run_with_density_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.shutdown"><code class="docutils literal notranslate"><span class="pre">QuantumCircuit.shutdown()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-NoisyCircuits.RunOnHardware">RunOnHardware</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware"><code class="docutils literal notranslate"><span class="pre">RunOnHardware</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware.cancel"><code class="docutils literal notranslate"><span class="pre">RunOnHardware.cancel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware.create_circuits"><code class="docutils literal notranslate"><span class="pre">RunOnHardware.create_circuits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware.get_results"><code class="docutils literal notranslate"><span class="pre">RunOnHardware.get_results()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware.run"><code class="docutils literal notranslate"><span class="pre">RunOnHardware.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware.setup_circuits"><code class="docutils literal notranslate"><span class="pre">RunOnHardware.setup_circuits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#NoisyCircuits.RunOnHardware.RunOnHardware.status"><code class="docutils literal notranslate"><span class="pre">RunOnHardware.status()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/NoisyCircuits.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="user-guide">
+<h1>User Guide<a class="headerlink" href="#user-guide" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="NoisyCircuits.utils.html">NoisyCircuits.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.utils.html#module-NoisyCircuits.utils.BuildQubitGateModel">NoisyCircuits.utils.BuildQubitGateModel module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.utils.html#module-NoisyCircuits.utils.Decomposition">NoisyCircuits.utils.Decomposition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NoisyCircuits.utils.html#module-NoisyCircuits.utils.GetNoiseModel">NoisyCircuits.utils.GetNoiseModel module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-NoisyCircuits.QuantumCircuit">
+<span id="quantumcircuit"></span><h2>QuantumCircuit<a class="headerlink" href="#module-NoisyCircuits.QuantumCircuit" title="Link to this heading"></a></h2>
+<p>This module allows users to create and simulate quantum circuits with noise models based on IBM quantum machines. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.QuantumCircuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">noise_model</span><span class="o">=</span><span class="n">my_noise_model</span><span class="p">,</span> <span class="n">backend_qpu_type</span><span class="o">=</span><span class="s1">&#39;Heron&#39;</span><span class="p">,</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">cx</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">run_with_density_matrix</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="c1"># Executes the circuit using the density matrix solver</span>
+<span class="go">[0.39841323, 0.00300163, 0.09303931, 0.00615167, 0.00616272, 0.09281154, 0.00300024, 0.39741967]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="c1"># Executes the circuit using the Monte-Carlo Wavefunction method</span>
+<span class="go">[0.39748485, 0.0037614 , 0.09168292, 0.00799886, 0.00746056, 0.09156762, 0.00367236, 0.39637143]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="c1"># Executes the circuit using the pure state solver</span>
+<span class="go">[0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span> <span class="c1"># Shutdown the Ray parallel execution environment</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.QuantumCircuit.</span></span><span class="sig-name descname"><span class="pre">QuantumCircuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_qpu_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_trajectories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jsonize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (<span class="math notranslate nohighlight">\(\sqrt{X}\)</span>, <span class="math notranslate nohighlight">\(X\)</span>, <span class="math notranslate nohighlight">\(R_Z(\theta)\)</span> and <span class="math notranslate nohighlight">\(ECR\)</span>) / Heron (<span class="math notranslate nohighlight">\(\sqrt{X}\)</span>, <span class="math notranslate nohighlight">\(X\)</span>, <span class="math notranslate nohighlight">\(R_Z(\theta)\)</span>, <span class="math notranslate nohighlight">\(R_X(\theta)\)</span>, <span class="math notranslate nohighlight">\(CZ\)</span> and <span class="math notranslate nohighlight">\(RZZ(\theta)\)</span>) QPUs.</p>
+<p>Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates, please refer to the Decomposition <a class="reference internal" href="NoisyCircuits.utils.html#module-NoisyCircuits.utils.Decomposition" title="NoisyCircuits.utils.Decomposition"><code class="xref py py-func docutils literal notranslate"><span class="pre">NoisyCircuits.utils.Decomposition()</span></code></a> class documentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_qubits</strong> (<em>int</em>) – The number of qubits in the circuit.</p></li>
+<li><p><strong>noise_model</strong> (<em>dict</em>) – The noise model to be used for the circuit.</p></li>
+<li><p><strong>backend_qpu_type</strong> (<em>str</em>) – The IBM Backend Architecture type to be used (Eagle or Heron).</p></li>
+<li><p><strong>num_trajectories</strong> (<em>int</em>) – The number of trajectories for the Monte-Carlo simulation.</p></li>
+<li><p><strong>num_cores</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of cores to use for parallel execution. Defaults to 2.</p></li>
+<li><p><strong>jsonize</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the circuit will be serialized to JSON format. Defaults to False.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, suppresses detailed output during initialization. Defaults to True.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The threshold for noise application. Defaults to 1e-12.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If num_qubits is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If num_qubits is less than 1.</p></li>
+<li><p><strong>TypeError</strong> – If the noise_model is not a dictionary.</p></li>
+<li><p><strong>TypeError</strong> – If the backend_qpu_type is not a string.</p></li>
+<li><p><strong>ValueError</strong> – If the backend_qpu_type is not one of [‘Eagle’, ‘Heron’].</p></li>
+<li><p><strong>TypeError</strong> – If num_trajectories is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If num_trajectories is less than 1.</p></li>
+<li><p><strong>TypeError</strong> – If threshold is not a float.</p></li>
+<li><p><strong>ValueError</strong> – If threshold is not between 0 and 1 (exclusive).</p></li>
+<li><p><strong>TypeError</strong> – If num_cores is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If num_cores is less than 1.</p></li>
+<li><p><strong>TypeError</strong> – If jsonize is not a boolean.</p></li>
+<li><p><strong>TypeError</strong> – If verbose is not a boolean.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.basis_gates_set">
+<span class="sig-name descname"><span class="pre">basis_gates_set</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'eagle':</span> <span class="pre">{'basis_gates':</span> <span class="pre">[['rz',</span> <span class="pre">'sx',</span> <span class="pre">'x'],</span> <span class="pre">['ecr']],</span> <span class="pre">'gate_decomposition':</span> <span class="pre">&lt;class</span> <span class="pre">'NoisyCircuits.utils.EagleDecomposition.EagleDecomposition'&gt;},</span> <span class="pre">'heron':</span> <span class="pre">{'basis_gates':</span> <span class="pre">[['rz',</span> <span class="pre">'rx',</span> <span class="pre">'sx',</span> <span class="pre">'x'],</span> <span class="pre">['cz',</span> <span class="pre">'rzz']],</span> <span class="pre">'gate_decomposition':</span> <span class="pre">&lt;class</span> <span class="pre">'NoisyCircuits.utils.HeronDecomposition.HeronDecomposition'&gt;}}</span></em><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.basis_gates_set" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.draw_circuit">
+<span class="sig-name descname"><span class="pre">draw_circuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mpl'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit.draw_circuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.draw_circuit" title="Link to this definition"></a></dt>
+<dd><p>Draws the quantum circuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>style</strong> (<em>str</em><em>, </em><em>optional</em>) – The style of the drawing, either ‘mpl’ for matplotlib or ‘text’ for text-based representation. Defaults to ‘mpl’.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If style is not a string.</p></li>
+<li><p><strong>ValueError</strong> – If style is not one of [‘mpl’, ‘text’].</p></li>
+<li><p><strong>ValueError</strong> – If there are no instructions in the circuit to draw.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_trajectories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.execute" title="Link to this definition"></a></dt>
+<dd><p>Executes the built quantum circuit with the specified noise model using the Monte-Carlo Wavefunction method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – The list of qubits to be measured.</p></li>
+<li><p><strong>num_trajectories</strong> (<em>int</em>) – The number of trajectories for the Monte-Carlo simulation (can be modified). Defaults to None and uses the class attribute. If specified, it overrides the class attribute for only this execution. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubits is not a list or the items in the list are not integers.</p></li>
+<li><p><strong>TypeError</strong> – If num_trajectories is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If num_trajectories is less than 1.</p></li>
+<li><p><strong>ValueError</strong> – If qubits contains invalid qubit indices.</p></li>
+<li><p><strong>ValueError</strong> – If there are no instructions in the circuit to execute.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The probabilities of the output states.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.refresh">
+<span class="sig-name descname"><span class="pre">refresh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit.refresh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.refresh" title="Link to this definition"></a></dt>
+<dd><p>Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.run_pure_state">
+<span class="sig-name descname"><span class="pre">run_pure_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit.run_pure_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.run_pure_state" title="Link to this definition"></a></dt>
+<dd><p>Runs the quantum circuit with the pure state solver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of qubits to be simulated.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubits is not a list or the items in the list are not integers.</p></li>
+<li><p><strong>ValueError</strong> – If qubits contains invalid qubit indices.</p></li>
+<li><p><strong>ValueError</strong> – If there are no instructions in the circuit to execute.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Probabilities of the output states.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.run_with_density_matrix">
+<span class="sig-name descname"><span class="pre">run_with_density_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit.run_with_density_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.run_with_density_matrix" title="Link to this definition"></a></dt>
+<dd><p>Runs the quantum circuit with the density matrix solver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of qubits to be simulated.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If qubits is not a list or the items in the list are not integers.</p></li>
+<li><p><strong>ValueError</strong> – If qubits contains invalid qubit indices.</p></li>
+<li><p><strong>ValueError</strong> – If there are no instructions in the circuit to execute.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Probabilities of the output states.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit.shutdown">
+<span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit.shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit.shutdown" title="Link to this definition"></a></dt>
+<dd><p>Shutsdown the Ray parallel execution environment.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NoisyCircuits.RunOnHardware">
+<span id="runonhardware"></span><h2>RunOnHardware<a class="headerlink" href="#module-NoisyCircuits.RunOnHardware" title="Link to this heading"></a></h2>
+<p>This module contains the <cite>RunOnHardware</cite> class which allows users to run quantum circuits on IBM Quantum Hardware. The class provides methods to create circuits (according to hardware requirements), set them up for execution, submit them to the hardware, check job status, cancel jobs, and retrieve results. IBM Quantum’s Qiskit Runtime Service is utilized for backend communication and job management. The retrieved results are formatted as probability distributions from little Endian format to big Endian format for easy analysis.</p>
+<dl>
+<dt>Example usage:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.RunOnHardware</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunOnHardware</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.QuantumCircuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span> <span class="n">num_cores</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">H</span><span class="p">(</span><span class="n">qubit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">CX</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">runner</span> <span class="o">=</span> <span class="n">RunOnHardware</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">your_token</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;ibm_fez&quot;</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">runner</span><span class="o">.</span><span class="n">create_circuits</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">circuit</span><span class="p">,</span> <span class="n">measure_qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">runner</span><span class="o">.</span><span class="n">setup_circuits</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job_id</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">status</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
+<span class="go">&#39;DONE&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">circuit</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">[0.40313749, 0.09695667, 0.09692287, 0.40298296]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="go">[0.40813749, 0.09195667, 0.10892288, 0.39098296]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>It should be noted that the IBM Quantum backends have a maximum limit of 10,000,000 circuit executions per job submission. Users should ensure that the product of the number of circuits and shots does not exceed this limit to avoid job submission errors.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.RunOnHardware.</span></span><span class="sig-name descname"><span class="pre">RunOnHardware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to run quantum circuits on IBM Quantum Hardware.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>token</strong> (<em>str</em>) – IBM Quantum token.</p></li>
+<li><p><strong>backend</strong> (<em>str</em>) – Backend name.</p></li>
+<li><p><strong>shots</strong> (<em>int</em>) – Number of shots.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – When the token, backend or shots are not provided.</p></li>
+<li><p><strong>TypeError</strong> – When the token, backend or shots are not of the expected type -&gt; (str, str, int) respectively.</p></li>
+<li><p><strong>ValueError</strong> – When the shots are less than or equal to zero.</p></li>
+<li><p><strong>ValueError</strong> – When the backend is not available.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware.cancel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware.cancel" title="Link to this definition"></a></dt>
+<dd><p>Method to cancel the submitted job.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>job_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The Job Id for the submitted batch of PUBs. If not provided, uses the
+last submitted job_id provided the class object is not destroyed.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – When the job_id is not of the expected type -&gt; str.</p></li>
+<li><p><strong>ValueError</strong> – When the job_id is not provided and the class object is destroyed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware.create_circuits">
+<span class="sig-name descname"><span class="pre">create_circuits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit" title="NoisyCircuits.QuantumCircuit.QuantumCircuit"><span class="pre">QuantumCircuit</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware.create_circuits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware.create_circuits" title="Link to this definition"></a></dt>
+<dd><p>Method that generates the fully decomposed circuit list in qiskit for IBM Hardware execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>circuit</strong> (<em>NoisyCircuit.QuantumCircuit.QuantumCircuit</em>) – The quantum circuit to add in qiskit version.</p></li>
+<li><p><strong>measure_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – The list of qubits to measure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – When the circuit is not provided.</p></li>
+<li><p><strong>TypeError</strong> – When the circuit is not of the expected type -&gt; NoisyCircuits.QuantumCircuit.</p></li>
+<li><p><strong>TypeError</strong> – When the measure_qubits is not of the expected type -&gt; list.</p></li>
+<li><p><strong>TypeError</strong> – When the elements of measure_qubits are not of the expected type -&gt; int.</p></li>
+<li><p><strong>ValueError</strong> – When the circuit is empty.</p></li>
+<li><p><strong>ValueError</strong> – When the measure_qubits contain invalid qubit indices.</p></li>
+<li><p><strong>ValueError</strong> – When the circuit contains gates that are not in the backend’s basis gates.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware.get_results">
+<span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware.get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware.get_results" title="Link to this definition"></a></dt>
+<dd><p>Method that retrieves the results of the submitted job.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>job_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The Job Id for the submitted batch of PUBs. If not provided, uses the last submitted job_id provided the class object is not destroyed.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – When the job_id is not of the expected type -&gt; str.</p></li>
+<li><p><strong>ValueError</strong> – When the job_id is not provided and the class object is destroyed.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The results of the submitted job. The list contains probabilities of the quantum circuit and the ordering is as inputted into the PUBs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware.run" title="Link to this definition"></a></dt>
+<dd><p>Method that submits the generated PUB for execution on the IBM Hardware.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – When the maximum circuit execution limit of 10,000,000 is exceeded.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the Job Id for the submitted batch of PUBs for retrieval.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware.setup_circuits">
+<span class="sig-name descname"><span class="pre">setup_circuits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware.setup_circuits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware.setup_circuits" title="Link to this definition"></a></dt>
+<dd><p>Method that generates the PUB for the circuit list for execution on the IBM Hardware.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.RunOnHardware.RunOnHardware.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/RunOnHardware.html#RunOnHardware.status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.RunOnHardware.RunOnHardware.status" title="Link to this definition"></a></dt>
+<dd><p>Method that retrieves the status of the submitted job.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>job_id</strong> (<em>str</em><em>, </em><em>optional</em>) – The Job Id for the submitted batch of PUBs. If not provided, uses the
+last submitted job_id provided the class object is not destroyed.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – When the job_id is not of the expected type -&gt; str.</p></li>
+<li><p><strong>ValueError</strong> – When the job_id is not provided and the class object is destroyed.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The status of the submitted job.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="intro.html" class="btn btn-neutral float-left" title="NoisyCircuits" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="NoisyCircuits.utils.html" class="btn btn-neutral float-right" title="NoisyCircuits.utils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

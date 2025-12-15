@@ -1,0 +1,140 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monte-Carlo Wave Function (MCWF) Method &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Quantum Circuit Simulators" href="quantum_simulator.html" />
+    <link rel="prev" title="Quantum Noise" href="quantum_noise.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quantum_computing.html">Quantum Computing 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_noise.html">Quantum Noise</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Monte-Carlo Wave Function (MCWF) Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quantum_simulator.html">Quantum Circuit Simulators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="comparison.html">Method Comparisons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hardware.html">Hardware Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
+      <li class="breadcrumb-item active">Monte-Carlo Wave Function (MCWF) Method</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/theory/mcwf_method.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="monte-carlo-wave-function-mcwf-method">
+<h1>Monte-Carlo Wave Function (MCWF) Method<a class="headerlink" href="#monte-carlo-wave-function-mcwf-method" title="Link to this heading"></a></h1>
+<p>The quantum jump, or Monte-Carlo Wave Function (MCWF), method first introduced in 1993 to simulate open quantum systems in quantum optics but can be extended (or modified) to solve any open quantum system. It is a technique used to simulate open quantum systems by unraveling the Lindblad master equation shown in <a class="reference internal" href="quantum_noise.html"><span class="doc">Quantum Noise</span></a> into a statistical ensemble of quantum trajectories. The modified Lindblad master equation is given by: <span id="id1">[<a class="reference internal" href="../references.html#id7" title="Klaus Mølmer, Yvan Castin, and Jean Dalibard. Monte carlo wave-function method in quantum optics. J. Opt. Soc. Am. B, 10(3):524–538, Mar 1993. URL: https://opg.optica.org/josab/abstract.cfm?URI=josab-10-3-524, doi:10.1364/JOSAB.10.000524.">7</a>]</span></p>
+<div class="math notranslate nohighlight">
+\[\dot{\rho} = \frac{1}{i\hbar}[H, \rho] + \sum_m (J_m\rho J_m^\dagger - \frac{1}{2}\{J_mJ_m^\dagger, \rho\})\]</div>
+<p>where <span class="math notranslate nohighlight">\(J_m\)</span> are called the “Jump” operators. The main idea of the MCWF method is that instead of evolving the density matrix (as performed using the Kraus representation), we simulate many stochastic trajectories starting from the initial state of the wavefunction <span class="math notranslate nohighlight">\(|\psi(t)\rangle\)</span> undergoing a continuous non-Hermitian evolution under an effective Hamiltonian <span class="math notranslate nohighlight">\(H_{eff}\)</span> punctuated by quantum jumps where one of the operators <span class="math notranslate nohighlight">\(J_m\)</span> act on the wavefunction. The expectation value of any observable <span class="math notranslate nohighlight">\(A\)</span> is computed by the ensemble average of many such trajectories (with <span class="math notranslate nohighlight">\(N\)</span> being the number of trajectories): <span id="id2">[<a class="reference internal" href="../references.html#id7" title="Klaus Mølmer, Yvan Castin, and Jean Dalibard. Monte carlo wave-function method in quantum optics. J. Opt. Soc. Am. B, 10(3):524–538, Mar 1993. URL: https://opg.optica.org/josab/abstract.cfm?URI=josab-10-3-524, doi:10.1364/JOSAB.10.000524.">7</a>]</span></p>
+<div class="math notranslate nohighlight">
+\[H_{eff} = H - \frac{-i\hbar}{2} \sum_m J_m J_m^\dagger\]</div>
+<div class="math notranslate nohighlight">
+\[\langle A \rangle (t) = \frac{1}{N} \sum_{n=1}^N \langle \psi_n(t) | A | \psi_n(t) \rangle\]</div>
+<p>In context of quantum circuits, the MCWF method can be used to simulate the effect of noise channels on quantum states by defining appropriate jump operators for each noise channel and as the number of trajectories sampled increases, the results converge to the fully evolved density matrix of the system.</p>
+<div class="math notranslate nohighlight">
+\[lim_{N\to\infty} \frac{1}{N} \sum_{n=1}^N |\psi_n(t)\rangle\langle\psi_n(t)| = \rho(t)\]</div>
+<p>For more information on the MCWF method, refer to the original paper in <span id="id3">Mølmer <em>et al.</em> [<a class="reference internal" href="../references.html#id7" title="Klaus Mølmer, Yvan Castin, and Jean Dalibard. Monte carlo wave-function method in quantum optics. J. Opt. Soc. Am. B, 10(3):524–538, Mar 1993. URL: https://opg.optica.org/josab/abstract.cfm?URI=josab-10-3-524, doi:10.1364/JOSAB.10.000524.">7</a>]</span>.</p>
+<p>As the probabilities of the different states are obtained from the diagonal elements of the density matrix, the MCWF method can just computed the state probabilities by averaging over the measurement results of many trajectories, making it computationally more efficient than evolving the full density matrix, or even computing the density matrix for each trajectory and storing it for averaging later (memory efficiency).</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quantum_noise.html" class="btn btn-neutral float-left" title="Quantum Noise" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quantum_simulator.html" class="btn btn-neutral float-right" title="Quantum Circuit Simulators" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
