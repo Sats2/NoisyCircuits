@@ -12,7 +12,7 @@ Density Matrices are quantum mechanical frameworks for representing wavefunction
 
 where :math:`p_i` is the probability of the system being in the pure state :math:`|\psi_i\rangle`. The density matrix formalism allows for the description of both pure states and mixed states. A pure state can be represented as a density matrix by setting :math:`p_1 = 1` and all other probabilities to zero. :cite:p:`NC10`
 
-The density matrix has some important properties. The density matrix must be Hermitian (:math:`\rho = \rho^\dagger`), have a trace of one (:math:`Tr(\rho) = 1`), and be positive semi-definite (:math:`\langle v|\rho| v\rangle\geq\;\forall v`). These properties ensure that the density matrix represents a valid quantum state. :cite:p:`tund`
+The density matrix has some important properties. The density matrix must be Hermitian (:math:`\rho = \rho^\dagger`), have a trace of one (:math:`Tr(\rho) = 1`), and be positive semi-definite (:math:`\langle v|\rho| v\rangle\geq 0 \;\forall v`). These properties ensure that the density matrix represents a valid quantum state. :cite:p:`tund`
 
 For closed systems, the evolution of the density matrix is defined by the Schrödinger equation writen in the density matrix formalism as:
 
@@ -32,7 +32,7 @@ Operator-Sum Representation
 --------------------------------
 An alternative way to represent the evolution of open quantum systems to think of this system as a larger closed system that includes both the quantum system of interest and its environment. The system's interaction with the environment can be modelled using unitary operations on the combined system. This approach is called the Stinespring dilation theorem which essentially states that for an operator :math:`\varepsilon\rightarrow \mathcal{B}(\mathbb{H_s})` (where :math:`\mathcal{B}(\mathbb{H_s})` is the space of bounded linear operators on the Hilbert space of the system :math:`\mathbb{H_s}`) that is a completely positive and trace-preserving map, then there exists an auxillary Hilbert space, with ancilla initialized with :math:`|0\rangle` and a unitary operator :math:`U` acting on the combined system such that the evolution of the combined system can be described by the Schrödinger equation. :cite:p:`NC10`
 
-Utilizing this theorem, a unitary :math:`U\in \mathbb{C}^{n}\otimes\mathbb{C}^{m}` can be defined that acts on the combined system consisting of the qubit system (of size :math:`n`) and the environment (of size :math:`m`). The evolution of this combined system can be described by the Schrödinger equation. The state of the combined system is given by :math:`\Psi\rangle= |\psi_s\rangle\otimes|\psi_e\rangle` where :math:`|\psi_s\rangle` is the state of the qubit system and :math:`|\psi_e\rangle` is the state of the environment. The evolution of the combined system is given by: :cite:p:`NC10`
+Utilizing this theorem, a unitary :math:`U\in \mathbb{C}^{n\times n}\otimes\mathbb{C}^{m\times m}` can be defined that acts on the combined system consisting of the qubit system (of size :math:`n`) and the environment (of size :math:`m`). The evolution of this combined system can be described by the Schrödinger equation. The state of the combined system is given by :math:`\Psi\rangle= |\psi_s\rangle\otimes|\psi_e\rangle` where :math:`|\psi_s\rangle` is the state of the qubit system and :math:`|\psi_e\rangle` is the state of the environment. The evolution of the combined system is given by: :cite:p:`NC10`
 
 .. math::
     |\Psi\rangle = U(\psi_s\rangle\otimes|\psi_e\rangle) = \sum_k \sqrt{p_k} K_k |\psi_s\rangle\otimes|e_k\rangle

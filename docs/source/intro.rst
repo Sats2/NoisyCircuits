@@ -1,7 +1,7 @@
 NoisyCircuits
 =============
 
-Create and simulate noisy quantum circuits using IBM (Heron RX / Eagle RX) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise.
+Create and simulate noisy quantum circuits using IBM (Heron R.X / Eagle R.X) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise.
 
 Overview
 --------
@@ -78,7 +78,7 @@ Project Status
 NoisyCircuits is in active development. New features and improvements are regularly added. Please check the GitHub repository for the latest updates.
 
 - **Version:** 1.1.0 (December 2025)
-- **Python Compatibility:** 3.10
+- **Python Compatibility:** :math:`\geq 3.10``
 - **License:** MIT License
 - **Coverage:** |coverage|
 

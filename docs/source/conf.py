@@ -46,5 +46,5 @@ html_context = {
     "github_user": "Sats2",
     "github_repo": "NoisyCircuits",
     "github_version": "main",
-    "conf_py_path": "/docs/",
+    "conf_py_path": "/README.md",
 }

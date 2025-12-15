@@ -3,7 +3,7 @@ Tutorials
 
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorials:
+    :caption: Tutorials List (Jupyter Notebooks):
 
     examples/introduction
     examples/run_on_hardware
