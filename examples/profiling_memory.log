@@ -20,7 +20,7 @@ Line #    Mem usage    Increment  Occurrences   Line Contents
     21                                                                   threshold,
     22                                                                   jsonize,
     23                                                                   verbose):
-    24    444.1 MiB    133.9 MiB           2       nqc = QC(num_qubits=num_qubits, 
+    24  84534.6 MiB  84224.4 MiB           2       nqc = QC(num_qubits=num_qubits, 
     25    310.2 MiB      0.0 MiB           1            noise_model=noise_model, 
     26    310.2 MiB      0.0 MiB           1            num_cores=num_cores,
     27    310.2 MiB      0.0 MiB           1            backend_qpu_type="heron", 
@@ -28,108 +28,108 @@ Line #    Mem usage    Increment  Occurrences   Line Contents
     29    310.2 MiB      0.0 MiB           1            threshold=threshold, 
     30    310.2 MiB      0.0 MiB           1            jsonize=jsonize,
     31    310.2 MiB      0.0 MiB           1            verbose=verbose)
-    32    444.1 MiB      0.0 MiB           1       return nqc
+    32  84534.6 MiB      0.0 MiB           1       return nqc
 
 
 Filename: ./profiling.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-    34    444.1 MiB    444.1 MiB           1   @profile(stream=memory_log)
+    34  84534.6 MiB  84534.6 MiB           1   @profile(stream=memory_log)
     35                                         def memory_single_matrix(nqc):
-    36    444.1 MiB      0.0 MiB           1       dense_mats = {}
-    37    444.1 MiB      0.0 MiB           6       for q_num in nqc.single_qubit_instructions:
-    38    444.1 MiB      0.0 MiB           5           q_res = {}
-    39    444.1 MiB      0.0 MiB          15           for op_name in ["x", "sx"]:
-    40    444.1 MiB      0.0 MiB          10               op_list = []
-    41    444.1 MiB      0.0 MiB          10               ops = nqc.single_qubit_instructions[q_num][op_name]["kraus_operators"]
-    42    444.1 MiB      0.0 MiB         120               for op in ops:
-    43    444.1 MiB      0.0 MiB         110                   op_list.append(op)
-    44    444.1 MiB      0.0 MiB          10               q_res[op_name] = op_list
-    45    444.1 MiB      0.0 MiB           5           dense_mats[q_num] = q_res
-    46    444.1 MiB      0.0 MiB           1       return dense_mats    
+    36  84534.6 MiB      0.0 MiB           1       dense_mats = {}
+    37  84534.6 MiB      0.0 MiB          11       for q_num in nqc.single_qubit_instructions:
+    38  84534.6 MiB      0.0 MiB          10           q_res = {}
+    39  84534.6 MiB      0.0 MiB          30           for op_name in ["x", "sx"]:
+    40  84534.6 MiB      0.0 MiB          20               op_list = []
+    41  84534.6 MiB      0.0 MiB          20               ops = nqc.single_qubit_instructions[q_num][op_name]["kraus_operators"]
+    42  84534.6 MiB      0.0 MiB         224               for op in ops:
+    43  84534.6 MiB      0.0 MiB         204                   op_list.append(op)
+    44  84534.6 MiB      0.0 MiB          20               q_res[op_name] = op_list
+    45  84534.6 MiB      0.0 MiB          10           dense_mats[q_num] = q_res
+    46  84534.6 MiB      0.0 MiB           1       return dense_mats    
 
 
 Filename: ./profiling.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-    48    444.1 MiB    444.1 MiB           1   @profile(stream=memory_log)
+    48  84534.6 MiB  84534.6 MiB           1   @profile(stream=memory_log)
     49                                         def memory_csr_matrix(nqc):
-    50    444.1 MiB      0.0 MiB           1       sparse_mats = {}
-    51    444.1 MiB      0.0 MiB           6       for q_num in nqc.single_qubit_instructions:
-    52    444.1 MiB      0.0 MiB           5           q_res = {}
-    53    444.1 MiB      0.0 MiB          15           for op_name in ["x", "sx"]:
-    54    444.1 MiB      0.0 MiB          10               op_list = []
-    55    444.1 MiB      0.0 MiB          10               ops = nqc.single_qubit_instructions[q_num][op_name]["kraus_operators"]
-    56    444.1 MiB      0.0 MiB         120               for op in ops:
-    57    444.1 MiB      0.0 MiB         110                   op_list.append(csr_matrix(op))
-    58    444.1 MiB      0.0 MiB          10               q_res[op_name] = op_list
-    59    444.1 MiB      0.0 MiB           5           sparse_mats[q_num] = q_res
-    60    444.1 MiB      0.0 MiB           1       return sparse_mats
+    50  84534.6 MiB      0.0 MiB           1       sparse_mats = {}
+    51  84534.6 MiB      0.0 MiB          11       for q_num in nqc.single_qubit_instructions:
+    52  84534.6 MiB      0.0 MiB          10           q_res = {}
+    53  84534.6 MiB      0.0 MiB          30           for op_name in ["x", "sx"]:
+    54  84534.6 MiB      0.0 MiB          20               op_list = []
+    55  84534.6 MiB      0.0 MiB          20               ops = nqc.single_qubit_instructions[q_num][op_name]["kraus_operators"]
+    56  84534.6 MiB      0.0 MiB         224               for op in ops:
+    57  84534.6 MiB      0.0 MiB         204                   op_list.append(csr_matrix(op))
+    58  84534.6 MiB      0.0 MiB          20               q_res[op_name] = op_list
+    59  84534.6 MiB      0.0 MiB          10           sparse_mats[q_num] = q_res
+    60  84534.6 MiB      0.0 MiB           1       return sparse_mats
 
 
 Filename: ./profiling.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-    62    444.1 MiB    444.1 MiB           1   @profile(stream=memory_log)
+    62  84534.6 MiB  84534.6 MiB           1   @profile(stream=memory_log)
     63                                         def memory_csc_matrix(nqc):
-    64    444.1 MiB      0.0 MiB           1       sparse_mats = {}
-    65    444.1 MiB      0.0 MiB           6       for q_num in nqc.single_qubit_instructions:
-    66    444.1 MiB      0.0 MiB           5           q_res = {}
-    67    444.1 MiB      0.0 MiB          15           for op_name in ["x", "sx"]:
-    68    444.1 MiB      0.0 MiB          10               op_list = []
-    69    444.1 MiB      0.0 MiB          10               ops = nqc.single_qubit_instructions[q_num][op_name]["kraus_operators"]
-    70    444.1 MiB      0.0 MiB         120               for op in ops:
-    71    444.1 MiB      0.0 MiB         110                   op_list.append(csc_matrix(op))
-    72    444.1 MiB      0.0 MiB          10               q_res[op_name] = op_list
-    73    444.1 MiB      0.0 MiB           5           sparse_mats[q_num] = q_res
-    74    444.1 MiB      0.0 MiB           1       return sparse_mats
+    64  84534.6 MiB      0.0 MiB           1       sparse_mats = {}
+    65  84534.6 MiB      0.0 MiB          11       for q_num in nqc.single_qubit_instructions:
+    66  84534.6 MiB      0.0 MiB          10           q_res = {}
+    67  84534.6 MiB      0.0 MiB          30           for op_name in ["x", "sx"]:
+    68  84534.6 MiB      0.0 MiB          20               op_list = []
+    69  84534.6 MiB      0.0 MiB          20               ops = nqc.single_qubit_instructions[q_num][op_name]["kraus_operators"]
+    70  84534.6 MiB      0.0 MiB         224               for op in ops:
+    71  84534.6 MiB      0.0 MiB         204                   op_list.append(csc_matrix(op))
+    72  84534.6 MiB      0.0 MiB          20               q_res[op_name] = op_list
+    73  84534.6 MiB      0.0 MiB          10           sparse_mats[q_num] = q_res
+    74  84534.6 MiB      0.0 MiB           1       return sparse_mats
 
 
 Filename: ./profiling.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-    76    444.1 MiB    444.1 MiB           1   @profile(stream=memory_log)
+    76  84534.6 MiB  84534.6 MiB           1   @profile(stream=memory_log)
     77                                         def dense_cz_mats(nqc):
-    78    444.1 MiB      0.0 MiB           1       dense_mats = {}
-    79    444.1 MiB      0.0 MiB           9       for key_pair in nqc.two_qubit_instructions["cz"].keys():
-    80    444.1 MiB      0.0 MiB           8           ops = nqc.two_qubit_instructions["cz"][key_pair]["operators"]
-    81    444.1 MiB      0.0 MiB           8           dense_mats[key_pair] = ops
-    82    444.1 MiB      0.0 MiB           1       return dense_mats
+    78  84534.6 MiB      0.0 MiB           1       dense_mats = {}
+    79  84534.6 MiB      0.0 MiB          19       for key_pair in nqc.two_qubit_instructions["cz"].keys():
+    80  84534.6 MiB      0.0 MiB          18           ops = nqc.two_qubit_instructions["cz"][key_pair]["operators"]
+    81  84534.6 MiB      0.0 MiB          18           dense_mats[key_pair] = ops
+    82  84534.6 MiB      0.0 MiB           1       return dense_mats
 
 
 Filename: ./profiling.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-    84    444.1 MiB    444.1 MiB           1   @profile(stream=memory_log)
+    84  84534.6 MiB  84534.6 MiB           1   @profile(stream=memory_log)
     85                                         def csr_cz_mats(nqc):
-    86    444.1 MiB      0.0 MiB           1       sparse_mats = {}
-    87    444.9 MiB      0.0 MiB           9       for key_pair in nqc.two_qubit_instructions["cz"].keys():
-    88    444.9 MiB      0.0 MiB           8           ops = nqc.two_qubit_instructions["cz"][key_pair]["operators"]
-    89    444.9 MiB      0.0 MiB           8           op_list = []
-    90    444.9 MiB      0.0 MiB        1162           for op in ops:
-    91    444.9 MiB      0.8 MiB        1154               op_list.append(csr_matrix(op))
-    92    444.9 MiB      0.0 MiB           8           sparse_mats[key_pair] = op_list
-    93    444.9 MiB      0.0 MiB           1       return sparse_mats
+    86  84534.6 MiB      0.0 MiB           1       sparse_mats = {}
+    87  84569.1 MiB      0.0 MiB          19       for key_pair in nqc.two_qubit_instructions["cz"].keys():
+    88  84566.9 MiB      0.0 MiB          18           ops = nqc.two_qubit_instructions["cz"][key_pair]["operators"]
+    89  84566.9 MiB      0.0 MiB          18           op_list = []
+    90  84569.1 MiB      0.0 MiB        2318           for op in ops:
+    91  84569.1 MiB     34.5 MiB        2300               op_list.append(csr_matrix(op))
+    92  84569.1 MiB      0.0 MiB          18           sparse_mats[key_pair] = op_list
+    93  84569.1 MiB      0.0 MiB           1       return sparse_mats
 
 
 Filename: ./profiling.py
 
 Line #    Mem usage    Increment  Occurrences   Line Contents
 =============================================================
-    95    444.9 MiB    444.9 MiB           1   @profile(stream=memory_log)
+    95  84569.1 MiB  84569.1 MiB           1   @profile(stream=memory_log)
     96                                         def csc_cz_mats(nqc):
-    97    444.9 MiB      0.0 MiB           1       sparse_mats = {}
-    98    446.4 MiB      0.0 MiB           9       for key_pair in nqc.two_qubit_instructions["cz"].keys():
-    99    446.4 MiB      0.0 MiB           8           ops = nqc.two_qubit_instructions["cz"][key_pair]["operators"]
-   100    446.4 MiB      0.0 MiB           8           op_list = []
-   101    446.4 MiB      0.0 MiB        1162           for op in ops:
-   102    446.4 MiB      1.5 MiB        1154               op_list.append(csc_matrix(op))
-   103    446.4 MiB      0.0 MiB           8           sparse_mats[key_pair] = op_list
-   104    446.4 MiB      0.0 MiB           1       return sparse_mats
+    97  84569.1 MiB      0.0 MiB           1       sparse_mats = {}
+    98  84612.6 MiB      0.0 MiB          19       for key_pair in nqc.two_qubit_instructions["cz"].keys():
+    99  84609.6 MiB      0.0 MiB          18           ops = nqc.two_qubit_instructions["cz"][key_pair]["operators"]
+   100  84609.6 MiB      0.0 MiB          18           op_list = []
+   101  84612.6 MiB      0.0 MiB        2318           for op in ops:
+   102  84612.6 MiB     43.5 MiB        2300               op_list.append(csc_matrix(op))
+   103  84612.6 MiB      0.0 MiB          18           sparse_mats[key_pair] = op_list
+   104  84612.6 MiB      0.0 MiB           1       return sparse_mats
 
 
