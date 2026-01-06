@@ -8,7 +8,9 @@
 
 A Python package for creating and simulating noisy quantum circuits using error models from IBM (Heron RX / Eagle RX) quantum hardware calibration data. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
 
-## 🎯 Overview
+The documentation for the package can be found [here](https://sats2.github.io/NoisyCircuits/).
+
+## Overview
 
 NoisyCircuits enables researchers and developers to:
 
@@ -20,11 +22,11 @@ NoisyCircuits enables researchers and developers to:
 
 ### Key Features
 
-✨ **Hardware-Calibrated Noise Models**: Direct integration with IBM Quantum backend calibration data  
-🚀 **Parallel Monte-Carlo Simulation**: Multi-core trajectory execution for scalable performance  
-🎛️ **Gate Set**: Support for IBM Eagle QPU basis gates (X, √X, Rz, ECR) and Heron QPU basis gates (X, √X, Rz, Rx, CZ, RZZ)  
-📊 **Validation Framework**: Built-in comparison with the density matrix method  
-🔬 **Research Applications**: Ready-to-use examples for quantum machine learning and algorithm development  
+**Hardware-Calibrated Noise Models**: Direct integration with IBM Quantum backend calibration data  
+**Parallel Monte-Carlo Simulation**: Multi-core trajectory execution for scalable performance  
+**Gate Set**: Support for IBM Eagle QPU basis gates (X, √X, Rz, ECR) and Heron QPU basis gates (X, √X, Rz, Rx, CZ, RZZ)  
+**Validation Framework**: Built-in comparison with the density matrix method  
+**Research Applications**: Ready-to-use examples for quantum machine learning and algorithm development  
 
 ### Supported Quantum Gates
 
@@ -34,7 +36,7 @@ The supported gated are fully decomposed into the hardware basis gates and this 
 - **Two-qubit gates**: ECR, CX, CY, CZ, CRx(θ), CRy(θ), CRz(θ), SWAP, RZZ(θ), RXX(θ), RYY(θ)
 - **Unitary Operation**: Additionally, a unitary operator can be applied to the circuit. This unitary operator is not decomposed and is applied fully to the quantum circuit assuming a perfect implmenetation.
 
-## 🛠️ Installation
+## Installation
 
 ### Prerequisites
 
@@ -76,7 +78,7 @@ Core dependencies are automatically installed:
 - **Ray**: Distributed computing for parallel execution
 - **NumPy, Matplotlib**: Scientific computing and visualization
 
-## 🧪 Eamples and Validation
+## Examples and Validation
 
 The `validation/` and `examples/` directories contains comprehensive validation and example notebooks:
 
@@ -104,7 +106,7 @@ For detailed information about the example suite, see [`examples/README.md`](exa
 - **Parallel Execution**: Scaling simulations across multiple CPU cores (tested for shared memory architecture)
 - **Statistical Validation**: Ensuring simulation accuracy through multiple metrics
 
-## 📚 Examples
+## Examples
 
 ### Tutorials
 1. **[Introduction](examples/introduction.ipynb)**: Basic usage and configuration
@@ -116,19 +118,19 @@ For detailed information about the example suite, see [`examples/README.md`](exa
 - **Monte-Carlo Wave Function**: Efficient method for simulating open quantum systems
 - **Hardware Noise Models**: Using real device calibration data for realistic simulations
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions to NoisyCircuits! Here's how you can help:
 
 ### Types of Contributions
 
-- 🐛 **Bug Reports**: Report issues or unexpected behavior
-- ✨ **Feature Requests**: Suggest new functionality or improvements
-- 📝 **Documentation**: Improve tutorials, examples, or API documentation
-- 🧪 **Testing**: Add test cases or improve validation coverage
-- 💻 **Code Contributions**: Implement new features or optimize existing code
+- **Bug Reports**: Report issues or unexpected behavior
+- **Feature Requests**: Suggest new functionality or improvements
+- **Documentation**: Improve tutorials, examples, or API documentation
+- **Testing**: Add test cases or improve validation coverage
+- **Code Contributions**: Implement new features or optimize existing code
 
-### 📁 Repository Structure
+### Repository Structure
 _To be updated along with version release_
 ```
 NoisyCircuits/
@@ -146,6 +148,7 @@ NoisyCircuits/
 │       └── EagleDecomposition.py               # Gate Decomposition for Eagle QPU
 │       └── HeronDecomposition.py               # Gate Decomposition for Heron QPU
 │       └── SwapSequence.py                     # Module that ensures correct qubit coupling
+├── docs/                                       # Directory with documentation. Automatically generated from source code API --> DO NOT CHANGE
 ├── noise_models/                               # Directory with sample noise models
 │   ├── README.md                               # Detailed documentation (will be added)
 │   ├── Noise_Model_Eagle_QPU.pkl               # Sample Noise Model for the Eagle QPU taken from IBM Brisbane calibration data
@@ -161,9 +164,11 @@ NoisyCircuits/
 │   ├── README.md                               # Detailed documentation
 │   ├── method_verification.ipynb               # Validation against exact methods
 │   ├── Results_Log_File.txt                    # Results of the validation study compiled in a single log file
+├── tests/                                      # Test suite for Unit and Integration Testing consisting of local and Git CI/CD actions testing. 
 ├── environment.yml                             # Conda environment specification
 ├── setup.py                                    # Package installation configuration
 ├── requirements.txt                            # Python dependencies
+├── pytest.toml                                 # Configuration for Pytest
 └── LICENSE                                     # MIT License
 ```
 
@@ -202,7 +207,7 @@ NoisyCircuits/
 - **Issues**: Use GitHub Issues for bug reports and feature requests
 - **Discussions**: Start a GitHub Discussion for questions and ideas
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -219,7 +224,7 @@ If you use NoisyCircuits in your research, please cite the software as follows:
 }
 ```
 
-## 📞 Support and Contact
+## Support and Contact
 
 - **Author**: Sathyamurthy Hegde
 - **GitHub**: [@Sats2](https://github.com/Sats2)
