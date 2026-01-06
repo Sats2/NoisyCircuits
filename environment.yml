@@ -6,6 +6,7 @@ dependencies:
   - joblib
   - pip
   - pandoc
+  - scipy
   - matplotlib
   - pip:
     - pennylane

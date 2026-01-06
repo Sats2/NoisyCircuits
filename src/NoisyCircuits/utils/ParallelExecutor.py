@@ -8,6 +8,7 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 import pennylane as qml
 from pennylane import numpy as np
+import scipy.sparse
 import ray
 
 @ray.remote
@@ -150,8 +151,8 @@ class RemoteExecutor:
             qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
             ops = self.two_qubit_noise[gate][qpair]["operators"]
-            op_psi = np.array([op @ psi_dash for op in ops])
-            kraus_probs = np.real(np.sum(np.conj(op_psi) * op_psi, axis=1))
+            op_psi = np.array([op.dot(psi_dash) for op in ops])
+            kraus_probs = np.real([np.vdot(psi, psi) for psi in op_psi])
             kraus_probs_sum = np.sum(kraus_probs)
             if kraus_probs_sum == 0 or np.isnan(kraus_probs_sum):
                 kraus_probs = np.ones(len(kraus_probs)) / len(kraus_probs)
@@ -159,7 +160,7 @@ class RemoteExecutor:
                 kraus_probs /= kraus_probs_sum
             kraus_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
             prob_sqrt = np.sqrt(kraus_probs[kraus_idx])
-            return ops[kraus_idx] @ psi_dash / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx] @ psi_dash
+            return ops[kraus_idx].dot(psi_dash) / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx].dot(psi_dash)
             
         def handle_param_gate(state:np.ndarray, 
                               gate:str, 
@@ -201,8 +202,8 @@ class RemoteExecutor:
             """
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
             ops = self.single_qubit_noise[qubits[0]][gate]["kraus_operators"]
-            op_psi = np.array([op @ psi_dash for op in ops])
-            kraus_probs = np.real(np.sum(np.conj(op_psi) * op_psi, axis=1))
+            op_psi = np.array([op.dot(psi_dash) for op in ops])
+            kraus_probs = np.real([np.vdot(psi, psi) for psi in op_psi])
             kraus_probs_sum = np.sum(kraus_probs)
             if kraus_probs_sum == 0 or np.isnan(kraus_probs_sum):
                 kraus_probs = np.ones(len(kraus_probs)) / len(kraus_probs)
@@ -210,7 +211,7 @@ class RemoteExecutor:
                 kraus_probs /= kraus_probs_sum
             kraus_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
             prob_sqrt = np.sqrt(kraus_probs[kraus_idx])
-            return ops[kraus_idx] @ psi_dash / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx] @ psi_dash
+            return ops[kraus_idx].dot(psi_dash) / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx].dot(psi_dash)
         
         self.gate_handlers = {}
         for gate in self.instruction_map:

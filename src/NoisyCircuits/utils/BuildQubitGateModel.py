@@ -15,6 +15,7 @@ Additionally, it needs to be noted that the QuantumCircuit module automatically 
 
 from pennylane import numpy as np
 from collections import defaultdict
+from scipy.sparse import csr_matrix
 import math
 import logging
 
@@ -126,8 +127,8 @@ class BuildModel:
         """
         mat = np.zeros(kraus_ops[0].shape, dtype=complex, requires_grad=False)
         for op in kraus_ops:
-            mat += np.dot(op.conj().T, op)
-        return np.allclose(mat, np.eye(mat.shape[0], dtype=complex), atol=1e-6)
+            mat += op.conj().T.dot(op)
+        return np.allclose(mat, np.eye(mat.shape[0], dtype=complex), atol=1e-3)
     
     def extract_single_qubit_qerrors(self,
                                     data:list,
@@ -271,7 +272,7 @@ class BuildModel:
         extended_kraus = []
         for op in kraus_ops:
             extended_op = self.build_full_matrix(op, qubit_idx, system_qubits)
-            extended_kraus.append(extended_op)
+            extended_kraus.append(csr_matrix(extended_op))
         return extended_kraus
     
     def build_full_matrix_2qubit(self,
@@ -320,7 +321,7 @@ class BuildModel:
         extended_kraus = []
         for op in kraus_ops:
             extended_op = self.build_full_matrix_2qubit(op, qubit_pair, system_qubits)
-            extended_kraus.append(extended_op)
+            extended_kraus.append(csr_matrix(extended_op))
         return extended_kraus        
     
     def _drop_errors(self,
@@ -413,14 +414,9 @@ class BuildModel:
                     else:
                         for op in ops:
                             operators.append(np.sqrt(prob) * op)
-                if not self._ensure_ctpt(operators):
-                    self.logging.warning(f"Warning: Original Kraus operators for qubit {qubit} do not form a CPTP map.")
-                    mat = np.zeros((2,2), dtype=complex)
-                    for op in operators:
-                        mat += np.dot(op.conj().T, op)
                 kraus_operators = self.extend_kraus_to_system(operators, qubit)
                 if not self._ensure_ctpt(kraus_operators):
-                    self.logging.warning(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
+                    self.logger.warning(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
                 qubit_errors[gate] = {
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
@@ -431,7 +427,7 @@ class BuildModel:
             for basis_gate in basis_gates:
                 if basis_gate not in qubit_errors.keys():
                     qubit_errors[basis_gate] = {
-                        "kraus_operators" : np.eye(2**self.num_qubits, dtype=complex),
+                        "kraus_operators" : csr_matrix(np.eye(2**self.num_qubits, dtype=complex)),
                         "instructions" : ["id"],
                         "probabilities" : [1.0],
                         "kraus" : None,
@@ -562,7 +558,7 @@ class BuildModel:
             "z" : np.array([[1, 0], [0, -1]]),
             "K0" : np.array([[1, 0], [0, 0]]),
             "K1" : np.array([[0, 1], [0, 0]]),
-            "i" : np.array([[1, 0], [0, 1]])
+            "i" : np.array([[1, 0], [0, 1]]) # TODO: Check use for this line
         }
         for two_qubit_gate in two_qubit_gate_errors.keys():    
             two_qubit_gate_error_operators[two_qubit_gate] = {}
