@@ -10,6 +10,54 @@ import pennylane as qml
 from pennylane import numpy as np
 import scipy.sparse
 import ray
+from numba import njit
+
+
+@njit(fastmath=False)
+def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray]],
+                             state:np.ndarray)->np.ndarray:
+    """
+    Computes the probabilities of the given statevector evolving under noise operators.
+
+    Args:
+        sparse_matrix_list (list[tuple[np.ndarray]]): List of sparse matrices representing the noise operators in CSR format.
+        state (np.ndarray): Statevector of the quantum system.
+
+    Returns:
+        np.ndarray: Probabilities of the statevector picking a given noise operator.
+    """
+    probs = np.zeros(len(sparse_matrix_list), dtype=np.float64)
+    for k, sparse_matrix in enumerate(sparse_matrix_list):
+        data, indices, indptr = sparse_matrix
+        res = np.zeros_like(state)
+        for i in range(res.shape[0]):
+            for j in range(indptr[i], indptr[i+1]):
+                res[i] += data[j] * state[indices[j]]
+        probs[k] = np.vdot(res, res).real
+    return probs
+
+@njit(fastmath=False)
+def update_statevector(sparse_matrix:tuple[np.ndarray],
+                       state:np.ndarray,
+                       prob:float)->np.ndarray:
+    """
+    Perfroms the matrix-vector product for sparse matrices in CSR format and provides the updated statevector under a given noise trajectory.
+
+    Args:
+        sparse_matrix (tuple[np.ndarray]): Sparse matrix in CSR format representing the noise operator.
+        state (np.ndarray): Current statevector of the quantum system.
+        prob (float): Probability of the state evolving under the given noise operator.
+    
+    Returns:
+        np.ndarray: Updated statevector after applying the noise operator (after normalization).
+    """
+    data, indices, indptr = sparse_matrix
+    res = np.zeros_like(state)
+    for i in range(res.shape[0]):
+        for j in range(indptr[i], indptr[i+1]):
+            res[i] += data[j] * state[indices[j]]
+    return res / np.sqrt(prob)
+
 
 @ray.remote
 class RemoteExecutor:
@@ -19,7 +67,8 @@ class RemoteExecutor:
     def __init__(self,
                  num_qubits:int,
                  single_qubit_noise:dict,
-                 two_qubit_noise:dict)->None:
+                 two_qubit_noise:dict,
+                 two_qubit_noise_index:dict)->None:
         """
         Constructor for the Remote Executor class.
 
@@ -27,10 +76,12 @@ class RemoteExecutor:
             num_qubits (int): Number of qubits in the quantum circuit.
             single_qubit_noise (dict): Dictionary containing the noise operators for single qubit gates.
             two_qubit_noise (dict): Dictionary containing the noise operators for two qubit gates.
+            two_qubit_noise_index (dict): Dictionary mapping qubit pairs to their indices in the two qubit noise dictionary.
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
+        self.two_qubit_noise_index = two_qubit_noise_index
         
         self.dev = qml.device("lightning.qubit", wires=self.num_qubits)
         
@@ -150,17 +201,15 @@ class RemoteExecutor:
             """
             qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
-            ops = self.two_qubit_noise[gate][qpair]["operators"]
-            op_psi = np.array([op.dot(psi_dash) for op in ops])
-            kraus_probs = np.real([np.vdot(psi, psi) for psi in op_psi])
+            ops = self.two_qubit_noise[self.two_qubit_noise_index[gate]][1][qpair]["operators"]
+            kraus_probs = compute_trajectory_probs(ops, psi_dash)
             kraus_probs_sum = np.sum(kraus_probs)
             if kraus_probs_sum == 0 or np.isnan(kraus_probs_sum):
                 kraus_probs = np.ones(len(kraus_probs)) / len(kraus_probs)
             else:
                 kraus_probs /= kraus_probs_sum
             kraus_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
-            prob_sqrt = np.sqrt(kraus_probs[kraus_idx])
-            return ops[kraus_idx].dot(psi_dash) / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx].dot(psi_dash)
+            return update_statevector(ops[kraus_idx], psi_dash, kraus_probs[kraus_idx])
             
         def handle_param_gate(state:np.ndarray, 
                               gate:str, 
@@ -201,17 +250,15 @@ class RemoteExecutor:
                 np.ndarray: Updated state of the system after noise application.
             """
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
-            ops = self.single_qubit_noise[qubits[0]][gate]["kraus_operators"]
-            op_psi = np.array([op.dot(psi_dash) for op in ops])
-            kraus_probs = np.real([np.vdot(psi, psi) for psi in op_psi])
+            ops = self.single_qubit_noise[qubits[0]][1][gate]["kraus_operators"]
+            kraus_probs = compute_trajectory_probs(ops, psi_dash)
             kraus_probs_sum = np.sum(kraus_probs)
             if kraus_probs_sum == 0 or np.isnan(kraus_probs_sum):
                 kraus_probs = np.ones(len(kraus_probs)) / len(kraus_probs)
             else:
                 kraus_probs /= kraus_probs_sum
             kraus_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
-            prob_sqrt = np.sqrt(kraus_probs[kraus_idx])
-            return ops[kraus_idx].dot(psi_dash) / prob_sqrt if prob_sqrt > 1e-12 else ops[kraus_idx].dot(psi_dash)
+            return update_statevector(ops[kraus_idx], psi_dash, kraus_probs[kraus_idx])
         
         self.gate_handlers = {}
         for gate in self.instruction_map:

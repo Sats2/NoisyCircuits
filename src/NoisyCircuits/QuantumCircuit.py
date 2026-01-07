@@ -22,6 +22,7 @@ os.environ["MKL_NUM_THREADS"] = "1"
 
 import pennylane as qml
 from pennylane import numpy as np
+import numpy as npy
 from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
 from NoisyCircuits.utils.PureStateSolver import PureStateSolver
@@ -136,6 +137,8 @@ class QuantumCircuit:
         self.two_qubit_instructions = multi_error
         self.measurement_error = measure_error
         self.connectivity = connectivity
+        single_qubit_instructions_array = npy.array(list(self.single_qubit_instructions.items()))
+        two_qubit_instructions_array = npy.array(list(self.two_qubit_instructions.items()))
         self.qubit_coupling_map = modeller.qubit_coupling_map
         self.measurement_error_operator = self._generate_measurement_error_operator()
         self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
@@ -144,11 +147,15 @@ class QuantumCircuit:
                                                                                                 qubit_map=self.qubit_coupling_map
                                                                                             )
         ray.init(num_cpus=self.num_cores, ignore_reinit_error=True, log_to_driver=False)
+        single_qubit_instruction_reference = ray.put(single_qubit_instructions_array)
+        two_qubits_instruction_reference = ray.put(two_qubit_instructions_array)
+        two_qubit_gate_index = {two_qubit_instructions_array[i][0] : i for i in range(len(two_qubit_instructions_array))}
         self.workers = [
             RemoteExecutor.remote(
                 num_qubits=self.num_qubits,
-                single_qubit_noise=self.single_qubit_instructions,
-                two_qubit_noise=self.two_qubit_instructions
+                single_qubit_noise=single_qubit_instruction_reference,
+                two_qubit_noise=two_qubits_instruction_reference,
+                two_qubit_noise_index=two_qubit_gate_index
             ) for _ in range(self.num_cores)]
 
     def __getattr__(self, name: str) -> callable:

@@ -103,6 +103,8 @@ The repository is organized as follows
     ├── environment.yml                                 # Conda environment specification   
     ├── setup.py                                        # Package installation configuration
     ├── requirements.txt                                # Python dependencies
+    └── pytest.toml                                     # Pytest configuration file
+    └── README.md                                       # Project overview
     └── LICENSE                                         # License information
 
 Adding New QPUs

@@ -20,7 +20,7 @@ Prerequisites
 ~~~~~~~~~~~~~
 
 - A conda-style environment manager: `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_, `Anaconda <https://www.anaconda.com/>`_, or `Micromamba <https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html>`_.
-- An IBM Quantum account + API token (only needed to pull live hardware data or submit jobs to real devices).
+- An IBM Quantum (IBMQ) account + API token (optional but recommended, only needed to pull live hardware data or submit jobs to real devices). Sample Noise models are provided for testing without an IBMQ account.
 
 Steps
 ~~~~~
@@ -70,20 +70,12 @@ If you use NoisyCircuits in your research, please cite the software as follows:
   		title = {NoisyCircuits},
   		year = {2025},
   		url = {https://github.com/Sats2/NoisyCircuits},
-  		version = {1.1.0},
+  		version = {1.1.1},
 	}
 
 Project Status
 ~~~~~~~~~~~~~~~
 NoisyCircuits is in active development. New features and improvements are regularly added. Please check the GitHub repository for the latest updates.
-
-- **Version:** 1.1.0 (December 2025)
-- **Python Compatibility:** :math:`\geq 3.10``
-- **License:** MIT License
-- **Coverage:** |coverage|
-
-.. |coverage| image:: assets/coverage.svg
-   :target: https://github.com/Sats2/NoisyCircuits/actions
 
 Getting Help
 ------------

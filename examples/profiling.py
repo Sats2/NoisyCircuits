@@ -5,7 +5,7 @@ import os
 import json
 from memory_profiler import profile
 
-memory_log = open("profiling_memory_with_sparse_multiqubit.log", "w")
+memory_log = open("profiling_memory_with_sparse_multicore_newversion.log", "w")
 memory_log.write("Memory profiling log for NoisyCircuits with 10 cores parallelization\n")
 memory_log.flush()
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
         nqc = create_circuit_object(num_qubits=num_qubits,
                                     noise_model=noise_model,
                                     num_cores=10,
-                                    num_trajectories=10,
+                                    num_trajectories=50,
                                     threshold=1e-8,
                                     jsonize=False,
                                     verbose=False)

@@ -125,10 +125,11 @@ class BuildModel:
         Returns:
             bool: True if the Kraus operators form a CPTP map, False otherwise.
         """
-        mat = np.zeros(kraus_ops[0].shape, dtype=complex, requires_grad=False)
+        mat = np.zeros((2**self.num_qubits, 2**self.num_qubits), dtype=complex, requires_grad=False)
         for op in kraus_ops:
+            op = csr_matrix(op, shape=(2**self.num_qubits, 2**self.num_qubits))
             mat += op.conj().T.dot(op)
-        return np.allclose(mat, np.eye(mat.shape[0], dtype=complex), atol=1e-3)
+        return np.allclose(mat, np.eye(mat.shape[0], dtype=complex))
     
     def extract_single_qubit_qerrors(self,
                                     data:list,
@@ -271,8 +272,9 @@ class BuildModel:
         system_qubits = self.num_qubits
         extended_kraus = []
         for op in kraus_ops:
-            extended_op = self.build_full_matrix(op, qubit_idx, system_qubits)
-            extended_kraus.append(csr_matrix(extended_op))
+            extended_op = csr_matrix(self.build_full_matrix(op, qubit_idx, system_qubits))
+            extended_op_csr = (extended_op.data, extended_op.indices, extended_op.indptr)
+            extended_kraus.append(extended_op_csr)
         return extended_kraus
     
     def build_full_matrix_2qubit(self,
@@ -320,8 +322,9 @@ class BuildModel:
         system_qubits = self.num_qubits
         extended_kraus = []
         for op in kraus_ops:
-            extended_op = self.build_full_matrix_2qubit(op, qubit_pair, system_qubits)
-            extended_kraus.append(csr_matrix(extended_op))
+            extended_op = csr_matrix(self.build_full_matrix_2qubit(op, qubit_pair, system_qubits))
+            extended_op_csr = (extended_op.data, extended_op.indices, extended_op.indptr)
+            extended_kraus.append(extended_op_csr)
         return extended_kraus        
     
     def _drop_errors(self,
@@ -426,8 +429,9 @@ class BuildModel:
                 }
             for basis_gate in basis_gates:
                 if basis_gate not in qubit_errors.keys():
+                    matrix = csr_matrix(np.eye(2**self.num_qubits, dtype=complex))
                     qubit_errors[basis_gate] = {
-                        "kraus_operators" : csr_matrix(np.eye(2**self.num_qubits, dtype=complex)),
+                        "kraus_operators" : (matrix.data, matrix.indices, matrix.indptr),
                         "instructions" : ["id"],
                         "probabilities" : [1.0],
                         "kraus" : None,

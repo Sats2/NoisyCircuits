@@ -7,6 +7,7 @@ dependencies:
   - pip
   - pandoc
   - scipy
+  - numba
   - matplotlib
   - pip:
     - pennylane
