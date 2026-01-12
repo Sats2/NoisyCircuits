@@ -68,6 +68,7 @@ class PureStateSolver:
         circuit = QuantumCircuit(self.num_qubits)
         state = QuantumState(self.num_qubits)
         state.set_zero_state()
+        exp = lambda x: np.exp(1j * x)
         instruction_map = {
             "x": lambda q, p: gate.X(q[0]),
             "sx": lambda q, p: gate.sqrtX(q[0]),
@@ -75,7 +76,7 @@ class PureStateSolver:
             "rx": lambda q, p: gate.RotX(q[0], p),
             "ecr": lambda q, p: gate.DenseMatrix(q, (1 / np.sqrt(2)) * np.array([[0, 0, 1, 1j], [0, 0, 1j, 1], [1, -1j, 0, 0], [-1j, 1, 0, 0]])),
             "cz": lambda q, p: gate.CZ(q[0], q[1]),
-            "rzz": lambda q, p: gate.RZZ(q[0], q[1], p),
+            "rzz": lambda q, p: gate.DenseMatrix(q, np.array([[exp(-p/2), 0, 0, 0], [0, exp(p/2), 0, 0], [0, 0, exp(p/2), 0], [0, 0, 0, exp(-p/2)]])),
             "unitary": lambda q, p: gate.DenseMatrix(q[0], p)
         }
         for entry in self.instruction_list:
@@ -85,6 +86,6 @@ class PureStateSolver:
             circuit.add_gate(instruction_map[gate_name](qubit_index, parameter))
         circuit.update_quantum_state(state)
         state_array = state.get_vector()
-        del state, circuit, instruction_map
+        del state, circuit, instruction_map, exp
         gc.collect()
         return get_probabilities(state_array, qubits)

@@ -59,9 +59,9 @@ class DensityMatrixSolver:
         self.instruction_list = instruction_list
 
     def solve(self,
-              qubits:list)->np.ndarray:
+              qubits:list)->np.ndarray[np.float64]:
         """
-        Solves the quantum circuit using density matrices and returns the probabilities of measuring each qubit in the computational basis.
+        Solves the quantum circuit using density matrix simulation and returns the probabilities of measuring the specified qubits in the computational basis.
 
         Args:
             qubits (list): List of qubits to be measured.

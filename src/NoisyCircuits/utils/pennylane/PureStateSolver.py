@@ -35,7 +35,7 @@ class PureStateSolver:
         self.instruction_list = instruction_list
         
     def solve(self,
-              qubits:list[int])->np.ndarray:
+              qubits:list[int])->np.ndarray[np.float64]:
         """
         Performs the quantum circuit simulation using pure statevector methods.
 
@@ -43,7 +43,7 @@ class PureStateSolver:
             qubits (list[int]): The list of qubits for which to compute the probabilities.
 
         Returns:
-            np.ndarray: The probabilities of measuring each qubit in the computational basis.
+            np.ndarray: The probabilities of measuring the specified qubits in the computational basis.
         """
         dev = qml.device("lightning.qubit", wires=self.num_qubits)
 
