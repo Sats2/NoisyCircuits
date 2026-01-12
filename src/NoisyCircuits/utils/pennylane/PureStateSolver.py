@@ -1,5 +1,5 @@
 """
-This module provides the ability for the QuantumCircuit module to perform a pure statevector simulation for a specific quantum circuit. Alternatively, the user can opt to use just this method to perform a pure statevector simulation using a custom instruction set as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. It is recommended to run all simulations via the QuantumCircuit module in order to allow for the correct decomposition of quantum gates according to the QPU's basis gates.
+This module provides the ability for the QuantumCircuit module to perform a pure statevector simulation for a specific quantum circuit using pennylane as a quantum circuit simulation backend. Alternatively, the user can opt to use just this method to perform a pure statevector simulation using a custom instruction set as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. It is recommended to run all simulations via the QuantumCircuit module in order to allow for the correct decomposition of quantum gates according to the QPU's basis gates.
 
 Example:
     >>> import numpy as np

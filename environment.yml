@@ -10,7 +10,7 @@ dependencies:
   - numba
   - matplotlib
   - pip:
-    - pennylane
+    - qulacs
     - qiskit
     - qiskit-aer
     - qiskit-ibm-runtime

@@ -13,7 +13,7 @@ Example:
 Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.
 """
 
-from pennylane import numpy as np
+import numpy as np
 from collections import defaultdict
 from scipy.sparse import csr_matrix
 import math

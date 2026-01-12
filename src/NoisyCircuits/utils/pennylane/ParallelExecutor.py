@@ -1,6 +1,5 @@
-#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
 """
-This module is responsible for running the MCWF simulations in parallel for noisy quantum circuit simulations. It is not meant to be called independently by a user but instead to be used as a helper module within the QuantumCircuit module to perform MCWF trajectory simulations in a parallel (shared/distributed memory) environment.
+This module is responsible for running the MCWF simulations in parallel for noisy quantum circuit simulations using pennylane as a quantum circuit simulator backend. It is not meant to be called independently by a user but instead to be used as a helper module within the QuantumCircuit module to perform MCWF trajectory simulations in a parallel (shared/distributed memory) environment.
 """
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
