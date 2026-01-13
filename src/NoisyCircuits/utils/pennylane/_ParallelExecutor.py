@@ -1,31 +1,31 @@
-#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
 """
-This module is responsible for running the MCWF simulations in parallel for noisy quantum circuit simulations. It is not meant to be called independently by a user but instead to be used as a helper module within the QuantumCircuit module to perform MCWF trajectory simulations in a parallel (shared/distributed memory) environment.
+This module is responsible for running the MCWF simulations in parallel for noisy quantum circuit simulations using pennylane as a quantum circuit simulator backend. It is not meant to be called independently by a user but instead to be used as a helper module within the QuantumCircuit module to perform MCWF trajectory simulations in a parallel (shared/distributed memory) environment.
 """
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
-
-import numpy as np
+import pennylane as qml
+from pennylane import numpy as np
+import numpy as npy
 import ray
 from numba import njit
 import gc
 
 
 @njit(fastmath=False)
-def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray]],
-                             state:np.ndarray)->np.ndarray:
+def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex128], int, int]],
+                             state:np.ndarray[np.complex128])->np.ndarray[np.float64]:
     """
     Computes the probabilities of the given statevector evolving under noise operators.
 
     Args:
-        sparse_matrix_list (list[tuple[np.ndarray]]): List of sparse matrices representing the noise operators in CSR format.
-        state (np.ndarray): Statevector of the quantum system.
+        sparse_matrix_list (list[tuple[np.ndarray[np.complex128], int, int]]): List of sparse matrices representing the noise operators in CSR format.
+        state (np.ndarray[np.complex128]): Statevector of the quantum system.
 
     Returns:
-        np.ndarray: Probabilities of the statevector picking a given noise operator.
+        np.ndarray[np.float64]: Probabilities of the statevector picking a given noise operator.
     """
     probs = npy.zeros(len(sparse_matrix_list), dtype=np.float64)
     for k, sparse_matrix in enumerate(sparse_matrix_list):
@@ -38,19 +38,19 @@ def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray]],
     return probs
 
 @njit(fastmath=False)
-def update_statevector(sparse_matrix:tuple[np.ndarray],
-                       state:np.ndarray,
-                       prob:float)->np.ndarray:
+def update_statevector(sparse_matrix:tuple[np.ndarray, int, int],
+                       state:np.ndarray[np.complex128],
+                       prob:float)->np.ndarray[np.complex128]:
     """
     Perfroms the matrix-vector product for sparse matrices in CSR format and provides the updated statevector under a given noise trajectory.
 
     Args:
         sparse_matrix (tuple[np.ndarray]): Sparse matrix in CSR format representing the noise operator.
-        state (np.ndarray): Current statevector of the quantum system.
+        state (np.ndarray[np.complex128]): Current statevector of the quantum system.
         prob (float): Probability of the state evolving under the given noise operator.
     
     Returns:
-        np.ndarray: Updated statevector after applying the noise operator (after normalization).
+        np.ndarray[np.complex128]: Updated statevector after applying the noise operator (after normalization).
     """
     data, indices, indptr = sparse_matrix
     res = npy.zeros_like(state)
@@ -104,55 +104,55 @@ class RemoteExecutor:
     def _setup_qnodes(self):
         """Pre-compile qnodes for better performance"""
         @qml.qnode(device=self.dev)
-        def apply_gate_noparams(state:np.ndarray, 
+        def apply_gate_noparams(state:np.ndarray[np.complex128], 
                                 gate_op:callable, 
-                                qubit_list:list)->np.ndarray:
+                                qubit_list:list[int])->np.ndarray[np.complex128]:
             """
             Apply Non-parameteric gates to the quantum circuit.
 
             Args:
-                state (np.ndarray): Current state of the qubit system.
+                state (np.ndarray[np.complex128]): Current state of the qubit system.
                 gate_op (callable): Operator to apply on the qubit system.
-                qubit_list (list): List of qubits that the operator must bbe applied to.
+                qubit_list (list[int]): List of qubits that the operator must bbe applied to.
             
             Returns:
-                np.ndarray: The updated state of the qubit system.
+                np.ndarray[np.complex128]: The updated state of the qubit system.
             """
             qml.StatePrep(state, wires=range(self.num_qubits))
             gate_op(qubit_list)
             return qml.state()
             
         @qml.qnode(device=self.dev)
-        def apply_gate_params(state:np.ndarray, 
+        def apply_gate_params(state:np.ndarray[np.complex128], 
                               gate_op:callable, 
-                              params:np.ndarray, 
-                              qubit_list:list):
+                              params:np.ndarray[np.complex128], 
+                              qubit_list:list[int])->np.ndarray[np.complex128]:
             """
             Apply Parameteric gates to the quantum circuit
 
             Args:
-                state (np.ndarray): Current state of the qubit system.
+                state (np.ndarray[np.complex128]): Current state of the qubit system.
                 gate_op (callable): Operator to apply on the qubit system.
-                params (np.ndarray): The value for the parameterized gate.
-                qubit_list (list): List of qubits that the operator must bbe applied to.
+                params (np.ndarray[np.complex128]): The value for the parameterized gate.
+                qubit_list (list[int]): List of qubits that the operator must bbe applied to.
 
             Returns:
-                np.ndarray: The updated state of the qubit system.
+                np.ndarray[np.complex128]: The updated state of the qubit system.
             """
             qml.StatePrep(state, wires=range(self.num_qubits))
             gate_op(params, qubit_list)
             return qml.state()
             
         @qml.qnode(device=self.dev)
-        def get_probs(state:np.ndarray)->np.ndarray:
+        def get_probs(state:np.ndarray[np.complex128])->np.ndarray[np.float64]:
             """
             Compute the final probabilties of the qubit system in the trajectory.
 
             Args:
-                state (np.ndarray): Final state of the qubit system in the current trajectory.
+                state (np.ndarray[np.complex128]): Final state of the qubit system in the current trajectory.
 
             Returns:
-                np.ndarray: Probabilities of the measured qubits from the qubit system.
+                np.ndarray[np.float64]: Probabilities of the measured qubits from the qubit system.
             """
             qml.StatePrep(state, wires=range(self.num_qubits))
             return qml.probs(wires=self.measured_qubits)
@@ -164,19 +164,19 @@ class RemoteExecutor:
     def _create_gate_handlers(self):
         """Create gate handler functions to eliminate conditionals in main loop"""
         
-        def safe_apply_gate_noparams(state:np.ndarray, 
+        def safe_apply_gate_noparams(state:np.ndarray[np.complex128], 
                                      gate_op:callable, 
-                                     qubits:list)->np.ndarray:
+                                     qubits:list[int])->np.ndarray[np.complex128]:
             """
             Apply gate with NaN handling only when needed.
 
             Args:
-                state (np.ndarray): Current state of the qubit system.
+                state (np.ndarray[np.complex128]): Current state of the qubit system.
                 gate_op (callable): Operator to apply on the qubit system.
-                qubits (list): List of qubits the the operator is applied to.
+                qubits (list[int]): List of qubits the the operator is applied to.
 
             Returns:
-                np.ndarray: Updated state afer NaN checks.
+                np.ndarray[np.complex128]: Updated state afer NaN checks.
             """
             psi_dash = self.apply_gate_noparams(state, gate_op, qubits)
             if np.isnan(psi_dash).any():
@@ -184,21 +184,21 @@ class RemoteExecutor:
                 psi_dash = self.apply_gate_noparams(noisy_state, gate_op, qubits)
             return psi_dash
         
-        def handle_two_qubit_gates(state:np.ndarray, 
+        def handle_two_qubit_gates(state:np.ndarray[np.complex128], 
                                    gate:str, 
-                                   qubits:list, 
-                                   params:np.ndarray)->np.ndarray:
+                                   qubits:list[int], 
+                                   params:np.ndarray[np.complex128])->np.ndarray[np.complex128]:
             """
             Apply two qubit gate with NaN handling when needed.
 
             Args:
-                state (np.ndarray): Current state of the qubit system.
+                state (np.ndarray[np.complex128]): Current state of the qubit system.
                 gate (str): Name of the gate to be applied to the system.
-                qubits (list): List of qubits that the gate must be applied to.
-                params (np.ndarray): Parameter value for parameterized two qubit gates.
+                qubits (list[int]): List of qubits that the gate must be applied to.
+                params (np.ndarray[np.compplex128]): Parameter value for parameterized two qubit gates.
 
             Returns:
-                np.ndarray: Updated state after NaN checks.
+                np.ndarray[np.complex128]: Updated state after NaN checks.
             """
             qpair = tuple(qubits)
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
@@ -213,21 +213,21 @@ class RemoteExecutor:
             kraus_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
             return update_statevector(ops[kraus_idx], psi_dash, kraus_probs[kraus_idx])
             
-        def handle_param_gate(state:np.ndarray, 
+        def handle_param_gate(state:np.ndarray[np.complex128], 
                               gate:str, 
-                              qubits:list, 
-                              params:np.ndarray)->np.ndarray:
+                              qubits:list[int], 
+                              params:np.ndarray[np.complex128])->np.ndarray[np.complex128]:
             """
             Apply parameterized gates with NaN handling.
 
             Args:
-                state (np.ndarray): Current state of the qubit system.
+                state (np.ndarray[np.complexy128]): Current state of the qubit system.
                 gate (str): Name of the gate to be applied to the qubit system.
-                qubits (list): List of qubits to applied the gate to.
-                params (np.ndarray): Parameter values to apply.
+                qubits (list[int]): List of qubits to applied the gate to.
+                params (np.ndarray[np.complex128]): Parameter values to apply.
             
             Returns:
-                np.ndarray: Updated state of the system after NaN checks.
+                np.ndarray[np.complex128]: Updated state of the system after NaN checks.
             """
             result = self.apply_gate_params(state, self.instruction_map[gate], params, qubits)
             if np.isnan(result).any():
@@ -235,21 +235,21 @@ class RemoteExecutor:
                 result = self.apply_gate_params(noisy_state, self.instruction_map[gate], params, qubits)
             return result
             
-        def handle_single_qubit_noise(state:np.ndarray, 
+        def handle_single_qubit_noise(state:np.ndarray[np.complex128], 
                                       gate:str, 
-                                      qubits:list, 
-                                      params:np.ndarray)->np.ndarray:
+                                      qubits:list[int], 
+                                      params:np.ndarray[np.complex128])->np.ndarray[np.complex128]:
             """
             Applies the noise operator to the system for single qubit gates.
 
             Args:
-                state (np.ndarray): Current State of the qubit system.
+                state (np.ndarray[np.complex128]): Current State of the qubit system.
                 gate (str): Name of the gate to apply.
-                qubits (list): Qubit to which the gate is applied.
-                params (np.ndarray): Value for the parameterized gate.
+                qubits (list[int]): Qubit to which the gate is applied.
+                params (np.ndarray[np.complex128]): Value for the parameterized gate.
 
             Returns:
-                np.ndarray: Updated state of the system after noise application.
+                np.ndarray[np.complex128]: Updated state of the system after noise application.
             """
             psi_dash = safe_apply_gate_noparams(state, self.instruction_map[gate], qubits)
             ops = self.single_qubit_noise[qubits[0]][1][gate]["kraus_operators"]
@@ -273,24 +273,24 @@ class RemoteExecutor:
                 self.gate_handlers[gate] = handle_single_qubit_noise
 
     def run(self, 
-            traj_id:int,
+            trajectories:int,
             instruction_list:list,
-            measured_qubits:list[int])->np.ndarray:
+            measured_qubits:list[int])->np.ndarray[np.float64]:
         """
         Main method of the module to execute the MCWF trajectory.
 
         Args:
-            traj_id (int): Trajectory ID.
+            trajectories (int): Total number of trajectories that need to be run by the core.
             instruction_list (list): List of instructions to build the quantum circuit.
             measured_qubits (list[int]): List of qubits to measure.
         
         Returns:
-            np.ndarray: Probabilities of the measured qubits after the circuit execution.
+            np.ndarray[np.float64]: Probabilities of the measured qubits after the circuit execution.
         """
         self.instruction_list = instruction_list
         self.measured_qubits = measured_qubits
         
-        def compute_trajectory(traj_id:int)->np.ndarray:
+        def compute_trajectory(traj_id:int)->np.ndarray[np.float64]:
             """
             Computes the probabilities of the current MCWF trajectory.
 
@@ -298,7 +298,7 @@ class RemoteExecutor:
                 traj_id (int): Trajectory ID.
             
             Returns:
-                np.ndarray: Probabilities from the current trajectory.
+                np.ndarray[np.float64]: Probabilities from the current trajectory.
             """
             np.random.seed(42 + traj_id)
             init_state = np.zeros(2**self.num_qubits, dtype=np.complex128)
@@ -317,4 +317,7 @@ class RemoteExecutor:
             gc.collect()
             return np.zeros(probs.shape) if np.isnan(probs).any() else probs
         
-        return compute_trajectory(traj_id)
+        result = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
+        for traj_id in range(trajectories):
+            result += compute_trajectory(traj_id)
+        return result

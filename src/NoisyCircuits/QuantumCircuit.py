@@ -20,17 +20,14 @@ os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 
-import pennylane as qml
-from pennylane import numpy as np
-import numpy as npy
+import numpy as np
 from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
-from NoisyCircuits.utils.DensityMatrixSolver import DensityMatrixSolver
-from NoisyCircuits.utils.PureStateSolver import PureStateSolver
-from NoisyCircuits.utils.ParallelExecutor import RemoteExecutor
 from NoisyCircuits.utils.EagleDecomposition import EagleDecomposition
 from NoisyCircuits.utils.HeronDecomposition import HeronDecomposition
+from NoisyCircuits.utils.solvers import load_solver
 import json
 import ray
+import gc
 
 
 class QuantumCircuit:
@@ -57,12 +54,15 @@ class QuantumCircuit:
         ValueError: If the backend_qpu_type is not one of ['Eagle', 'Heron'].
         TypeError: If num_trajectories is not an integer.
         ValueError: If num_trajectories is less than 1.
-        TypeError: If threshold is not a float.
-        ValueError: If threshold is not between 0 and 1 (exclusive).
         TypeError: If num_cores is not an integer.
         ValueError: If num_cores is less than 1.
+        ValueError: If num_cores exceeds the available CPU cores.
+        TypeError: If sim_backend is not a string.
+        ValueError: If sim_backend is not available.
         TypeError: If jsonize is not a boolean.
         TypeError: If verbose is not a boolean.
+        TypeError: If threshold is not a float.
+        ValueError: If threshold is not between 0 and 1 (exclusive).
     """
 
     # Update QPU Basis Gates Here!
@@ -76,6 +76,7 @@ class QuantumCircuit:
                     "gate_decomposition" : HeronDecomposition
                 }
     }
+    available_sim_backends = ["qulacs", "pennylane"]
 
     def __init__(self,
                  num_qubits:int,
@@ -83,6 +84,7 @@ class QuantumCircuit:
                  backend_qpu_type:str,
                  num_trajectories:int,
                  num_cores:int=2,
+                 sim_backend:str="qulacs",
                  jsonize:bool=False,
                  verbose:bool=True,
                  threshold:float=1e-12)->None:
@@ -109,12 +111,18 @@ class QuantumCircuit:
             raise ValueError("Threshold must be a float between 0 and 1 (exclusive).")
         if not isinstance(num_cores, int):
             raise TypeError("Number of cores must be an integer.")
+        if not isinstance(sim_backend, str):
+            raise TypeError("Simulation backend must be a string.")
+        if sim_backend.lower() not in QuantumCircuit.available_sim_backends:
+            raise ValueError(f"Simulation backend must be one of {QuantumCircuit.available_sim_backends}.")
         if num_cores < 1:
             raise ValueError("Number of cores must be a positive integer greater than or equal to 1.")
         if not isinstance(jsonize, bool):
             raise TypeError("Jsonize must be a boolean.")
         if not isinstance(verbose, bool):
             raise TypeError("Verbose must be a boolean.")
+        if num_cores > os.cpu_count():
+            raise ValueError(f"Number of cores cannot exceed available CPU cores ({os.cpu_count()}).")
         self.num_qubits = num_qubits
         self.noise_model = noise_model
         if jsonize:
@@ -122,6 +130,7 @@ class QuantumCircuit:
         self.num_trajectories = num_trajectories
         self.threshold = threshold
         self.num_cores = num_cores
+        self.backend = sim_backend.lower()
         self.verbose = verbose
         self.qpu = backend_qpu_type.lower()
         basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
@@ -137,8 +146,8 @@ class QuantumCircuit:
         self.two_qubit_instructions = multi_error
         self.measurement_error = measure_error
         self.connectivity = connectivity
-        single_qubit_instructions_array = npy.array(list(self.single_qubit_instructions.items()))
-        two_qubit_instructions_array = npy.array(list(self.two_qubit_instructions.items()))
+        single_qubit_instructions_array = np.array(list(self.single_qubit_instructions.items()))
+        two_qubit_instructions_array = np.array(list(self.two_qubit_instructions.items()))
         self.qubit_coupling_map = modeller.qubit_coupling_map
         self.measurement_error_operator = self._generate_measurement_error_operator()
         self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
@@ -147,16 +156,19 @@ class QuantumCircuit:
                                                                                                 qubit_map=self.qubit_coupling_map
                                                                                             )
         ray.init(num_cpus=self.num_cores, ignore_reinit_error=True, log_to_driver=False)
-        single_qubit_instruction_reference = ray.put(single_qubit_instructions_array)
-        two_qubits_instruction_reference = ray.put(two_qubit_instructions_array)
-        two_qubit_gate_index = {two_qubit_instructions_array[i][0] : i for i in range(len(two_qubit_instructions_array))}
+        self._single_qubit_instruction_reference = ray.put(single_qubit_instructions_array)
+        self._two_qubits_instruction_reference = ray.put(two_qubit_instructions_array)
+        self._two_qubit_gate_index = {two_qubit_instructions_array[i][0] : i for i in range(len(two_qubit_instructions_array))}
+        self.solver = load_solver(self.backend)
         self.workers = [
-            RemoteExecutor.remote(
-                num_qubits=self.num_qubits,
-                single_qubit_noise=single_qubit_instruction_reference,
-                two_qubit_noise=two_qubits_instruction_reference,
-                two_qubit_noise_index=two_qubit_gate_index
-            ) for _ in range(self.num_cores)]
+                    self.solver.RemoteExecutor.remote(
+                                        num_qubits = self.num_qubits,
+                                        single_qubit_noise = self._single_qubit_instruction_reference,
+                                        two_qubit_noise = self._two_qubits_instruction_reference,
+                                        two_qubit_noise_index = self._two_qubit_gate_index
+                            ) for _ in range(self.num_cores)
+        ]
+        
 
     def __getattr__(self, name: str) -> callable:
         """
@@ -194,6 +206,16 @@ class QuantumCircuit:
             else:
                 meas_error_op = np.kron(meas_error_op, self.measurement_error[qubit])
         return meas_error_op
+    
+    def _distribute_trajectories(self)->list[int]:
+        """
+        Private method that distributes the total number of trajectories across the available cores as equally as possible.
+        
+        Returns:
+            list[int]: A list containing the number of trajectories assigned to each core.
+        """
+        q, r = divmod(self.num_trajectories, self.num_cores)
+        return [q+1 if i < r else q for i in range(self.num_cores)]
 
     def execute(self,
                 qubits:list[int],
@@ -232,9 +254,12 @@ class QuantumCircuit:
             measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
         else:
             measurement_error_operator = self.measurement_error_operator
-        futures = [self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list, qubits) for traj_id in range(num_trajectories)]
-        probs_raw = np.array(ray.get(futures))
-        probs = np.mean(probs_raw, axis=0)
+        
+        trajectories_per_worker = self._distribute_trajectories()
+        futures = [self.workers[i].run.remote(trajectories_per_worker[i], self.instruction_list, qubits) for i in range(self.num_cores)]
+        probs = np.array(ray.get(futures))
+        probs = np.sum(probs, axis=0) / num_trajectories
+
         if measurement_error_operator is not None:
             probs = np.dot(measurement_error_operator, probs)
         return probs
@@ -265,12 +290,12 @@ class QuantumCircuit:
             measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
         else:
             measurement_error_operator = self.measurement_error_operator
-        density_matrix_solver = DensityMatrixSolver(
-            num_qubits=self.num_qubits,
-            single_qubit_noise=self.single_qubit_instructions,
-            two_qubit_noise=self.two_qubit_instructions,
-            instruction_list=self.instruction_list
-        )
+        density_matrix_solver = self.solver.DensityMatrixSolver(
+                    num_qubits=self.num_qubits,
+                    single_qubit_noise=self.single_qubit_instructions,
+                    two_qubit_noise=self.two_qubit_instructions,
+                    instruction_list=self.instruction_list
+                )
         probs = density_matrix_solver.solve(qubits=qubits)
         if measurement_error_operator is not None:
             probs = np.dot(measurement_error_operator, probs)
@@ -298,10 +323,10 @@ class QuantumCircuit:
             raise ValueError("No instructions in the circuit to execute.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
-        pure_state_solver = PureStateSolver(
-            num_qubits=self.num_qubits,
-            instruction_list=self.instruction_list
-            )
+        pure_state_solver = self.solver.PureStateSolver(
+                    num_qubits=self.num_qubits,
+                    instruction_list=self.instruction_list
+                    )
         return pure_state_solver.solve(qubits=qubits)
     
     def draw_circuit(self,
@@ -323,33 +348,26 @@ class QuantumCircuit:
             raise ValueError("Style must be one of ['mpl', 'text'].")
         if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to draw.")
-        
-        @qml.qnode(qml.device("default.qubit", wires=self.num_qubits))
-        def circuit():
-            instruction_map = {
-                                "x": lambda q: qml.X(q),
-                                "sx": lambda q: qml.SX(q),
-                                "rz": lambda t, q: qml.RZ(t, q),
-                                "rx": lambda t,q: qml.RX(t, q),
-                                "ecr": lambda q: qml.ECR(q),
-                                "cz": lambda q: qml.CZ(q),
-                                "rzz": lambda t,q: qml.IsingZZ(t, q),
-                                "unitary": lambda p, q: qml.QubitUnitary(p, q),
-            }
-            for entry in self.instruction_list:
-                gate_instruction = entry[0]
-                qubit_added = entry[1]
-                params = entry[2]
-                if gate_instruction in ["rz", "rx", "unitary", "rzz"]:
-                    instruction_map[gate_instruction](params, qubit_added)
-                else:
-                    instruction_map[gate_instruction](qubit_added)
-            return qml.state()
-        
+        from qiskit import QuantumCircuit as QiskitQuantumCircuit
+        circuit = QiskitQuantumCircuit(self.num_qubits)
+        instruction_map = {
+            "x": lambda q, p: circuit.x(q[0]),
+            "sx": lambda q, p: circuit.sx(q[0]),
+            "rz": lambda q, p: circuit.rz(p[0], q[0]),
+            "rx": lambda q, p: circuit.rx(p[0], q[0]),
+            "cz": lambda q, p: circuit.cz(q[0], q[1]),
+            "ecr": lambda q, p: circuit.ecr(q[0], q[1]),
+            "rzz": lambda q, p: circuit.rzz(p, q[0], q[1]),
+            "unitary": lambda q, p: circuit.unitary(p, q)
+        }
+        for gate_name, qubit_index, parameters in self.instruction_list:
+            instruction_map[gate_name](qubit_index, parameters)
         if style.lower() == "mpl":
-            qml.draw_mpl(circuit)()
+            circuit.draw(output="mpl")
         else:
-            qml.draw(circuit)()
+            circuit.draw()
+        del circuit
+        gc.collect()
     
     def shutdown(self):
         """

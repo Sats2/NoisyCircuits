@@ -17,13 +17,12 @@ import numpy as np
 from qulacs import QuantumCircuit, QuantumState
 import qulacs.gate as gate
 import gc
-from numba import njit
 
-@njit(fastmath=False)
+
 def get_probabilities(state:np.ndarray[np.complex128],
                       qubits:list[int])->np.ndarray[np.float64]:
     """
-    Numba JIT-compiled function to compute measurement probabilities for specified qubits.
+    Computes the measurement probabilities for specified qubits.
 
     Args:
         state(np.ndarray[np.complex128]): The statevector of the full quantum system.
@@ -77,7 +76,7 @@ class PureStateSolver:
             "ecr": lambda q, p: gate.DenseMatrix(q, (1 / np.sqrt(2)) * np.array([[0, 0, 1, 1j], [0, 0, 1j, 1], [1, -1j, 0, 0], [-1j, 1, 0, 0]])),
             "cz": lambda q, p: gate.CZ(q[0], q[1]),
             "rzz": lambda q, p: gate.DenseMatrix(q, np.array([[exp(-p/2), 0, 0, 0], [0, exp(p/2), 0, 0], [0, 0, exp(p/2), 0], [0, 0, 0, exp(-p/2)]])),
-            "unitary": lambda q, p: gate.DenseMatrix(q[0], p)
+            "unitary": lambda q, p: gate.DenseMatrix(q, p) if len(q) > 1 else gate.DenseMatrix(q[0], p)
         }
         for entry in self.instruction_list:
             gate_name = entry[0]

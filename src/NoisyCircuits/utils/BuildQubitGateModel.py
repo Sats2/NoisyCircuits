@@ -125,7 +125,7 @@ class BuildModel:
         Returns:
             bool: True if the Kraus operators form a CPTP map, False otherwise.
         """
-        mat = np.zeros((2**self.num_qubits, 2**self.num_qubits), dtype=complex, requires_grad=False)
+        mat = np.zeros((2**self.num_qubits, 2**self.num_qubits), dtype=complex)
         for op in kraus_ops:
             op = csr_matrix(op, shape=(2**self.num_qubits, 2**self.num_qubits))
             mat += op.conj().T.dot(op)
@@ -251,7 +251,7 @@ class BuildModel:
             if i == n:
                 op_list.append(P)
             else:
-                op_list.append(np.eye(2, requires_grad=False))
+                op_list.append(np.eye(2))
         full_op = op_list[0]
         for op in op_list[1:]:
             full_op = np.kron(full_op, op)
@@ -753,19 +753,15 @@ class BuildModel:
             measurement_errors[qubit] = matrix
         return measurement_errors
 
-    def build_qubit_gate_model(self,
-                               threshold:float=1e-12)->tuple[dict, dict, dict]:
+    def build_qubit_gate_model(self)->tuple[dict, dict, dict, dict]:
         """
         Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.
-
-        Args:
-            threshold (float) : cutoff threshold for probabilities to filter out low-probability errors (applied only to ECR gates). Default is 1e-12, which means no filtering as lowest recorded probabilities are approximately 1e-11.
         
         Raises:
             ValueError: If the noise model does not contain information regarding the specified basis gates.
 
         Returns:
-            tuple[dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, and measurement error instructions.
+            tuple[dict, dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, measurement error instructions and the connectivity map.
         """
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],

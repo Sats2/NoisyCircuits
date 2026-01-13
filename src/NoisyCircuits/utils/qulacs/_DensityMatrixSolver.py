@@ -16,25 +16,8 @@ This module contains only one class `DensityMatrixSolver` which has only one cal
 
 from qulacs import QuantumCircuit, DensityMatrix
 import qulacs.gate as gate
+from qulacs.state import partial_trace
 import numpy as np
-from numba import njit
-
-
-@njit(fastmath=False)
-def get_probabilities(state:np.ndarray[np.complex128],
-                      qubits:list[int])->np.ndarray[np.float64]:
-    """
-    Numba JIT-compiled function to compute measurement probabilities for specified qubits.
-
-    Args:
-        state(np.ndarray[np.complex128]): The density matrix of the full quantum system.
-        qubits(list[int]): The list of qubits for which to compute the probabilities.
-
-    Returns:
-        np.ndarray[np.float64]: The probabilities of measuring each qubit in the computational basis.
-    """
-    #TODO: Implement partial trace for density matrix to get probabilities
-    return None
 
 class DensityMatrixSolver:
     """
@@ -100,10 +83,21 @@ class DensityMatrixSolver:
             "rzz": lambda q, p: gate.DenseMatrix(q, np.array([[exp(-p/2), 0, 0, 0], [0, exp(p/2), 0, 0], [0, 0, exp(p/2), 0], [0, 0, 0, exp(-p/2)]])),
             "unitary": lambda q, p: gate.DenseMatrix(q[0], p)
         }
-        #TODO: Check implementation of quantum channels for noise application in Qulacs
         noise_handlers = {
-            #TODO
-            "unitary": lambda **kwargs: None
+            "x": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
+                                                       self.single_qubit_noise[q[0]]["x"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["x"]["qubit_channel"]))]),
+            "sx": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
+                                                        self.single_qubit_noise[q[0]]["sx"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["sx"]["qubit_channel"]))]),
+            "rz": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
+                                                        self.single_qubit_noise[q[0]]["rz"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["rz"]["qubit_channel"]))]),
+            "rx": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
+                                                        self.single_qubit_noise[q[0]]["rx"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["rx"]["qubit_channel"]))]),
+            "ecr": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]], 
+                                                        self.two_qubit_noise["ecr"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["ecr"][tuple(q)]["qubit_channel"]))]),
+            "cz": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]], 
+                                                        self.two_qubit_noise["cz"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["cz"][tuple(q)]["qubit_channel"]))]),
+            "rzz": lambda q: gate.DenseMatrix(list(q), np.eye(2**len(q))),
+            "unitary": lambda q: gate.DenseMatrix(list(q), np.eye(2 ** len(q)))
         }
         for entry in self.instruction_list:
             gate_name = entry[0]
@@ -112,6 +106,10 @@ class DensityMatrixSolver:
             circuit.add_gate(instruction_map[gate_name](qubit_index, parameter))
             circuit.add_gate(noise_handlers[gate_name](qubit_index))
         circuit.update_quantum_state(state)
-        state_matrix = state.get_matrix()
+        if len(qubits) == self.num_qubits:
+            probs = np.diag(state.get_matrix()).real
+        else:
+            probs = np.diag(partial_trace(state, qubits).get_matrix()).real
         del state, circuit, instruction_map, noise_handlers, exp
-        return get_probabilities(state_matrix, qubits)
+        return probs
+        
