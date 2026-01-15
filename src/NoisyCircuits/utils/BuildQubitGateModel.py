@@ -15,7 +15,7 @@ Additionally, it needs to be noted that the QuantumCircuit module automatically 
 
 import numpy as np
 from collections import defaultdict
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix, csr_matrix, kron
 import math
 import logging
 
@@ -244,18 +244,18 @@ class BuildModel:
             system (int): The total number of qubits in the system.
 
         Returns:
-            np.ndarray: The full system operator.
+            np.ndarray: The full system operator as a sparse CSR matrix.
         """
         op_list = []
         for i in range(system):
             if i == n:
-                op_list.append(P)
+                op_list.append(csr_matrix(P, shape=(2,2)))
             else:
-                op_list.append(np.eye(2))
+                op_list.append(csr_matrix(np.eye(2, dtype=np.complex128), shape=(2,2)))
         full_op = op_list[0]
         for op in op_list[1:]:
-            full_op = np.kron(full_op, op)
-        return full_op
+            full_op = kron(full_op, op)
+        return csr_matrix(full_op, dtype=np.complex128)
     
     def extend_kraus_to_system(self, 
                                kraus_ops:list, 
@@ -272,7 +272,7 @@ class BuildModel:
         system_qubits = self.num_qubits
         extended_kraus = []
         for op in kraus_ops:
-            extended_op = csr_matrix(self.build_full_matrix(op, qubit_idx, system_qubits))
+            extended_op = self.build_full_matrix(op, qubit_idx, system_qubits)
             extended_op_csr = (extended_op.data, extended_op.indices, extended_op.indptr)
             extended_kraus.append(extended_op_csr)
         return extended_kraus
@@ -293,20 +293,29 @@ class BuildModel:
             np.ndarray: The full system operator (2^system x 2^system matrix). 
         """
         q0, q1 = qubit_pair
+        P_coo = coo_matrix(P)
         dim = 2**system
-        full_op = np.zeros((dim, dim), dtype=np.complex128)
-        for i in range(dim):
-            for j in range(dim):
-                state_i = [(i >> k) & 1 for k in range(system)]
-                state_j = [(j >> k) & 1 for k in range(system)]
-                i_q0, i_q1 = state_i[q0], state_i[q1]
-                j_q0, j_q1 = state_j[q0], state_j[q1]
-                other_qubits_same = all(state_i[k] == state_j[k] for k in range(system) if k not in [q0, q1])
-                if other_qubits_same:
-                    i_2q = i_q0 * 2 + i_q1
-                    j_2q = j_q0 * 2 + j_q1
-                    full_op[i,j] = P[i_2q, j_2q]
-        return full_op
+        rows, cols, data = [], [], []
+        other_qubits = [k for k in range(system) if k not in qubit_pair]
+        num_others = len(other_qubits)
+        other_indices = np.arange(2**num_others)
+        other_masks = np.zeros(2**num_others, dtype=np.int64)
+        for i in range(2**num_others):
+            mask = 0
+            for bit_idx, actual_qubit in enumerate(other_qubits):
+                if (i >> bit_idx) & 1:
+                    mask |= (1 << actual_qubit)
+            other_masks[i] = mask
+        for p_row, p_col, p_val in zip(P_coo.row, P_coo.col, P_coo.data):
+            b0_r, b1_r = (p_row & 1), (p_row >> 1) & 1
+            b0_c, b1_c = (p_col & 1), (p_col >> 1) & 1
+            base_r = (b0_r << q1) | (b1_r << q0)
+            base_c = (b0_c << q1) | (b1_c << q0)
+            rows.extend(base_r | other_masks)
+            cols.extend(base_c | other_masks)
+            data.extend([p_val] * len(other_masks))
+
+        return csr_matrix((data, (rows, cols)), shape=(dim, dim), dtype=np.complex128)
 
     def extend_kraus_to_system_multiqubit(self, kraus_ops:list, qubit_pair:tuple)->list:
         """
@@ -322,7 +331,7 @@ class BuildModel:
         system_qubits = self.num_qubits
         extended_kraus = []
         for op in kraus_ops:
-            extended_op = csr_matrix(self.build_full_matrix_2qubit(op, qubit_pair, system_qubits))
+            extended_op = self.build_full_matrix_2qubit(op, qubit_pair, system_qubits)
             extended_op_csr = (extended_op.data, extended_op.indices, extended_op.indptr)
             extended_kraus.append(extended_op_csr)
         return extended_kraus        
@@ -431,7 +440,7 @@ class BuildModel:
                 if basis_gate not in qubit_errors.keys():
                     matrix = csr_matrix(np.eye(2**self.num_qubits, dtype=complex))
                     qubit_errors[basis_gate] = {
-                        "kraus_operators" : (matrix.data, matrix.indices, matrix.indptr),
+                        "kraus_operators" : [(matrix.data, matrix.indices, matrix.indptr)],
                         "instructions" : ["id"],
                         "probabilities" : [1.0],
                         "kraus" : None,

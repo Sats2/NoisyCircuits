@@ -35,7 +35,7 @@ def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex
             for j in range(indptr[i], indptr[i+1]):
                 res[i] += data[j] * state[indices[j]]
         probs[k] = np.vdot(res, res).real
-    return probs/np.sum(probs) if np.sum(probs) == 0.0 or np.isnan(probs).any() else np.ones(len(probs), dtype=np.float64)/len(probs)
+    return probs #/ np.sum(probs)
 
 @njit(fastmath=False)
 def update_statevector(sparse_matrix:tuple[np.ndarray[np.complex128], int, int],
@@ -85,7 +85,8 @@ class RemoteExecutor:
                  num_qubits:int,
                  single_qubit_noise:dict,
                  two_qubit_noise:dict,
-                 two_qubit_noise_index:dict)->None:
+                 two_qubit_noise_index:dict
+                 )->None:
         """
         Constructor for the RemoteExecutor class.
 
@@ -94,11 +95,14 @@ class RemoteExecutor:
             single_qubit_noise (dict): Dictionary containing the noise operators for single qubit gates.
             two_qubit_noise (dict): Dictionary containing the noise operators for two qubit gates.
             two_qubit_noise_index (dict): Dictionary mapping qubit pairs to their indices in the two qubit noise dictionary.
+            instruction_list (list): List of instructions to build the quantum circuit.
+            measured_qubits (list[int]): List of qubits to measure.
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
         self.two_qubit_noise_index = two_qubit_noise_index
+        self.measured_qubits = num_qubits
         exp = lambda x: np.exp(1j * x)
         self.instruction_map = {
             "x": lambda q, p: gate.X(q[0]),
@@ -117,9 +121,10 @@ class RemoteExecutor:
             "rx": self._no_noise,
             "cz": self._apply_two_qubit_noise,
             "ecr": self._apply_two_qubit_noise,
-            "rzz": self._apply_two_qubit_noise,
+            "rzz": self._no_noise,
             "unitary": self._no_noise
         }
+        self.probs_sum = np.zeros(2**self.measured_qubits, dtype=np.float64)
     
     def _apply_single_qubit_noise(self,
                                    state:np.ndarray[np.complex128],
@@ -159,7 +164,7 @@ class RemoteExecutor:
             np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
         """
         qubit_pair = tuple(qubit_index)
-        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name][1][qubit_pair]]["operators"]
+        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]["operators"]
         kraus_probs = compute_trajectory_probs(ops, state)
         chosen_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
         return update_statevector(ops[chosen_idx], state, kraus_probs[chosen_idx])
@@ -167,51 +172,70 @@ class RemoteExecutor:
     def _no_noise(self,
                   state:np.ndarray[np.complex128],
                   gate_name:str,
-                  qubit_index:list[int])->np.ndarray[[np.complex128]]:
+                  qubit_index:list[int])->np.ndarray[np.complex128]:
         """
         Private method that returns the statevector unchanged when no noise is to be applied.
         """
         return state
 
     def run(self,
-            trajectories:int,
-            instruction_list:list,
-            measured_qubits:list[int])->np.ndarray[np.float64]:
+            traj_id:int,
+            instruction_list:list[list[str, list[int], float|None]]
+        )->np.ndarray[np.float64]:
         """
         Main method of the module to execute the MCWF trajectories.
 
         Args:
             trajectories (int): List of trajectory IDs to be simulated.
-            instruction_list (list): List of instructions to build the quantum circuit.
-            measured_qubits (list[int]): List of qubits to measure.
+            instruction_list (list[list[str, list[int], float|None]]): List of instructions to build the quantum circuit.
 
         Returns:
             np.ndarray[np.float64]: Sum of probabilities of the measured qubits after the circuit execution after each trajectory.
         """
         self.instruction_list = instruction_list
-        self.measured_qubits = measured_qubits
 
         def compute_trajectory(traj_id:int)->np.ndarray[np.float64]:
-            circuit = QuantumCircuit(self.num_qubits)
-            state = QuantumState(self.num_qubits)
-            state.set_zero_state()
             np.random.seed(42 + traj_id)
+            init_state = np.zeros(2**self.num_qubits, dtype=np.complex128)
+            init_state[0] = 1.0 + 0.0j
             for gate_name, qubit_index, parameters in self.instruction_list:
-                gc.collect()
+                state = QuantumState(self.num_qubits)
+                state.load(init_state)
+                circuit = QuantumCircuit(self.num_qubits)
                 circuit.add_gate(self.instruction_map[gate_name](qubit_index, parameters))
                 circuit.update_quantum_state(state)
                 state_vector = state.get_vector()
-                state_vector_updated = self.noise_function_map[gate_name](state_vector, gate_name, qubit_index)
-                state.load(state_vector_updated)
-                del state_vector
-                gc.collect()
-            final_state = state.get_vector()
-            final_probs = get_probabilities(final_state, self.measured_qubits)
-            del state, circuit, final_state
-            gc.collect()
-            return np.zeros(final_probs.shape, dtype=np.float64) if np.isnan(final_probs).any() else final_probs
+                state_vector_updated = self.noise_function_map[gate_name](state_vector.copy(), gate_name, qubit_index)
+                init_state = state_vector_updated
+            if len(self.measured_qubits) == self.num_qubits:
+                final_probs = np.abs(init_state)**2
+            else:
+                final_probs = get_probabilities(init_state, self.measured_qubits)
+            return final_probs
         
-        results = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
-        for traj_id in range(trajectories):
-            results += compute_trajectory(traj_id)
-        return results
+        self.probs_sum += compute_trajectory(traj_id)
+
+    def get(self,
+            measured_qubits:list[int])->np.ndarray[np.float64]:
+        """
+        Method to get the accumulated probabilities after all trajectories have been run.
+
+        Args:
+            measured_qubits (list[int]): List of qubits that were measured.
+
+        Returns:
+            np.ndarray[np.float64]: Accumulated probabilities after all trajectories.
+        """
+        return self.probs_sum
+    
+    def reset(self, 
+              measured_qubits:list[int])->None:
+        """
+        Method to reset the accumulated probabilities and the measured qubits.
+
+        Args:
+            measured_qubits (list[int]): List of qubits that will be measured.
+        """
+        self.measured_qubits = measured_qubits
+        self.probs_sum = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
+        

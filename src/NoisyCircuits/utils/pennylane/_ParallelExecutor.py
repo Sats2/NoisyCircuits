@@ -59,7 +59,6 @@ def update_statevector(sparse_matrix:tuple[np.ndarray, int, int],
             res[i] += data[j] * state[indices[j]]
     return res / npy.sqrt(prob)
 
-
 @ray.remote
 class RemoteExecutor:
     """
@@ -83,6 +82,8 @@ class RemoteExecutor:
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
         self.two_qubit_noise_index = two_qubit_noise_index
+        self.measured_qubits = num_qubits
+        self.probs_sum = np.zeros(2**self.measured_qubits, dtype=np.float64)
         
         self.dev = qml.device("lightning.qubit", wires=self.num_qubits)
         
@@ -103,7 +104,7 @@ class RemoteExecutor:
 
     def _setup_qnodes(self):
         """Pre-compile qnodes for better performance"""
-        @qml.qnode(device=self.dev)
+        @qml.qnode(device=self.dev, interface=None)
         def apply_gate_noparams(state:np.ndarray[np.complex128], 
                                 gate_op:callable, 
                                 qubit_list:list[int])->np.ndarray[np.complex128]:
@@ -122,7 +123,7 @@ class RemoteExecutor:
             gate_op(qubit_list)
             return qml.state()
             
-        @qml.qnode(device=self.dev)
+        @qml.qnode(device=self.dev, interface=None)
         def apply_gate_params(state:np.ndarray[np.complex128], 
                               gate_op:callable, 
                               params:np.ndarray[np.complex128], 
@@ -143,7 +144,7 @@ class RemoteExecutor:
             gate_op(params, qubit_list)
             return qml.state()
             
-        @qml.qnode(device=self.dev)
+        @qml.qnode(device=self.dev, interface=None)
         def get_probs(state:np.ndarray[np.complex128])->np.ndarray[np.float64]:
             """
             Compute the final probabilties of the qubit system in the trajectory.
@@ -273,14 +274,13 @@ class RemoteExecutor:
                 self.gate_handlers[gate] = handle_single_qubit_noise
 
     def run(self, 
-            trajectories:int,
-            instruction_list:list,
-            measured_qubits:list[int])->np.ndarray[np.float64]:
+            traj_id:int,
+            instruction_list:list)->np.ndarray[np.float64]:
         """
         Main method of the module to execute the MCWF trajectory.
 
         Args:
-            trajectories (int): Total number of trajectories that need to be run by the core.
+            traj_id (int): Total number of trajectories that need to be run by the core.
             instruction_list (list): List of instructions to build the quantum circuit.
             measured_qubits (list[int]): List of qubits to measure.
         
@@ -288,7 +288,6 @@ class RemoteExecutor:
             np.ndarray[np.float64]: Probabilities of the measured qubits after the circuit execution.
         """
         self.instruction_list = instruction_list
-        self.measured_qubits = measured_qubits
         
         def compute_trajectory(traj_id:int)->np.ndarray[np.float64]:
             """
@@ -306,18 +305,36 @@ class RemoteExecutor:
             state = init_state.copy()
             
             for gate, qubits, params in self.instruction_list:
-                gc.collect()
                 state = self.gate_handlers[gate](state, gate, qubits, params)
                 if np.isnan(state).any():
                     return np.zeros(2**len(self.measured_qubits))
-                gc.collect()
             
             probs = self.get_probs(state)
             del state
-            gc.collect()
-            return np.zeros(probs.shape) if np.isnan(probs).any() else probs
+            return probs
         
-        result = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
-        for traj_id in range(trajectories):
-            result += compute_trajectory(traj_id)
-        return result
+        self.probs_sum += compute_trajectory(traj_id)
+
+    def get(self,
+            measured_qubits:list[int])->np.ndarray[np.float64]:
+        """
+        Method to get the accumulated probabilities after all trajectories have been run.
+
+        Args:
+            measured_qubits (list[int]): List of qubits that were measured.
+
+        Returns:
+            np.ndarray[np.float64]: Accumulated probabilities after all trajectories.
+        """
+        return self.probs_sum
+    
+    def reset(self, 
+              measured_qubits:list[int])->None:
+        """
+        Method to reset the accumulated probabilities and the measured qubits.
+
+        Args:
+            measured_qubits (list[int]): List of qubits that will be measured.
+        """
+        self.measured_qubits = measured_qubits
+        self.probs_sum = np.zeros(2**len(self.measured_qubits), dtype=np.float64)

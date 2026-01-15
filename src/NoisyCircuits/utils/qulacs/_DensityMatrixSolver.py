@@ -15,9 +15,9 @@ This module contains only one class `DensityMatrixSolver` which has only one cal
 """
 
 from qulacs import QuantumCircuit, DensityMatrix
-import qulacs.gate as gate
-from qulacs.state import partial_trace
+from qulacs import gate
 import numpy as np
+from qulacs.state import partial_trace
 
 class DensityMatrixSolver:
     """
@@ -78,10 +78,10 @@ class DensityMatrixSolver:
             "sx": lambda q, p: gate.sqrtX(q[0]),
             "rz": lambda q, p: gate.RotZ(q[0], p),
             "rx": lambda q, p: gate.RotX(q[0], p),
-            "ecr": lambda q, p: gate.DenseMatrix(q, (1 / np.sqrt(2)) * np.array([[0, 0, 1, 1j], [0, 0, 1j, 1], [1, -1j, 0, 0], [-1j, 1, 0, 0]])),
             "cz": lambda q, p: gate.CZ(q[0], q[1]),
+            "ecr": lambda q, p: gate.DenseMatrix(q, (1 / np.sqrt(2)) * np.array([[0, 0, 1, 1j], [0, 0, 1j, 1], [1, -1j, 0, 0], [-1j, 1, 0, 0]])),
             "rzz": lambda q, p: gate.DenseMatrix(q, np.array([[exp(-p/2), 0, 0, 0], [0, exp(p/2), 0, 0], [0, 0, exp(p/2), 0], [0, 0, 0, exp(-p/2)]])),
-            "unitary": lambda q, p: gate.DenseMatrix(q[0], p)
+            "unitary": lambda q, p: gate.DenseMatrix(q, p) if len(q) > 1 else gate.DenseMatrix(q[0], p)
         }
         noise_handlers = {
             "x": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
@@ -99,17 +99,19 @@ class DensityMatrixSolver:
             "rzz": lambda q: gate.DenseMatrix(list(q), np.eye(2**len(q))),
             "unitary": lambda q: gate.DenseMatrix(list(q), np.eye(2 ** len(q)))
         }
+
         for entry in self.instruction_list:
             gate_name = entry[0]
             qubit_index = entry[1]
             parameter = entry[2]
+            instruction_map[gate_name](qubit_index, parameter)
             circuit.add_gate(instruction_map[gate_name](qubit_index, parameter))
             circuit.add_gate(noise_handlers[gate_name](qubit_index))
-        circuit.update_quantum_state(state)
+            circuit.update_quantum_state(state)
         if len(qubits) == self.num_qubits:
             probs = np.diag(state.get_matrix()).real
         else:
-            probs = np.diag(partial_trace(state, qubits).get_matrix()).real
+            trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
+            probs = np.diag(partial_trace(state, trace_qubits).get_matrix()).real
         del state, circuit, instruction_map, noise_handlers, exp
         return probs
-        

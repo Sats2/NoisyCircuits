@@ -76,7 +76,7 @@ class QuantumCircuit:
                     "gate_decomposition" : HeronDecomposition
                 }
     }
-    available_sim_backends = ["qulacs", "pennylane"]
+    available_sim_backends = ["qulacs", "pennylane", "qiskit"]
 
     def __init__(self,
                  num_qubits:int,
@@ -130,7 +130,9 @@ class QuantumCircuit:
         self.num_trajectories = num_trajectories
         self.threshold = threshold
         self.num_cores = num_cores
-        self.backend = sim_backend.lower()
+        self._sim_backend = None
+        self.solver = None
+        self.sim_backend = sim_backend
         self.verbose = verbose
         self.qpu = backend_qpu_type.lower()
         basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
@@ -159,7 +161,6 @@ class QuantumCircuit:
         self._single_qubit_instruction_reference = ray.put(single_qubit_instructions_array)
         self._two_qubits_instruction_reference = ray.put(two_qubit_instructions_array)
         self._two_qubit_gate_index = {two_qubit_instructions_array[i][0] : i for i in range(len(two_qubit_instructions_array))}
-        self.solver = load_solver(self.backend)
         self.workers = [
                     self.solver.RemoteExecutor.remote(
                                         num_qubits = self.num_qubits,
@@ -168,7 +169,41 @@ class QuantumCircuit:
                                         two_qubit_noise_index = self._two_qubit_gate_index
                             ) for _ in range(self.num_cores)
         ]
+
+    @property
+    def sim_backend(self)->str:
+        """
+        Getter for the _sim_backend attribute
+
+        Returns:
+            (str): Returns the current sim_backend value.
+        """
+        return self._sim_backend
+    
+    @sim_backend.setter
+    def sim_backend(self,
+                    backend:str)->None:
+        """
+        Setter for the _sim_backend attribute and updates the solver modules.
+
+        Args:
+            backend (str): The name of the backend.
         
+        Raises:
+            TypeError: Raised when backend is not a string
+            ValueError: Raised when the specified backend is not available.
+        """
+        if not isinstance(backend, str):
+            raise TypeError("Specified backend must of type string")
+        if backend not in QuantumCircuit.available_sim_backends:
+            raise ValueError(f"Specified backend {backend} is not available. Choose from {QuantumCircuit.available_sim_backends}.")
+        if backend == self._sim_backend:
+            print("Backend already in use.")
+            return
+        new_solver = load_solver(backend)
+        self.solver = new_solver
+        self._sim_backend = backend
+        print("Successfully switched backend to {}.".format(backend))
 
     def __getattr__(self, name: str) -> callable:
         """
@@ -206,16 +241,6 @@ class QuantumCircuit:
             else:
                 meas_error_op = np.kron(meas_error_op, self.measurement_error[qubit])
         return meas_error_op
-    
-    def _distribute_trajectories(self)->list[int]:
-        """
-        Private method that distributes the total number of trajectories across the available cores as equally as possible.
-        
-        Returns:
-            list[int]: A list containing the number of trajectories assigned to each core.
-        """
-        q, r = divmod(self.num_trajectories, self.num_cores)
-        return [q+1 if i < r else q for i in range(self.num_cores)]
 
     def execute(self,
                 qubits:list[int],
@@ -246,7 +271,7 @@ class QuantumCircuit:
             raise TypeError("qubits must be of type list.\nAll entries in qubits must be integers.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
-        if self._gate_decomposer.instruction_list == []:
+        if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to execute.")
         if num_trajectories is None:
             num_trajectories = self.num_trajectories
@@ -255,10 +280,18 @@ class QuantumCircuit:
         else:
             measurement_error_operator = self.measurement_error_operator
         
-        trajectories_per_worker = self._distribute_trajectories()
-        futures = [self.workers[i].run.remote(trajectories_per_worker[i], self.instruction_list, qubits) for i in range(self.num_cores)]
-        probs = np.array(ray.get(futures))
-        probs = np.sum(probs, axis=0) / num_trajectories
+        reset_probs = [
+            self.workers[i].reset.remote(measured_qubits=qubits) for i in range(self.num_cores)
+        ]
+
+        futures = [
+            self.workers[traj_id % self.num_cores].run.remote(traj_id, self.instruction_list) for traj_id in range(num_trajectories)
+            ]
+        
+        prob_chunks = [
+            ray.get(self.workers[i].get.remote(qubits)) for i in range(self.num_cores)
+        ]
+        probs = np.array(prob_chunks).sum(axis=0) / num_trajectories
 
         if measurement_error_operator is not None:
             probs = np.dot(measurement_error_operator, probs)
@@ -284,7 +317,7 @@ class QuantumCircuit:
             raise TypeError("Qubits must be a list of integers.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
-        if self._gate_decomposer.instruction_list == []:
+        if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to execute.")
         if len(qubits) != self.num_qubits:
             measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
@@ -319,7 +352,7 @@ class QuantumCircuit:
         """
         if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
             raise TypeError("Qubits must be a list of integers.")
-        if self._gate_decomposer.instruction_list == []:
+        if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to execute.")
         if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
             raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
@@ -353,8 +386,8 @@ class QuantumCircuit:
         instruction_map = {
             "x": lambda q, p: circuit.x(q[0]),
             "sx": lambda q, p: circuit.sx(q[0]),
-            "rz": lambda q, p: circuit.rz(p[0], q[0]),
-            "rx": lambda q, p: circuit.rx(p[0], q[0]),
+            "rz": lambda q, p: circuit.rz(p, q[0]),
+            "rx": lambda q, p: circuit.rx(p, q[0]),
             "cz": lambda q, p: circuit.cz(q[0], q[1]),
             "ecr": lambda q, p: circuit.ecr(q[0], q[1]),
             "rzz": lambda q, p: circuit.rzz(p, q[0], q[1]),
