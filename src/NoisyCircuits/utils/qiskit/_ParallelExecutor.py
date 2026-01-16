@@ -166,6 +166,7 @@ class RemoteExecutor:
         new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
         return new_state
     
+    #TODO: Test out if a non-unitary matrix can be passed directly to qiskit as a gate instead of updating the statevector and re-initializing at each step to reduce floating point inaccuracies from repeated initializations to cause less drift.
     def run(self,
             traj_id:int,
             instruction_list:list[list[str, list[int], float]|None]

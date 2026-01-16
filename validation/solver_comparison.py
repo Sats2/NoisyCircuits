@@ -39,14 +39,13 @@ def compute_metrics(pd_1, pd_2):
     js = 0.5 * np.sum(pd_1 * np.log(1e-10 + pd_1 / m) + pd_2 * np.log(1e-10 + pd_2 / m))
     return (battacharyya_coefficient, battacharyya_distance, hellinger_distance, js)
 
-qubit_list = [2, 3, 4, 5, 6, 7]
+qubit_list = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 depth_list = [5, 20, 50, 100]
 logger_qiskit = open("Qiskit_Log.log", "w")
 logger_qulacs = open("Qulacs_Log.log", "w")
 logger_pennylane = open("Pennylane_Log.log", "w")
 
 def run_pennylane(circuit, depth, logger):
-    circuit.sim_backend = "pennylane"
     dm = circuit.run_with_density_matrix(list(range(circuit.num_qubits)))
     mcwf_10 = circuit.execute(list(range(circuit.num_qubits)), num_trajectories=10)
     mcwf_100 = circuit.execute(list(range(circuit.num_qubits)), num_trajectories=100)
@@ -70,7 +69,6 @@ def run_pennylane(circuit, depth, logger):
     return (metrics_10, metrics_100, metrics_200, metrics_500, metrics_1000)
 
 def run_qiskit(circuit, depth, logger):
-    circuit.sim_backend = "qiskit"
     dm = circuit.run_with_density_matrix(list(range(circuit.num_qubits)))
     mcwf_10 = circuit.execute(list(range(circuit.num_qubits)), num_trajectories=10)
     mcwf_100 = circuit.execute(list(range(circuit.num_qubits)), num_trajectories=100)
@@ -94,7 +92,6 @@ def run_qiskit(circuit, depth, logger):
     return (metrics_10, metrics_100, metrics_200, metrics_500, metrics_1000)
 
 def run_qulacs(circuit, depth, logger):
-    circuit.sim_backend = "qulacs"
     dm = circuit.run_with_density_matrix(list(range(circuit.num_qubits)))
     mcwf_10 = circuit.execute(list(range(circuit.num_qubits)), num_trajectories=10)
     mcwf_100 = circuit.execute(list(range(circuit.num_qubits)), num_trajectories=100)
@@ -124,11 +121,29 @@ output_dict = {
     "qulacs" : {}
 }
 for qubit in qubit_list:
-    circ = QC(num_qubits=qubit,
+    circ_pen = QC(num_qubits=qubit,
               noise_model=noise_model,
               backend_qpu_type=qpu_type,
               num_trajectories=1,
-              num_cores=50,
+              num_cores=25,
+              sim_backend="pennylane",
+              jsonize=True,
+              verbose=verbose,
+              threshold=1e-8)
+    circ_qis = QC(num_qubits=qubit,
+              noise_model=noise_model,
+              backend_qpu_type=qpu_type,
+              num_trajectories=1,
+              num_cores=25,
+              sim_backend="qiskit",
+              jsonize=True,
+              verbose=verbose,
+              threshold=1e-8)
+    circ_qul = QC(num_qubits=qubit,
+              noise_model=noise_model,
+              backend_qpu_type=qpu_type,
+              num_trajectories=1,
+              num_cores=25,
               sim_backend="qulacs",
               jsonize=True,
               verbose=verbose,
@@ -137,24 +152,27 @@ for qubit in qubit_list:
     output_dict["qiskit"][qubit] = {}
     output_dict["qulacs"][qubit] = {}
     for depth in depth_list:
-        build_random_circuit(circ, depth, qubit)
-        instructions = circ.instruction_list
-        metrics_pennylane = run_pennylane(circ, depth, logger_pennylane)
-        circ.instruction_list = instructions
-        metrics_qiskit = run_qiskit(circ, depth, logger_qiskit)
-        circ.instruction_list = instructions
-        metrics_qulacs = run_qulacs(circ, depth, logger_qulacs)
+        build_random_circuit(circ_pen, depth, qubit)
+        instructions = circ_pen.instruction_list
+        metrics_pennylane = run_pennylane(circ_pen, depth, logger_pennylane)
+        circ_qis.refresh()
+        circ_qis.instruction_list = instructions
+        metrics_qiskit = run_qiskit(circ_qis, depth, logger_qiskit)
+        circ_qul.refresh()
+        circ_qul.instruction_list = instructions
+        metrics_qulacs = run_qulacs(circ_qul, depth, logger_qulacs)
         output_dict["pennylane"][qubit][depth] = metrics_pennylane
         output_dict["qiskit"][qubit][depth] = metrics_qiskit
         output_dict["qulacs"][qubit][depth] = metrics_qulacs
-    circ.shutdown()
+    circ_pen.shutdown()
+    circ_qis.shutdown()
+    circ_qul.shutdown()
 
 with open("Solver_Comparison.pkl", "wb") as f:
     pickle.dump(output_dict, f)
 logger_qulacs.close()
 logger_pennylane.close()
 logger_qiskit.close()
-
 
 
 trajectories = [10, 100, 200, 500, 1000]

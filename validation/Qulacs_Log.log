@@ -54,115 +54,927 @@ Hellinger Distance:	0.3120339600620069
 Jenson-Shannon Divergence:	0.09428529415639436
 ===========================================================================
 
+Metrics for 2 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.9921052083696031
+Battacharyya Distance:	0.00792612049669491
+Hellinger Distance:	0.08885263997782095
+Jenson-Shannon Divergence:	0.007883707376310618
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.9927068478588801
+Battacharyya Distance:	0.007319877194397635
+Hellinger Distance:	0.08539995399150538
+Jenson-Shannon Divergence:	0.007283649670045529
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.992998776127777
+Battacharyya Distance:	0.007025847437445052
+Hellinger Distance:	0.08367331637298965
+Jenson-Shannon Divergence:	0.006992446320341834
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.9925884514297825
+Battacharyya Distance:	0.007439150563231373
+Hellinger Distance:	0.08609035120644438
+Jenson-Shannon Divergence:	0.007401744155765139
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.9927059506539191
+Battacharyya Distance:	0.007320780991292331
+Hellinger Distance:	0.08540520678923594
+Jenson-Shannon Divergence:	0.00728454005860131
+===========================================================================
+
+Metrics for 2 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.9986442500414578
+Battacharyya Distance:	0.0013566698190117233
+Hellinger Distance:	0.036820510059019616
+Jenson-Shannon Divergence:	0.001355440627623672
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.9999605365474092
+Battacharyya Distance:	3.946423129329212e-05
+Hellinger Distance:	0.006281994512492238
+Jenson-Shannon Divergence:	3.946313315872406e-05
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.9999835349633233
+Battacharyya Distance:	1.6465172226942542e-05
+Hellinger Distance:	0.004057713536091397
+Jenson-Shannon Divergence:	1.6465081970747368e-05
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.9999751615818261
+Battacharyya Distance:	2.4838726652528197e-05
+Hellinger Distance:	0.004983815871214468
+Jenson-Shannon Divergence:	2.4838411974344513e-05
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.9999948867077233
+Battacharyya Distance:	5.113305349627391e-06
+Hellinger Distance:	0.0022612595474152813
+Jenson-Shannon Divergence:	5.113389248672198e-06
+===========================================================================
+
 Metrics for 3 Qubits with depth of 5
 No. of Trajectories: 10
-Battacharyya Coefficient:	0.8091923896546601
-Battacharyya Distance:	0.21171857850951417
-Hellinger Distance:	0.4368153046143745
-Jenson-Shannon Divergence:	0.17106613360520495
+Battacharyya Coefficient:	0.2224072345204866
+Battacharyya Distance:	1.5032451878160418
+Hellinger Distance:	0.8818122053359909
+Jenson-Shannon Divergence:	0.6041752981018024
 No. of Trajectories: 100
-Battacharyya Coefficient:	0.80919238965466
-Battacharyya Distance:	0.2117185785095143
-Hellinger Distance:	0.43681530461437446
-Jenson-Shannon Divergence:	0.17106613360520484
+Battacharyya Coefficient:	0.22939415668004362
+Battacharyya Distance:	1.4723135467994157
+Hellinger Distance:	0.8778415821319738
+Jenson-Shannon Divergence:	0.5995632781145506
 No. of Trajectories: 200
-Battacharyya Coefficient:	0.8178071044840636
-Battacharyya Distance:	0.20112878377695056
-Hellinger Distance:	0.4268405973146711
-Jenson-Shannon Divergence:	0.16494963708566307
+Battacharyya Coefficient:	0.23510771904560201
+Battacharyya Distance:	1.4477114909440463
+Hellinger Distance:	0.874581203179218
+Jenson-Shannon Divergence:	0.5960136640228999
 No. of Trajectories: 500
-Battacharyya Coefficient:	0.8255982248092719
-Battacharyya Distance:	0.19164703443971834
-Hellinger Distance:	0.41761438575644955
-Jenson-Shannon Divergence:	0.15920877644561465
+Battacharyya Coefficient:	0.2695727310937181
+Battacharyya Distance:	1.3109170508543802
+Hellinger Distance:	0.8546503781700986
+Jenson-Shannon Divergence:	0.5807971183482434
 No. of Trajectories: 1000
-Battacharyya Coefficient:	0.8270732002845989
-Battacharyya Distance:	0.1898620748348664
-Hellinger Distance:	0.41584468220167303
-Jenson-Shannon Divergence:	0.1581007829213804
+Battacharyya Coefficient:	0.2744569088693792
+Battacharyya Distance:	1.2929610107946907
+Hellinger Distance:	0.8517881726876886
+Jenson-Shannon Divergence:	0.5796421253366861
 ===========================================================================
 
 Metrics for 3 Qubits with depth of 20
 No. of Trajectories: 10
-Battacharyya Coefficient:	0.5836077331878788
-Battacharyya Distance:	0.5385262115853164
-Hellinger Distance:	0.6452846401490115
-Jenson-Shannon Divergence:	0.3488782957667418
+Battacharyya Coefficient:	0.6275310622257133
+Battacharyya Distance:	0.46596210764643803
+Hellinger Distance:	0.6103023330894336
+Jenson-Shannon Divergence:	0.3210017012589625
 No. of Trajectories: 100
-Battacharyya Coefficient:	0.608834129122962
-Battacharyya Distance:	0.49620941434273563
-Hellinger Distance:	0.6254325470241825
-Jenson-Shannon Divergence:	0.3307250837183109
+Battacharyya Coefficient:	0.6782869390906475
+Battacharyya Distance:	0.3881848665735211
+Hellinger Distance:	0.5671975501617331
+Jenson-Shannon Divergence:	0.2917702077845897
 No. of Trajectories: 200
-Battacharyya Coefficient:	0.6091145445910127
-Battacharyya Distance:	0.4957489426019185
-Hellinger Distance:	0.6252083296063045
-Jenson-Shannon Divergence:	0.3305724059044
+Battacharyya Coefficient:	0.6887669741907015
+Battacharyya Distance:	0.3728522738957153
+Hellinger Distance:	0.557882627269767
+Jenson-Shannon Divergence:	0.2810287637749247
 No. of Trajectories: 500
-Battacharyya Coefficient:	0.6305820164953143
-Battacharyya Distance:	0.4611120503632764
-Hellinger Distance:	0.6077976501310315
-Jenson-Shannon Divergence:	0.315217549441297
+Battacharyya Coefficient:	0.6848890783513093
+Battacharyya Distance:	0.37849838324604185
+Hellinger Distance:	0.5613474161771923
+Jenson-Shannon Divergence:	0.28176655739684686
 No. of Trajectories: 1000
-Battacharyya Coefficient:	0.634361538978156
-Battacharyya Distance:	0.4551362363218972
-Hellinger Distance:	0.6046804619151857
-Jenson-Shannon Divergence:	0.3137642312355048
+Battacharyya Coefficient:	0.6796181041105085
+Battacharyya Distance:	0.3862242501770443
+Hellinger Distance:	0.5660228757652914
+Jenson-Shannon Divergence:	0.2849186357021448
+===========================================================================
+
+Metrics for 3 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.5799822371572148
+Battacharyya Distance:	0.5447578015016541
+Hellinger Distance:	0.6480877740271737
+Jenson-Shannon Divergence:	0.35517526281489087
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.6528309287315522
+Battacharyya Distance:	0.42643709788295087
+Hellinger Distance:	0.589210549183532
+Jenson-Shannon Divergence:	0.3039405599379327
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.6453089921927302
+Battacharyya Distance:	0.43802601923470513
+Hellinger Distance:	0.5955594074548577
+Jenson-Shannon Divergence:	0.3086395122975625
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.6397573609548486
+Battacharyya Distance:	0.44666629802195534
+Hellinger Distance:	0.6002021651459308
+Jenson-Shannon Divergence:	0.31293349181178964
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.6399191981503789
+Battacharyya Distance:	0.4464133634890195
+Hellinger Distance:	0.6000673310973803
+Jenson-Shannon Divergence:	0.31737347333315485
+===========================================================================
+
+Metrics for 3 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.808194824191159
+Battacharyya Distance:	0.21295213047710349
+Hellinger Distance:	0.4379556779077285
+Jenson-Shannon Divergence:	0.17194296633166062
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.8609730345303191
+Battacharyya Distance:	0.14969209382496662
+Hellinger Distance:	0.37286319940758167
+Jenson-Shannon Divergence:	0.13105700425650801
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.8609873649256381
+Battacharyya Distance:	0.14967544954519826
+Hellinger Distance:	0.37284398221929094
+Jenson-Shannon Divergence:	0.13104385893924914
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.8599552938572156
+Battacharyya Distance:	0.15087487497275134
+Hellinger Distance:	0.37422547500879927
+Jenson-Shannon Divergence:	0.13191946645272612
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.8573718565989374
+Battacharyya Distance:	0.15388354947765367
+Hellinger Distance:	0.377661413707887
+Jenson-Shannon Divergence:	0.1340845339879782
 ===========================================================================
 
 Metrics for 4 Qubits with depth of 5
 No. of Trajectories: 10
-Battacharyya Coefficient:	0.7747614240272019
-Battacharyya Distance:	0.2552001369861392
-Hellinger Distance:	0.47459306355320463
-Jenson-Shannon Divergence:	0.1969801557732062
+Battacharyya Coefficient:	0.9910723231304486
+Battacharyya Distance:	0.008967767365057494
+Hellinger Distance:	0.09448638457243441
+Jenson-Shannon Divergence:	0.008270788447199827
 No. of Trajectories: 100
-Battacharyya Coefficient:	0.7786521884951203
-Battacharyya Distance:	0.25019081741721677
-Hellinger Distance:	0.47047615402366333
-Jenson-Shannon Divergence:	0.19414845648397333
+Battacharyya Coefficient:	0.9971836511982353
+Battacharyya Distance:	0.0028203221740730894
+Hellinger Distance:	0.053069283034381
+Jenson-Shannon Divergence:	0.0027649449189304214
 No. of Trajectories: 200
-Battacharyya Coefficient:	0.7833366702553146
-Battacharyya Distance:	0.2441927006207138
-Hellinger Distance:	0.4654710836826531
-Jenson-Shannon Divergence:	0.19077469058783553
+Battacharyya Coefficient:	0.9984467595953371
+Battacharyya Distance:	0.001554447933090151
+Hellinger Distance:	0.03941117106457685
+Jenson-Shannon Divergence:	0.001539196847549672
 No. of Trajectories: 500
-Battacharyya Coefficient:	0.7802923026507086
-Battacharyya Distance:	0.2480866825105266
-Hellinger Distance:	0.46872987674065475
-Jenson-Shannon Divergence:	0.19314769169962293
+Battacharyya Coefficient:	0.9971254574178887
+Battacharyya Distance:	0.002878682014191803
+Hellinger Distance:	0.053614760860509814
+Jenson-Shannon Divergence:	0.002823230125648531
 No. of Trajectories: 1000
-Battacharyya Coefficient:	0.779801592984473
-Battacharyya Distance:	0.24871575962414283
-Hellinger Distance:	0.4692530309071482
-Jenson-Shannon Divergence:	0.19350811320008793
+Battacharyya Coefficient:	0.9968550779734389
+Battacharyya Distance:	0.0031498776866750607
+Hellinger Distance:	0.056079604372532274
+Jenson-Shannon Divergence:	0.0030791172815332075
 ===========================================================================
 
 Metrics for 4 Qubits with depth of 20
 No. of Trajectories: 10
-Battacharyya Coefficient:	0.2086096887607386
-Battacharyya Distance:	1.5672902908941775
-Hellinger Distance:	0.8896012091041087
-Jenson-Shannon Divergence:	0.6064949101841438
+Battacharyya Coefficient:	0.5024943499788708
+Battacharyya Distance:	0.6881708829352612
+Hellinger Distance:	0.7053408041658726
+Jenson-Shannon Divergence:	0.41135639594403794
 No. of Trajectories: 100
-Battacharyya Coefficient:	0.21088972319434424
-Battacharyya Distance:	1.556419921018744
-Hellinger Distance:	0.8883187923295816
-Jenson-Shannon Divergence:	0.6019896952303098
+Battacharyya Coefficient:	0.4978358458184339
+Battacharyya Distance:	0.6974848831669771
+Hellinger Distance:	0.7086354169682721
+Jenson-Shannon Divergence:	0.4147913896696861
 No. of Trajectories: 200
-Battacharyya Coefficient:	0.23815451997769857
-Battacharyya Distance:	1.4348355723743373
-Hellinger Distance:	0.8728376023193158
-Jenson-Shannon Divergence:	0.5853975003686172
+Battacharyya Coefficient:	0.5434501736559944
+Battacharyya Distance:	0.6098172534293463
+Hellinger Distance:	0.6756847092721845
+Jenson-Shannon Divergence:	0.3928684749183711
 No. of Trajectories: 500
-Battacharyya Coefficient:	0.2416766487006463
-Battacharyya Distance:	1.420154608680407
-Hellinger Distance:	0.8708176337784993
-Jenson-Shannon Divergence:	0.5822435539537478
+Battacharyya Coefficient:	0.5284788742865575
+Battacharyya Distance:	0.6377524474385098
+Hellinger Distance:	0.6866739588142784
+Jenson-Shannon Divergence:	0.4008473666386513
 No. of Trajectories: 1000
-Battacharyya Coefficient:	0.23560176056167398
-Battacharyya Distance:	1.4456123545599857
-Hellinger Distance:	0.8742987129342904
-Jenson-Shannon Divergence:	0.5867219362142089
+Battacharyya Coefficient:	0.5283223527213418
+Battacharyya Distance:	0.6380486650475741
+Hellinger Distance:	0.6867879201608666
+Jenson-Shannon Divergence:	0.4009660019710033
+===========================================================================
+
+Metrics for 4 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.690606499596445
+Battacharyya Distance:	0.37018508254947174
+Hellinger Distance:	0.5562315169108383
+Jenson-Shannon Divergence:	0.26526223201449994
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.7728665821329384
+Battacharyya Distance:	0.2576488427908105
+Hellinger Distance:	0.4765851632902969
+Jenson-Shannon Divergence:	0.21002638046175587
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.8122081768988192
+Battacharyya Distance:	0.20799859618788272
+Hellinger Distance:	0.4333495391742769
+Jenson-Shannon Divergence:	0.17781302819105688
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.8095857089067063
+Battacharyya Distance:	0.21123263264684683
+Hellinger Distance:	0.43636486005941294
+Jenson-Shannon Divergence:	0.1800450492572025
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.8122164145556572
+Battacharyya Distance:	0.20798845394196822
+Hellinger Distance:	0.4333400344368384
+Jenson-Shannon Divergence:	0.17780553690756057
+===========================================================================
+
+Metrics for 4 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.7761558914664336
+Battacharyya Distance:	0.2534018879098345
+Hellinger Distance:	0.47312166356966157
+Jenson-Shannon Divergence:	0.19236466130062574
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.912872065377518
+Battacharyya Distance:	0.09115953375055719
+Hellinger Distance:	0.2951744139112327
+Jenson-Shannon Divergence:	0.08480727927552506
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.9227921398488325
+Battacharyya Distance:	0.08035127043789499
+Hellinger Distance:	0.2778630240901536
+Jenson-Shannon Divergence:	0.07549195341617382
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.9236044595646298
+Battacharyya Distance:	0.07947137305456484
+Hellinger Distance:	0.2763974320443804
+Jenson-Shannon Divergence:	0.07472372851943629
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.9181422113534927
+Battacharyya Distance:	0.08540298603120863
+Hellinger Distance:	0.2861080017263847
+Jenson-Shannon Divergence:	0.07987262241721174
+===========================================================================
+
+Metrics for 5 Qubits with depth of 5
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.14779444924114277
+Battacharyya Distance:	1.9119328270518763
+Hellinger Distance:	0.9231497986561411
+Jenson-Shannon Divergence:	0.6362490365484621
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.15248730680224398
+Battacharyya Distance:	1.8806739204824654
+Hellinger Distance:	0.9206045259489942
+Jenson-Shannon Divergence:	0.6340644366382441
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.1561102335202929
+Battacharyya Distance:	1.8571928961445063
+Hellinger Distance:	0.9186347296285524
+Jenson-Shannon Divergence:	0.6315729234178987
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.15986598696689716
+Battacharyya Distance:	1.833419396172541
+Hellinger Distance:	0.916588246178795
+Jenson-Shannon Divergence:	0.6299386174622834
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.1579262164625476
+Battacharyya Distance:	1.8456273394406053
+Hellinger Distance:	0.917645783261422
+Jenson-Shannon Divergence:	0.6308623741007536
+===========================================================================
+
+Metrics for 5 Qubits with depth of 20
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.561456401107337
+Battacharyya Distance:	0.5772211550002843
+Hellinger Distance:	0.6622262444911545
+Jenson-Shannon Divergence:	0.3780079871819866
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.6191925232529476
+Battacharyya Distance:	0.4793390316294121
+Hellinger Distance:	0.617096002861182
+Jenson-Shannon Divergence:	0.33635757538968003
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.6099268155175672
+Battacharyya Distance:	0.4944163035736687
+Hellinger Distance:	0.6245583915716995
+Jenson-Shannon Divergence:	0.34315885895214193
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.6004766266440894
+Battacharyya Distance:	0.5100315613768446
+Hellinger Distance:	0.6320786132721989
+Jenson-Shannon Divergence:	0.34990556054924143
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.6044985556261979
+Battacharyya Distance:	0.5033559982995439
+Hellinger Distance:	0.6288890556958336
+Jenson-Shannon Divergence:	0.3471183651224632
+===========================================================================
+
+Metrics for 5 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.6281197468217404
+Battacharyya Distance:	0.4650244510385398
+Hellinger Distance:	0.6098198530544797
+Jenson-Shannon Divergence:	0.320380961865888
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.6617034794895391
+Battacharyya Distance:	0.4129377395684895
+Hellinger Distance:	0.5816326336370653
+Jenson-Shannon Divergence:	0.2965390154301962
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.6763267832121608
+Battacharyya Distance:	0.39107891262417216
+Hellinger Distance:	0.5689228566237842
+Jenson-Shannon Divergence:	0.2849305213960927
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.6795200317475277
+Battacharyya Distance:	0.3863685656966571
+Hellinger Distance:	0.5661095019990389
+Jenson-Shannon Divergence:	0.28304810109993006
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.6709869472656815
+Battacharyya Distance:	0.3990055948588536
+Hellinger Distance:	0.5735965940758767
+Jenson-Shannon Divergence:	0.28976220436072253
+===========================================================================
+
+Metrics for 5 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.5078865341661405
+Battacharyya Distance:	0.6774972142924233
+Hellinger Distance:	0.7015079941371141
+Jenson-Shannon Divergence:	0.41384323045323024
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.6183899756102084
+Battacharyya Distance:	0.4806359920437263
+Hellinger Distance:	0.61774592219958
+Jenson-Shannon Divergence:	0.32847027570766124
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.6259655314626793
+Battacharyya Distance:	0.4684599709591971
+Hellinger Distance:	0.6115835744538424
+Jenson-Shannon Divergence:	0.3254780502032153
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.6294763016281482
+Battacharyya Distance:	0.46286707254768206
+Hellinger Distance:	0.6087065782265457
+Jenson-Shannon Divergence:	0.3227627773837749
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.641343375438618
+Battacharyya Distance:	0.44419027837885955
+Hellinger Distance:	0.5988794741563611
+Jenson-Shannon Divergence:	0.31427556320354993
+===========================================================================
+
+Metrics for 6 Qubits with depth of 5
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.009078962643482756
+Battacharyya Distance:	4.701795339208014
+Hellinger Distance:	0.9954501681935347
+Jenson-Shannon Divergence:	0.690858413836362
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.016413317633154675
+Battacharyya Distance:	4.109662222884736
+Hellinger Distance:	0.9917593873348842
+Jenson-Shannon Divergence:	0.6878060234951513
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.018619133793160283
+Battacharyya Distance:	3.983565528453754
+Hellinger Distance:	0.9906466909079438
+Jenson-Shannon Divergence:	0.6869216053990239
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.01525638287149231
+Battacharyya Distance:	4.182757314545579
+Hellinger Distance:	0.9923424898332868
+Jenson-Shannon Divergence:	0.688307847454402
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.014553724026522514
+Battacharyya Distance:	4.229908371273405
+Hellinger Distance:	0.9926964671910022
+Jenson-Shannon Divergence:	0.6885692829698841
+===========================================================================
+
+Metrics for 6 Qubits with depth of 20
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.26290920080462243
+Battacharyya Distance:	1.3359465505037216
+Hellinger Distance:	0.8585399228897911
+Jenson-Shannon Divergence:	0.57497976390818
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.2955206389998759
+Battacharyya Distance:	1.2190166002437646
+Hellinger Distance:	0.8393326879136512
+Jenson-Shannon Divergence:	0.5541669651227493
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.30168826678307203
+Battacharyya Distance:	1.1983610239178453
+Hellinger Distance:	0.835650485081627
+Jenson-Shannon Divergence:	0.5494157284538173
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.3020031164933574
+Battacharyya Distance:	1.1973179421460847
+Hellinger Distance:	0.8354620778388886
+Jenson-Shannon Divergence:	0.5490150163684347
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.31079442736511786
+Battacharyya Distance:	1.1686235906200517
+Hellinger Distance:	0.8301840594922989
+Jenson-Shannon Divergence:	0.5458934945243895
+===========================================================================
+
+Metrics for 6 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.45282557463735684
+Battacharyya Distance:	0.7922482725985915
+Hellinger Distance:	0.7397123936801331
+Jenson-Shannon Divergence:	0.4495604020346156
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.49812037382015206
+Battacharyya Distance:	0.6969135166674295
+Hellinger Distance:	0.7084346308454981
+Jenson-Shannon Divergence:	0.41935172452348624
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.4985008221933225
+Battacharyya Distance:	0.6961500402469553
+Hellinger Distance:	0.7081660665465599
+Jenson-Shannon Divergence:	0.41821816705292625
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.5058554445301002
+Battacharyya Distance:	0.6815043332565985
+Hellinger Distance:	0.7029541631367218
+Jenson-Shannon Divergence:	0.4140561189012967
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.5005682774837813
+Battacharyya Distance:	0.6920112709820123
+Hellinger Distance:	0.7067048340839107
+Jenson-Shannon Divergence:	0.41747699266045096
+===========================================================================
+
+Metrics for 6 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.4712945483395641
+Battacharyya Distance:	0.7522720124022644
+Hellinger Distance:	0.7271213459015473
+Jenson-Shannon Divergence:	0.4379421021909941
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.5441448086327652
+Battacharyya Distance:	0.6085398752094474
+Hellinger Distance:	0.6751704905966172
+Jenson-Shannon Divergence:	0.385229813404878
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.5570870003108508
+Battacharyya Distance:	0.5850338567979856
+Hellinger Distance:	0.6655170919626265
+Jenson-Shannon Divergence:	0.378272036151038
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.5557724185234938
+Battacharyya Distance:	0.5873963877278751
+Hellinger Distance:	0.6665039995992132
+Jenson-Shannon Divergence:	0.3786492195488627
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.5690554296486134
+Battacharyya Distance:	0.5637774336977672
+Hellinger Distance:	0.6564636854820138
+Jenson-Shannon Divergence:	0.3739670289851511
+===========================================================================
+
+Metrics for 7 Qubits with depth of 5
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.3449917715613158
+Battacharyya Distance:	1.064234712782117
+Hellinger Distance:	0.8093257863423734
+Jenson-Shannon Divergence:	0.5179862471619189
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.27653992460156906
+Battacharyya Distance:	1.285400075670979
+Hellinger Distance:	0.8505645627455026
+Jenson-Shannon Divergence:	0.5630092930021401
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.2662455889781994
+Battacharyya Distance:	1.3233361293137704
+Hellinger Distance:	0.8565946596972327
+Jenson-Shannon Divergence:	0.5693115742557704
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.27375024018560945
+Battacharyya Distance:	1.2955391204614572
+Hellinger Distance:	0.8522028865325486
+Jenson-Shannon Divergence:	0.5649079527951834
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.27879996784813743
+Battacharyya Distance:	1.277260715418094
+Hellinger Distance:	0.849234968752394
+Jenson-Shannon Divergence:	0.5648273373978343
+===========================================================================
+
+Metrics for 7 Qubits with depth of 20
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.7765147932451915
+Battacharyya Distance:	0.25293958538981665
+Hellinger Distance:	0.4727422201951211
+Jenson-Shannon Divergence:	0.1920596936861097
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.8192100400241095
+Battacharyya Distance:	0.199414768883191
+Hellinger Distance:	0.42519402627047137
+Jenson-Shannon Divergence:	0.16411010283027058
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.8231950498077221
+Battacharyya Distance:	0.1945621078334848
+Hellinger Distance:	0.4204818072074959
+Jenson-Shannon Divergence:	0.16116814779267996
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.8341512306299876
+Battacharyya Distance:	0.18134056137136145
+Hellinger Distance:	0.40724534296934095
+Jenson-Shannon Divergence:	0.152832323748058
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.8348357527713977
+Battacharyya Distance:	0.18052027674769391
+Hellinger Distance:	0.40640404430665555
+Jenson-Shannon Divergence:	0.15229997711138604
+===========================================================================
+
+Metrics for 7 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.6294519139166015
+Battacharyya Distance:	0.4629058161571247
+Hellinger Distance:	0.6087266102977307
+Jenson-Shannon Divergence:	0.3193727288773264
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.6989630176679095
+Battacharyya Distance:	0.3581574456330852
+Hellinger Distance:	0.5486683719089861
+Jenson-Shannon Divergence:	0.2675257328287417
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.700213643450727
+Battacharyya Distance:	0.35636978557467247
+Hellinger Distance:	0.5475274938762801
+Jenson-Shannon Divergence:	0.2656093133128551
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.6781000388407552
+Battacharyya Distance:	0.3884604520135409
+Hellinger Distance:	0.5673622838719644
+Jenson-Shannon Divergence:	0.2835114836386893
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.6690639999105924
+Battacharyya Distance:	0.4018755583912619
+Hellinger Distance:	0.5752703712955978
+Jenson-Shannon Divergence:	0.2904315890800687
+===========================================================================
+
+Metrics for 7 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.39269428881149626
+Battacharyya Distance:	0.9347238608920212
+Hellinger Distance:	0.7792982171114129
+Jenson-Shannon Divergence:	0.4915523579129156
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.47028590485171406
+Battacharyya Distance:	0.7544144610273282
+Hellinger Distance:	0.7278146021843813
+Jenson-Shannon Divergence:	0.43712142073300486
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.5099821742179677
+Battacharyya Distance:	0.6733795063884078
+Hellinger Distance:	0.7000127325888835
+Jenson-Shannon Divergence:	0.4103953506583021
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.4993543971342288
+Battacharyya Distance:	0.6944392206158753
+Hellinger Distance:	0.7075631440870097
+Jenson-Shannon Divergence:	0.41803895005413694
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.49822459887812154
+Battacharyya Distance:	0.6967043018649152
+Hellinger Distance:	0.708361066918843
+Jenson-Shannon Divergence:	0.4175957039237591
+===========================================================================
+
+Metrics for 8 Qubits with depth of 5
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.7884005127828383
+Battacharyya Distance:	0.23774905329429802
+Hellinger Distance:	0.45999944262703035
+Jenson-Shannon Divergence:	0.1923944776797244
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.7908024540718076
+Battacharyya Distance:	0.23470708441304017
+Hellinger Distance:	0.45738118230662833
+Jenson-Shannon Divergence:	0.19039439451331944
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.7938578573935388
+Battacharyya Distance:	0.23085085467609662
+Hellinger Distance:	0.4540287905039482
+Jenson-Shannon Divergence:	0.18820119931677087
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.7907964422347655
+Battacharyya Distance:	0.23471468664019923
+Hellinger Distance:	0.45738775427994516
+Jenson-Shannon Divergence:	0.19064113853040998
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.7915393030748423
+Battacharyya Distance:	0.233775744450648
+Hellinger Distance:	0.4565749630949713
+Jenson-Shannon Divergence:	0.19007439557615305
+===========================================================================
+
+Metrics for 8 Qubits with depth of 20
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.10217193609495188
+Battacharyya Distance:	2.2810982368181913
+Hellinger Distance:	0.9475378957620874
+Jenson-Shannon Divergence:	0.6555037894082001
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.11671638049967359
+Battacharyya Distance:	2.148008385360891
+Hellinger Distance:	0.9398316974333876
+Jenson-Shannon Divergence:	0.6481770745379539
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.13110495979806744
+Battacharyya Distance:	2.031757056753674
+Hellinger Distance:	0.9321453964924832
+Jenson-Shannon Divergence:	0.6396734141898115
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.13430533876294304
+Battacharyya Distance:	2.007639423726726
+Hellinger Distance:	0.930427139134093
+Jenson-Shannon Divergence:	0.6382626020486095
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.13297847369462523
+Battacharyya Distance:	2.0175680157799296
+Hellinger Distance:	0.9311399069450148
+Jenson-Shannon Divergence:	0.6388084466957199
+===========================================================================
+
+Metrics for 8 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.29062247404537067
+Battacharyya Distance:	1.2357301941350762
+Hellinger Distance:	0.8422455259339607
+Jenson-Shannon Divergence:	0.5572702959147631
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.38333222215740137
+Battacharyya Distance:	0.9588532450169748
+Hellinger Distance:	0.785281973461599
+Jenson-Shannon Divergence:	0.49345129317846026
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.38267953290624723
+Battacharyya Distance:	0.96055736875866
+Hellinger Distance:	0.7856974399187627
+Jenson-Shannon Divergence:	0.49420985519140165
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.38568365814055494
+Battacharyya Distance:	0.952737784018543
+Hellinger Distance:	0.7837833513545627
+Jenson-Shannon Divergence:	0.4918227203993708
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.39524377131238747
+Battacharyya Distance:	0.9282525618721674
+Hellinger Distance:	0.7776607413832572
+Jenson-Shannon Divergence:	0.4881727620728856
+===========================================================================
+
+Metrics for 8 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.2660336524397034
+Battacharyya Distance:	1.3241324652713082
+Hellinger Distance:	0.8567183595352021
+Jenson-Shannon Divergence:	0.5687721552435959
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.32869705047652115
+Battacharyya Distance:	1.1126187716515203
+Hellinger Distance:	0.8193307937139126
+Jenson-Shannon Divergence:	0.5267814813094773
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.3314182095646999
+Battacharyya Distance:	1.1043742281102713
+Hellinger Distance:	0.817668508895684
+Jenson-Shannon Divergence:	0.5252718691828129
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.32267442564804427
+Battacharyya Distance:	1.1311114342328912
+Hellinger Distance:	0.8229979188043838
+Jenson-Shannon Divergence:	0.5313915269089032
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.33140609090977663
+Battacharyya Distance:	1.1044107948291317
+Hellinger Distance:	0.8176759193559602
+Jenson-Shannon Divergence:	0.5263655555751519
+===========================================================================
+
+Metrics for 9 Qubits with depth of 5
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.24368550420676877
+Battacharyya Distance:	1.4118768022425177
+Hellinger Distance:	0.8696634382295553
+Jenson-Shannon Divergence:	0.5853901678313345
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.24885122641792878
+Battacharyya Distance:	1.3909000453476295
+Hellinger Distance:	0.8666883947429384
+Jenson-Shannon Divergence:	0.5823513563511666
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.26086015135718427
+Battacharyya Distance:	1.3437708338163539
+Hellinger Distance:	0.8597324285164752
+Jenson-Shannon Divergence:	0.5766568923069717
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.2600952733675922
+Battacharyya Distance:	1.3467072790586938
+Hellinger Distance:	0.8601771484016698
+Jenson-Shannon Divergence:	0.5771306279333486
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.2663329157561546
+Battacharyya Distance:	1.3230081897594643
+Hellinger Distance:	0.8565436849594221
+Jenson-Shannon Divergence:	0.5731238319786146
+===========================================================================
+
+Metrics for 9 Qubits with depth of 20
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.5099356439633214
+Battacharyya Distance:	0.6734707495333929
+Hellinger Distance:	0.7000459670885035
+Jenson-Shannon Divergence:	0.4079005465534231
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.5363492026631426
+Battacharyya Distance:	0.6229698325378413
+Hellinger Distance:	0.6809190828116488
+Jenson-Shannon Divergence:	0.3886444199252629
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.5636583444915413
+Battacharyya Distance:	0.573306983216294
+Hellinger Distance:	0.6605616212804513
+Jenson-Shannon Divergence:	0.3762415143239877
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.5564096737514332
+Battacharyya Distance:	0.5862504327586243
+Hellinger Distance:	0.6660257699584652
+Jenson-Shannon Divergence:	0.3795555675941813
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.549744429138
+Battacharyya Distance:	0.598301783044722
+Hellinger Distance:	0.6710108574845862
+Jenson-Shannon Divergence:	0.38324609607686705
+===========================================================================
+
+Metrics for 9 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.27602631758489904
+Battacharyya Distance:	1.287259064242375
+Hellinger Distance:	0.8508664304203308
+Jenson-Shannon Divergence:	0.5627687746537522
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.2989930014483548
+Battacharyya Distance:	1.2073351123926293
+Hellinger Distance:	0.8372616069979442
+Jenson-Shannon Divergence:	0.5469384067739853
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.31745355136879483
+Battacharyya Distance:	1.1474237662529672
+Hellinger Distance:	0.8261636936057768
+Jenson-Shannon Divergence:	0.5351447818762465
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.3299184339094706
+Battacharyya Distance:	1.108909825044444
+Hellinger Distance:	0.8185851000914102
+Jenson-Shannon Divergence:	0.5285144321711875
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.33002974885728265
+Battacharyya Distance:	1.108572480532331
+Hellinger Distance:	0.8185171049793963
+Jenson-Shannon Divergence:	0.5289634749830039
+===========================================================================
+
+Metrics for 9 Qubits with depth of 100
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.2906925293517139
+Battacharyya Distance:	1.2354891705720408
+Hellinger Distance:	0.842203936497958
+Jenson-Shannon Divergence:	0.5559121458994044
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.40886942154025496
+Battacharyya Distance:	0.894359436652296
+Hellinger Distance:	0.7688501664590541
+Jenson-Shannon Divergence:	0.47408078921117724
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.41825868947589095
+Battacharyya Distance:	0.8716551635368969
+Hellinger Distance:	0.7627196801764585
+Jenson-Shannon Divergence:	0.46700502927448606
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.4311485681837149
+Battacharyya Distance:	0.8413025425130918
+Hellinger Distance:	0.7542224020941406
+Jenson-Shannon Divergence:	0.46008006813732183
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.4328900205992145
+Battacharyya Distance:	0.8372715772387807
+Hellinger Distance:	0.7530670484127927
+Jenson-Shannon Divergence:	0.4591528561656859
+===========================================================================
+
+Metrics for 10 Qubits with depth of 5
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.20495573214081336
+Battacharyya Distance:	1.5849612639388155
+Hellinger Distance:	0.8916525488435537
+Jenson-Shannon Divergence:	0.6084823510078307
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.20716616718230085
+Battacharyya Distance:	1.574234067729093
+Hellinger Distance:	0.8904121701873343
+Jenson-Shannon Divergence:	0.6075983723850132
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.20672078262356874
+Battacharyya Distance:	1.57638627248384
+Hellinger Distance:	0.8906622352926223
+Jenson-Shannon Divergence:	0.6077587110252192
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.21773814728269475
+Battacharyya Distance:	1.52446209741671
+Hellinger Distance:	0.884455681601585
+Jenson-Shannon Divergence:	0.6027891117363438
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.2147330939675503
+Battacharyya Distance:	1.5383594454655813
+Hellinger Distance:	0.8861528683203982
+Jenson-Shannon Divergence:	0.6041597786193378
+===========================================================================
+
+Metrics for 10 Qubits with depth of 20
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.48581657653424326
+Battacharyya Distance:	0.7219241408590293
+Hellinger Distance:	0.7170658431873377
+Jenson-Shannon Divergence:	0.42404520741568075
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.4971512616074948
+Battacharyya Distance:	0.6988609498795101
+Hellinger Distance:	0.7091182823709427
+Jenson-Shannon Divergence:	0.416485151147049
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.49803190813109205
+Battacharyya Distance:	0.6970911314576488
+Hellinger Distance:	0.7084970655331742
+Jenson-Shannon Divergence:	0.41566140384324757
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.5114469901078345
+Battacharyya Distance:	0.6705113351138693
+Hellinger Distance:	0.6989656714691905
+Jenson-Shannon Divergence:	0.406582296942015
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.5210514974021423
+Battacharyya Distance:	0.6519063987312245
+Hellinger Distance:	0.6920610540971575
+Jenson-Shannon Divergence:	0.400806271825118
+===========================================================================
+
+Metrics for 10 Qubits with depth of 50
+No. of Trajectories: 10
+Battacharyya Coefficient:	0.2569652398104199
+Battacharyya Distance:	1.3588144568904714
+Hellinger Distance:	0.8619946404652326
+Jenson-Shannon Divergence:	0.5735802538650837
+No. of Trajectories: 100
+Battacharyya Coefficient:	0.3264824904924341
+Battacharyya Distance:	1.119378959598214
+Hellinger Distance:	0.8206811253518453
+Jenson-Shannon Divergence:	0.5285533686876134
+No. of Trajectories: 200
+Battacharyya Coefficient:	0.3281365998525431
+Battacharyya Distance:	1.1143252943295536
+Hellinger Distance:	0.8196727396642285
+Jenson-Shannon Divergence:	0.5272608616442669
+No. of Trajectories: 500
+Battacharyya Coefficient:	0.32449431884716795
+Battacharyya Distance:	1.12548725039597
+Hellinger Distance:	0.8218915263914316
+Jenson-Shannon Divergence:	0.5309906613976496
+No. of Trajectories: 1000
+Battacharyya Coefficient:	0.31869564778478776
+Battacharyya Distance:	1.1435187138027427
+Hellinger Distance:	0.8254116259275839
+Jenson-Shannon Divergence:	0.535142653125501
 ===========================================================================
 
