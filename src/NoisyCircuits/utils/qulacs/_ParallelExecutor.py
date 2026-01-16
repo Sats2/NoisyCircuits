@@ -181,20 +181,26 @@ class RemoteExecutor:
     def run(self,
             traj_id:int,
             instruction_list:list[list[str, list[int], float|None]]
-        )->np.ndarray[np.float64]:
+        )->None:
         """
         Main method of the module to execute the MCWF trajectories.
 
         Args:
-            trajectories (int): List of trajectory IDs to be simulated.
+            traj_id (int): Trajectory ID for the simulation.
             instruction_list (list[list[str, list[int], float|None]]): List of instructions to build the quantum circuit.
-
-        Returns:
-            np.ndarray[np.float64]: Sum of probabilities of the measured qubits after the circuit execution after each trajectory.
         """
         self.instruction_list = instruction_list
 
         def compute_trajectory(traj_id:int)->np.ndarray[np.float64]:
+            """
+            Method to compute a single MCWF trajectory.
+
+            Args:
+                traj_id (int): Trajectory ID for the simulation.
+
+            Returns:
+                np.ndarray[np.float64]: Probabilities after executing the trajectory.
+            """
             np.random.seed(42 + traj_id)
             init_state = np.zeros(2**self.num_qubits, dtype=np.complex128)
             init_state[0] = 1.0 + 0.0j
