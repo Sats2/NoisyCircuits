@@ -59,23 +59,6 @@ def update_statevector(sparse_matrix:tuple[np.ndarray[np.complex128], int, int],
             res[i] += data[j] * state[indices[j]]
     return res / np.sqrt(prob)
 
-def get_probabilities(state:np.ndarray[np.complex128],
-                      qubits:list[int])->np.ndarray[np.float64]:
-    """
-    Computes the measurement probabilities for the specified qubits.
-
-    Args:
-        state (np.ndarray[np.complex128]): The statevector of the full quantum system.
-        qubits (list[int]): The list of qubits for which to compute the probabilities.
-
-    Returns:
-        np.ndarray[np.float64]: The probabilities of measuring each qubit in the computational basis.
-    """
-    state_tensor = state.reshape([2]*int(np.log2(len(state))))
-    sum_axes = tuple(i for i in range(state_tensor.ndim) if i not in qubits)
-    probs = np.sum(np.abs(state_tensor)**2, axis=sum_axes)
-    return probs.flatten()
-
 @ray.remote
 class RemoteExecutor:
     """
@@ -103,6 +86,7 @@ class RemoteExecutor:
         self.two_qubit_noise = two_qubit_noise
         self.two_qubit_noise_index = two_qubit_noise_index
         self.measured_qubits = num_qubits
+        self.partial_trace = None
         exp = lambda x: np.exp(1j * x)
         self.instruction_map = {
             "x": lambda q, p: gate.X(q[0]),
@@ -213,13 +197,14 @@ class RemoteExecutor:
                 state_vector = state.get_vector()
                 state_vector_updated = self.noise_function_map[gate_name](state_vector.copy(), gate_name, qubit_index)
                 init_state = state_vector_updated
-            if len(self.measured_qubits) == self.num_qubits:
-                final_probs = np.abs(init_state)**2
-            else:
-                final_probs = get_probabilities(init_state, self.measured_qubits)
-            return final_probs
-        
-        self.probs_sum += compute_trajectory(traj_id)
+            return init_state
+
+        final_state = compute_trajectory(traj_id)
+        if len(self.trace_qubits) == 0:
+            self.probs_sum += np.abs(final_state)**2
+        else:
+            reduced_state = np.diag(self.partial_trace(QuantumState(final_state), self.trace_qubits).get_matrix()).real
+            self.probs_sum += reduced_state
 
     def get(self,
             measured_qubits:list[int])->np.ndarray[np.float64]:
@@ -243,5 +228,9 @@ class RemoteExecutor:
             measured_qubits (list[int]): List of qubits that will be measured.
         """
         self.measured_qubits = measured_qubits
+        self.trace_qubits = [i for i in range(self.num_qubits) if i not in self.measured_qubits]
+        if self.trace_qubits:
+            from qulacs.state import partial_trace
+            self.partial_trace = partial_trace
         self.probs_sum = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
         

@@ -85,8 +85,7 @@ class RemoteExecutor:
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
         self.two_qubit_noise_index = two_qubit_noise_index
-        self.measured_qubits = num_qubits
-        self.probs_sum = np.zeros(2**self.measured_qubits, dtype=np.float64)
+        self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)
         self.circuit = QuantumCircuit(num_qubits)
         self.noise_function_map = {
             "x": self._apply_single_qubit_noise,
@@ -142,7 +141,7 @@ class RemoteExecutor:
             kraus_probs = compute_trajectory_probs(ops, state.copy() + np.random.normal(0, 1e-8, size=state.shape))
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
         new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
-        return new_state
+        return new_state / np.linalg.norm(new_state)
     
     def _apply_two_qubit_noise(self,
                                state:np.ndarray[np.complex128],
@@ -164,9 +163,8 @@ class RemoteExecutor:
         kraus_probs = compute_trajectory_probs(ops, state.copy())
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
         new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
-        return new_state
+        return new_state / np.linalg.norm(new_state)
     
-    #TODO: Test out if a non-unitary matrix can be passed directly to qiskit as a gate instead of updating the statevector and re-initializing at each step to reduce floating point inaccuracies from repeated initializations to cause less drift.
     def run(self,
             traj_id:int,
             instruction_list:list[list[str, list[int], float]|None]
@@ -195,8 +193,10 @@ class RemoteExecutor:
             system_qubit_list = list(range(self.num_qubits))
             init_state[0] = 1.0 + 0.0j
             current_state = init_state.copy()
+            self.circuit.initialize(init_state, system_qubit_list, normalize=False)
             for entry in self.instruction_list:
-                self.circuit.data.clear()
+                new_circuit = self.circuit.copy_empty_like()
+                self.circuit = new_circuit
                 gate_name, qubit_index, parameter = entry
                 self.circuit.initialize(current_state, system_qubit_list, normalize=False)
                 self.instruction_map[gate_name](qubit_index, parameter)
@@ -208,11 +208,7 @@ class RemoteExecutor:
             return current_state
         
         final_state = compute_trajectory(traj_id)
-        if len(self.trace_qubits) == 0:
-            self.probs_sum += np.abs(final_state)**2
-        else:
-            reduced_state = np.diag(np.asarray(partial_trace(Statevector(final_state), self.trace_qubits))).real
-            self.probs_sum += reduced_state
+        self.probs_sum += np.abs(final_state)**2
 
     def get(self,
             measured_qubits:list[int])->np.ndarray[np.float64]:
@@ -235,6 +231,4 @@ class RemoteExecutor:
         Args:
             measured_qubits (list[int]): List of qubits that will be measured.
         """
-        self.measured_qubits = measured_qubits
-        self.trace_qubits = [i for i in range(self.num_qubits) if i not in measured_qubits]
-        self.probs_sum = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
+        self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)

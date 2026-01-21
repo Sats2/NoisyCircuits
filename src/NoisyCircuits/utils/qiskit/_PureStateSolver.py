@@ -16,7 +16,6 @@ This module contains only one class `PureStateSolver` which has only one callabl
 from qiskit import QuantumCircuit
 from qiskit_aer import AerSimulator
 from qiskit_aer.library import SaveStatevector
-from qiskit.quantum_info import partial_trace
 import numpy as np
 
 
@@ -66,9 +65,5 @@ class PureStateSolver:
         circuit.append(SaveStatevector(self.num_qubits), circuit.qubits)
         sim = AerSimulator()
         res = sim.run(circuit).result()
-        trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
-        if len(trace_qubits) == 0:
-            probs = np.abs(res.data()["statevector"])**2
-            return probs.real
-        probs = np.diag(np.asarray(partial_trace(res.data()["statevector"], trace_qubits)))
+        probs = np.abs(res.data()["statevector"])**2
         return probs.real

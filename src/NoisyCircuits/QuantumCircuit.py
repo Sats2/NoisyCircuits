@@ -25,6 +25,7 @@ from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.EagleDecomposition import EagleDecomposition
 from NoisyCircuits.utils.HeronDecomposition import HeronDecomposition
 from NoisyCircuits.utils.solvers import load_solver
+from NoisyCircuits.utils.marginal_probs import compute_marginal_probs
 import json
 import ray
 import gc
@@ -291,8 +292,17 @@ class QuantumCircuit:
         prob_chunks = [
             ray.get(self.workers[i].get.remote(qubits)) for i in range(self.num_cores)
         ]
+
         probs = np.array(prob_chunks).sum(axis=0) / num_trajectories
 
+        if self._sim_backend not in ["pennylane"]:
+            probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
+
+        if len(qubits) != self.num_qubits and self._sim_backend not in ["pennylane"]:
+            trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
+            probs_reduced = compute_marginal_probs(probs, trace_qubits)
+            probs = probs_reduced
+        
         if measurement_error_operator is not None:
             probs = np.dot(measurement_error_operator, probs)
         return probs
@@ -330,6 +340,11 @@ class QuantumCircuit:
                     instruction_list=self.instruction_list
                 )
         probs = density_matrix_solver.solve(qubits=qubits)
+
+        if self._sim_backend not in ["pennylane"]:
+            m = len(qubits)
+            probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+        
         if measurement_error_operator is not None:
             probs = np.dot(measurement_error_operator, probs)
         return probs
@@ -360,7 +375,14 @@ class QuantumCircuit:
                     num_qubits=self.num_qubits,
                     instruction_list=self.instruction_list
                     )
-        return pure_state_solver.solve(qubits=qubits)
+        probs = pure_state_solver.solve(qubits=qubits)
+        if self._sim_backend not in ["pennylane"]:
+            probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
+        if len(qubits) != self.num_qubits and self._sim_backend not in ["pennylane"]:
+            trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
+            probs_reduced = compute_marginal_probs(probs, trace_qubits)
+            probs = probs_reduced
+        return probs
     
     def draw_circuit(self,
                      style:str="mpl")->None:
