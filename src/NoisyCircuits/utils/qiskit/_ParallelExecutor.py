@@ -137,8 +137,6 @@ class RemoteExecutor:
         """
         ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]["kraus_operators"]
         kraus_probs = compute_trajectory_probs(ops, state.copy())
-        if np.isnan(kraus_probs).any():
-            kraus_probs = compute_trajectory_probs(ops, state.copy() + np.random.normal(0, 1e-8, size=state.shape))
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
         new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
         return new_state / np.linalg.norm(new_state)

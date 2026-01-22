@@ -35,7 +35,7 @@ def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex
             for j in range(indptr[i], indptr[i+1]):
                 res[i] += data[j] * state[indices[j]]
         probs[k] = np.vdot(res, res).real
-    return probs #/ np.sum(probs)
+    return probs
 
 @njit(fastmath=False)
 def update_statevector(sparse_matrix:tuple[np.ndarray[np.complex128], int, int],
@@ -85,8 +85,7 @@ class RemoteExecutor:
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
         self.two_qubit_noise_index = two_qubit_noise_index
-        self.measured_qubits = num_qubits
-        self.partial_trace = None
+        self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)
         exp = lambda x: np.exp(1j * x)
         self.instruction_map = {
             "x": lambda q, p: gate.X(q[0]),
@@ -108,7 +107,6 @@ class RemoteExecutor:
             "rzz": self._no_noise,
             "unitary": self._no_noise
         }
-        self.probs_sum = np.zeros(2**self.measured_qubits, dtype=np.float64)
     
     def _apply_single_qubit_noise(self,
                                    state:np.ndarray[np.complex128],
@@ -127,9 +125,10 @@ class RemoteExecutor:
             np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
         """
         ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]["kraus_operators"]
-        kraus_probs = compute_trajectory_probs(ops, state)
+        kraus_probs = compute_trajectory_probs(ops, state.copy())
         chosen_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
-        return update_statevector(ops[chosen_idx], state, kraus_probs[chosen_idx])
+        new_state =  update_statevector(ops[chosen_idx], state, kraus_probs[chosen_idx])
+        return new_state / np.linalg.norm(new_state)
     
     def _apply_two_qubit_noise(self,
                                state:np.ndarray[np.complex128],
@@ -151,7 +150,8 @@ class RemoteExecutor:
         ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]["operators"]
         kraus_probs = compute_trajectory_probs(ops, state)
         chosen_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
-        return update_statevector(ops[chosen_idx], state, kraus_probs[chosen_idx])
+        new_state = update_statevector(ops[chosen_idx], state, kraus_probs[chosen_idx])
+        return new_state / np.linalg.norm(new_state)
     
     def _no_noise(self,
                   state:np.ndarray[np.complex128],
@@ -200,11 +200,7 @@ class RemoteExecutor:
             return init_state
 
         final_state = compute_trajectory(traj_id)
-        if len(self.trace_qubits) == 0:
-            self.probs_sum += np.abs(final_state)**2
-        else:
-            reduced_state = np.diag(self.partial_trace(QuantumState(final_state), self.trace_qubits).get_matrix()).real
-            self.probs_sum += reduced_state
+        self.probs_sum += np.abs(final_state)**2
 
     def get(self,
             measured_qubits:list[int])->np.ndarray[np.float64]:
@@ -227,10 +223,5 @@ class RemoteExecutor:
         Args:
             measured_qubits (list[int]): List of qubits that will be measured.
         """
-        self.measured_qubits = measured_qubits
-        self.trace_qubits = [i for i in range(self.num_qubits) if i not in self.measured_qubits]
-        if self.trace_qubits:
-            from qulacs.state import partial_trace
-            self.partial_trace = partial_trace
-        self.probs_sum = np.zeros(2**len(self.measured_qubits), dtype=np.float64)
+        self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)
         

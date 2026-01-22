@@ -107,7 +107,7 @@ class DensityMatrixSolver:
             instruction_map[gate_name](qubit_index, parameter)
             circuit.add_gate(instruction_map[gate_name](qubit_index, parameter))
             circuit.add_gate(noise_handlers[gate_name](qubit_index))
-            circuit.update_quantum_state(state)
+        circuit.update_quantum_state(state)
         if len(qubits) == self.num_qubits:
             probs = np.diag(state.get_matrix()).real
         else:
