@@ -7,7 +7,7 @@ The connectivity chart is created from the two qubit gate instruction set where 
 
 Example:
     >>> from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
-    >>> model = BuildModel(noise_model=noise_model, num_qubits=num_qubits, threshold=1e-6, basis_gates=[["sx"], ["cx"]], verbose=True)
+    >>> model = BuildModel(noise_model=noise_model, num_qubits=num_qubits, num_cores=2, threshold=1e-6, basis_gates=[["sx"], ["cx"]], verbose=True)
     >>> single_qubit_noise, two_qubit_noise, connectivity, measurement_noise = model.build_qubit_gate_model()
 
 Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.
@@ -16,8 +16,10 @@ Additionally, it needs to be noted that the QuantumCircuit module automatically 
 import numpy as np
 from collections import defaultdict
 from scipy.sparse import coo_matrix, csr_matrix, kron
-import math
 import logging
+# from joblib import Parallel, delayed
+from os import cpu_count
+import time
 
 def _map_instruction_qubits(instrs, gate_qubits)->list:
     """
@@ -64,6 +66,7 @@ class BuildModel:
     Args:
         noise_model (dict): The noise model to use. Provided as a JSON-ised dictionary.
         num_qubits (int): The number of qubits in the model.
+        num_cores (int, optional): The number of cores to use for parallel processing. Defaults to 2.
         threshold (float, optional): The threshold for noise. Defaults to 1e-12.
         basis_gates (list[list[str]]): List of basis gates for single qubit and two qubit operators.
         verbose (bool): Flag to indicate whether logging is required or not. Defaults to True.
@@ -71,12 +74,15 @@ class BuildModel:
     Raises:
         TypeError: If noise_model is not a dictionary or num_qubits is not an integer.
         ValueError: If num_qubits is not a positive integer or threshold is not between 0 and 1.
+        TypeError: If num_cores is not an integer.
+        ValueError: If num_cores is not a positive integer, or greater than the number of available CPU cores.
         TypeError: If threshold is not a float or int.
         ValueError: If basis_gates is None or not a list of lists of strings.
     """
     def __init__(self,
                  noise_model:dict,
                  num_qubits:int,
+                 num_cores:int=2,
                  threshold:float=1e-12,
                  basis_gates:list[list[str]]=None,
                  verbose:bool=True)->None:
@@ -89,6 +95,10 @@ class BuildModel:
             raise TypeError("Number of qubits must be an integer.")
         if num_qubits <= 0:
             raise ValueError("Number of qubits must be a positive integer.")
+        if not isinstance(num_cores, int):
+            raise TypeError("Number of cores must be an integer.")
+        if num_cores <= 0 or num_cores > cpu_count():
+            raise ValueError("Number of cores must be a positive integer and less than or equal to the number of available CPU cores.")
         if not isinstance(threshold, (float, int)):
             raise TypeError("Threshold must be a float or int.")
         if threshold < 0 or threshold > 1:
@@ -102,6 +112,7 @@ class BuildModel:
         self.use_qubits = list(range(num_qubits))
         self.threshold = threshold
         self.basis_gates = basis_gates
+        self.num_cores = num_cores
         self.qubit_coupling_map = []
         self.verbose = verbose
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -125,11 +136,10 @@ class BuildModel:
         Returns:
             bool: True if the Kraus operators form a CPTP map, False otherwise.
         """
-        mat = np.zeros((2**self.num_qubits, 2**self.num_qubits), dtype=complex)
+        mat = np.zeros(kraus_ops[0].shape, dtype=np.complex128)
         for op in kraus_ops:
-            op = csr_matrix(op, shape=(2**self.num_qubits, 2**self.num_qubits))
-            mat += op.conj().T.dot(op)
-        return np.allclose(mat, np.eye(mat.shape[0], dtype=complex))
+            mat += np.dot(op.conj().T, op)
+        return np.allclose(mat, np.eye(mat.shape[0], dtype=np.complex128))
     
     def extract_single_qubit_qerrors(self,
                                     data:list,
@@ -255,7 +265,9 @@ class BuildModel:
         full_op = op_list[0]
         for op in op_list[1:]:
             full_op = kron(full_op, op)
-        return csr_matrix(full_op, dtype=np.complex128)
+        full_op = full_op.tocsr()
+        full_op.eliminate_zeros()
+        return full_op
     
     def extend_kraus_to_system(self, 
                                kraus_ops:list, 
@@ -298,7 +310,6 @@ class BuildModel:
         rows, cols, data = [], [], []
         other_qubits = [k for k in range(system) if k not in qubit_pair]
         num_others = len(other_qubits)
-        other_indices = np.arange(2**num_others)
         other_masks = np.zeros(2**num_others, dtype=np.int64)
         for i in range(2**num_others):
             mask = 0
@@ -314,8 +325,9 @@ class BuildModel:
             rows.extend(base_r | other_masks)
             cols.extend(base_c | other_masks)
             data.extend([p_val] * len(other_masks))
-
-        return csr_matrix((data, (rows, cols)), shape=(dim, dim), dtype=np.complex128)
+        data = csr_matrix((data, (rows, cols)), shape=(dim, dim), dtype=np.complex128)
+        data.eliminate_zeros()
+        return data
 
     def extend_kraus_to_system_multiqubit(self, kraus_ops:list, qubit_pair:tuple)->list:
         """
@@ -361,6 +373,7 @@ class BuildModel:
         filtered_probs = list(map(float, filtered_probs))
         return filtered_probs, filtered_instrs
     
+    #TODO: Optimize this function for better performance (single core -> before parallelization)
     def post_process_single_qubit_errors(self,
                                          single_qubit_errors:dict,
                                          basis_gates:list)->dict:
@@ -426,9 +439,9 @@ class BuildModel:
                     else:
                         for op in ops:
                             operators.append(np.sqrt(prob) * op)
-                kraus_operators = self.extend_kraus_to_system(operators, qubit)
-                if not self._ensure_ctpt(kraus_operators):
+                if not self._ensure_ctpt(operators):
                     self.logger.warning(f"Warning: Extended Kraus operators for qubit {qubit} do not form a CPTP map.")
+                kraus_operators = self.extend_kraus_to_system(operators, qubit)
                 qubit_errors[gate] = {
                     "kraus_operators" : kraus_operators,
                     "instructions" : instructions,
@@ -673,9 +686,9 @@ class BuildModel:
                                 for kraus_op in kraus_operations_for_q1:
                                     k_op = np.kron(q0_ops, kraus_op)
                                     error_operators.append(np.sqrt(prob) * k_op)
-                error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
-                if not self._ensure_ctpt(error_operators_full_system):
+                if not self._ensure_ctpt(error_operators):
                     self.logger.warning(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
+                error_operators_full_system = self.extend_kraus_to_system_multiqubit(error_operators, qpair)
                 two_qubit_gate_error_operators[two_qubit_gate][qpair] = {
                     "operators": error_operators_full_system,
                     "qubit_channel" : error_operators
@@ -772,34 +785,67 @@ class BuildModel:
         Returns:
             tuple[dict, dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, measurement error instructions and the connectivity map.
         """
+        time_data = {}
+
+        t0 = time.perf_counter_ns()
         single_qubit_errors = self.extract_single_qubit_qerrors(
             self.noise_model["errors"],
             self.basis_gates[0],
             self.use_qubits
         )
+        t1 = time.perf_counter_ns()
+        time_data["single_qubit_extraction_time"] = t1 - t0
+
+        t0 = time.perf_counter_ns()
         two_qubit_errors = self.extract_two_qubit_errors(
             self.noise_model["errors"],
             self.use_qubits,
             self.basis_gates[1]
         )
+        t1 = time.perf_counter_ns()
+        time_data["two_qubit_extraction_time"] = t1 - t0
+
         if single_qubit_errors == {} and all(two_qubit_errors[gate] == {} for gate in self.basis_gates[1]):
             raise ValueError("Provided noise model does not contain information regarding the specified basis gates.")
         if all(two_qubit_errors[gate] == {} for gate in self.basis_gates[1]) and len(self.use_qubits) > 1:
             raise UserWarning("No information on two qubit gate errors were found.")
         if single_qubit_errors == {} and not all(two_qubit_errors[gate]=={} for gate in self.basis_gates[1]):
             raise UserWarning("No information on single qubit gate errors were found.")
+        
+        
+        
+        t0 = time.perf_counter_ns()
         measurement_errors = self.extract_measurement_errors(self.noise_model["errors"],
                                                               self.use_qubits)
+        t1 = time.perf_counter_ns()
+        time_data["measurement_extraction_time"] = t1 - t0
+
         self.logger.info("Completed Extraction of Measurement Errors.")
         self.logger.info("Completed Extraction of two-qubit gate Errors.\nStarting post-processing on Single Qubit Errors.")
+        t0 = time.perf_counter_ns()
         single_qubit_error_instructions = self.post_process_single_qubit_errors(single_qubit_errors, self.basis_gates[0])
+        t1 = time.perf_counter_ns()
+        time_data["single_qubit_error_postprocessing_time"] = t1 - t0
         self.logger.info("Completed post-processing on Single Qubit Errors.")
+
+        t0 = time.perf_counter_ns()
         two_qubit_error_post_processed = self.post_process_two_qubit_errors(two_qubit_errors, self.threshold)
+        t1 = time.perf_counter_ns()
+        time_data["two_qubit_error_postprocessing_time"] = t1 - t0
         self.logger.info("Building Noise Operators for Two Qubit Gate Errors.")
+
+        t0 = time.perf_counter_ns()
         two_qubit_gate_error_instructions = self.get_two_qubit_gate_noise_operators(two_qubit_error_post_processed)
+        t1 = time.perf_counter_ns()
+        time_data["two_qubit_error_operator_construction_time"] = t1 - t0
+
         self.logger.info("Completed building Noise Operators for Two Qubit Gate Errors.\nExtracting Measurement Errors.")
         self.logger.info("Preparing Qubit Connectivity Map for Requested Qubits")
+
+        t0 = time.perf_counter_ns()
         connectivity_map = self._create_connectivity_map(two_qubit_gate_error_instructions, self.use_qubits)
+        t1 = time.perf_counter_ns()
+        time_data["connectivity_map_construction_time"] = t1 - t0
         self.logger.info("Qubit Connectivity Map Prepared.")
         self.logger.info("Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.")
-        return single_qubit_error_instructions, two_qubit_gate_error_instructions, measurement_errors, connectivity_map
+        return single_qubit_error_instructions, two_qubit_gate_error_instructions, measurement_errors, connectivity_map, time_data
