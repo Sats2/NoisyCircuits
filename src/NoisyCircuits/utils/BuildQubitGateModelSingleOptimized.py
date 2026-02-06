@@ -298,30 +298,19 @@ class BuildModel:
         Returns:
             csr_matrix: The full system operator as a CSR Matrix. 
         """
+        swap = np.array([[1, 0, 0, 0], 
+                         [0, 0, 1, 0], 
+                         [0, 1, 0, 0], 
+                         [0, 0, 0, 1]], dtype=np.float64)
         q0, q1 = qubit_pair
-        P_coo = coo_matrix(P)
-        dim = 2**system
-        rows, cols, data = [], [], []
-        other_qubits = [k for k in range(system) if k not in qubit_pair]
-        num_others = len(other_qubits)
-        other_masks = np.zeros(2**num_others, dtype=np.int64)
-        for i in range(2**num_others):
-            mask = 0
-            for bit_idx, actual_qubit in enumerate(other_qubits):
-                if (i >> bit_idx) & 1:
-                    mask |= (1 << actual_qubit)
-            other_masks[i] = mask
-        for p_row, p_col, p_val in zip(P_coo.row, P_coo.col, P_coo.data):
-            b0_r, b1_r = (p_row & 1), (p_row >> 1) & 1
-            b0_c, b1_c = (p_col & 1), (p_col >> 1) & 1
-            base_r = (b0_r << q1) | (b1_r << q0)
-            base_c = (b0_c << q1) | (b1_c << q0)
-            rows.extend(base_r | other_masks)
-            cols.extend(base_c | other_masks)
-            data.extend([p_val] * len(other_masks))
-        data = csr_matrix((data, (rows, cols)), shape=(dim, dim), dtype=np.complex128)
-        data.eliminate_zeros()
-        return data
+        if q0 > q1:
+            P = np.dot(swap, np.dot(P, swap))
+        P = csr_matrix(P, dtype=np.complex128)
+        left_order = min(qubit_pair)
+        right_order = system - max(qubit_pair) - 1
+        system_matrix = kron(identity(2**left_order, dtype=np.complex128), kron(P, identity(2**right_order, dtype=np.complex128))).tocsr()
+        system_matrix.eliminate_zeros()
+        return system_matrix
 
     def _extend_kraus_to_system_multiqubit(self, kraus_ops:list, qubit_pair:tuple)->list:
         """
@@ -587,6 +576,7 @@ class BuildModel:
         ops_list = [op.astype(np.complex128) for op in ops_list]
         return ops_list
         
+    #TODO: Look into optimization of this function without parallelization. Additionally, look into using matrix operator identities to speed up construction of system level matrices.
     def _get_two_qubit_gate_noise_operators(self, 
                                            two_qubit_gate_errors:dict)->dict:
         """
@@ -606,7 +596,7 @@ class BuildModel:
             "z" : np.array([[1, 0], [0, -1]]),
             "K0" : np.array([[1, 0], [0, 0]]),
             "K1" : np.array([[0, 1], [0, 0]]),
-            "i" : np.array([[1, 0], [0, 1]]) # TODO: Check use for this line
+            "i" : np.array([[1, 0], [0, 1]])
         }
         for two_qubit_gate in two_qubit_gate_errors.keys():    
             two_qubit_gate_error_operators[two_qubit_gate] = {}
