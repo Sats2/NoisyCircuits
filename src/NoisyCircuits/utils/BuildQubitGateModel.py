@@ -10,7 +10,7 @@ Example:
     >>> model = BuildModel(noise_model=noise_model, num_qubits=num_qubits, threshold=1e-6, basis_gates=[["sx"], ["cx"]], verbose=True)
     >>> single_qubit_noise, two_qubit_noise, connectivity, measurement_noise = model.build_qubit_gate_model()
 
-Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.
+Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script. 
 """
 
 import numpy as np

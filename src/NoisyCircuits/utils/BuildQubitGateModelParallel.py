@@ -247,28 +247,43 @@ def _build_full_matrix_2qubit(P:np.ndarray,
                               system:int)->csr_matrix:
         """
         Extends a 2 qubit operator P to a full system operator by applying P to the specified qubit pair and identity to all others.
+        Using Big Endian ordering (Q0 is MSB). Optimized for runtime.
 
         Args:
             P (np.ndarray): The two-qubit operator to extend (4x4 matrix).
-            qubit_pairt (tuple): Tuple of qubit indices to which P is applied.
+            qubit_pair (tuple): Tuple of qubit indices to which P is applied (q_control, q_target).
             system (int): Total number of qubits in the system.
 
         Returns:
             csr_matrix: The full system operator as a CSR Matrix. 
         """
         q0, q1 = qubit_pair
-        swap = np.array([[1, 0, 0, 0],
-                         [0, 0, 1, 0],
-                         [0, 1, 0, 0],
-                         [0, 0, 0, 1]], dtype=np.complex128)
-        if q0 > q1:
-            P = np.dot(swap, np.dot(P, swap))
-        P = csr_matrix(P, dtype=np.complex128)
-        left_order = min(qubit_pair)
-        right_order = system - max(qubit_pair) - 1
-        system_matrix = kron(identity(2**left_order, dtype=np.complex128), kron(P, identity(2**right_order, dtype=np.complex128))).tocsr()
-        system_matrix.eliminate_zeros()
-        return system_matrix
+        P_coo = coo_matrix(P)
+        dim = 2**system
+        shift0 = system - 1 - q0
+        shift1 = system - 1 - q1
+        
+        other_qubits = [k for k in range(system) if k not in qubit_pair]
+        other_masks = np.array([0], dtype=np.int64)
+        for q in other_qubits:
+             s = system - 1 - q
+             bit = 1 << s
+             other_masks = np.concatenate([other_masks, other_masks | bit])
+        p_row = P_coo.row
+        p_col = P_coo.col
+        p_data = P_coo.data
+        val_q0_r = (p_row >> 1) & 1
+        val_q1_r = (p_row & 1)
+        val_q0_c = (p_col >> 1) & 1
+        val_q1_c = (p_col & 1)
+        base_r = (val_q0_r << shift0) | (val_q1_r << shift1)
+        base_c = (val_q0_c << shift0) | (val_q1_c << shift1)
+        full_rows = (base_r[:, None] | other_masks[None, :]).flatten()
+        full_cols = (base_c[:, None] | other_masks[None, :]).flatten()
+        full_data = np.tile(p_data[:, None], (1, len(other_masks))).flatten()
+        data_matrix = csr_matrix((full_data, (full_rows, full_cols)), shape=(dim, dim), dtype=np.complex128)
+        data_matrix.eliminate_zeros()
+        return data_matrix
 
 def _extend_kraus_to_system_multiqubit(num_qubits:int, 
                                        kraus_ops:list, 
