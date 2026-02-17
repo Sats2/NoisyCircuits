@@ -1,3 +1,4 @@
+#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
 import pytest
 import os
 import pickle

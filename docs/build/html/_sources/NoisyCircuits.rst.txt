@@ -9,9 +9,6 @@ Subpackages
 
    NoisyCircuits.utils
 
-Submodules
-----------
-
 QuantumCircuit
 -----------------------------------
 

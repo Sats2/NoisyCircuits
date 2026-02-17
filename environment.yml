@@ -7,12 +7,14 @@ dependencies:
   - pip
   - pandoc
   - scipy
+  - numba
   - matplotlib
   - pip:
-    - pennylane
+    - qulacs
     - qiskit
     - qiskit-aer
     - qiskit-ibm-runtime
+    - pylatexenc
     - ray
     - pytest
     - sphinx

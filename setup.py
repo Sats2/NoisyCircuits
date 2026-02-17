@@ -36,11 +36,11 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/guides/single-sourcing-package-version/
-    version="1.1.1",  # Required
+    version="1.1.2",  # Required
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description="A python package that build error modelled quantum gates from IBM Eagle R3 chip Hardware using Pennylane",  # Optional
+    description="A python package that build error modelled quantum gates from IBM QPUs using Pennylane",  # Optional
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.
     #
@@ -123,7 +123,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    install_requires=["peppercorn", "pennylane", "qiskit", "qiskit-aer", "qiskit-ibm-runtime", "ray"],  # Optional
+    install_requires=["peppercorn", "qulacs", "qiskit", "qiskit-aer", "qiskit-ibm-runtime", "ray", "scipy", "numba"],  # Optional
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:

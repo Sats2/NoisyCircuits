@@ -38,7 +38,7 @@ Mulitple Qubits and Entanglement
 Mutli-Qubit Systems
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a system of multiple qubits, the state of the qubit system is obtained from taking the Kronecker product of the states of the different qubits as shown in the equation below for an :math:: `n` qubit system. If the coefficients for each qubit in the system already satisfy the normalization constraint, then the resulting state will also satisfy the normalization constraint.
+For a system of multiple qubits, the state of the qubit system is obtained from taking the Kronecker product of the states of the different qubits as shown in the equation below for an :math:`n` qubit system. If the coefficients for each qubit in the system already satisfy the normalization constraint, then the resulting state will also satisfy the normalization constraint.
 
 .. math::
     |q_0q_1...q_{n-1}\rangle = |q_0\rangle \otimes |q_1\rangle \otimes ... \otimes |q_{n-1}\rangle

@@ -24,7 +24,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx_rtd_theme',
     'sphinxcontrib.bibtex',
-    'nbsphinx'
+    'nbsphinx',
+    'sphinx_copybutton'
 ]
 
 nbsphinx_execute = "never"
@@ -46,5 +47,5 @@ html_context = {
     "github_user": "Sats2",
     "github_repo": "NoisyCircuits",
     "github_version": "main",
-    "conf_py_path": "/README.md",
+    "conf_py_path": "",
 }

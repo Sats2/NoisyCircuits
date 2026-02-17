@@ -8,7 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoisyCircuits &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -16,7 +17,11 @@
       <script src="_static/documentation_options.js?v=8d563738"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -84,7 +89,7 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">NoisyCircuits</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/intro.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/mainintro.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -94,7 +99,7 @@
              
   <section id="noisycircuits">
 <h1>NoisyCircuits<a class="headerlink" href="#noisycircuits" title="Link to this heading"></a></h1>
-<p>Create and simulate noisy quantum circuits using IBM (Heron RX / Eagle RX) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise.</p>
+<p>Create and simulate noisy quantum circuits using IBM (Heron R.X / Eagle R.X) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise. The package implements the quantum circuit mapping according to the “Big-Endian” convention, where the first qubit in the list of qubits corresponds to the least significant bit (LSB) in the statevector representation. For example, in a 3-qubit system, the state <span class="math notranslate nohighlight">\(|q_0 q_1 q_2\rangle\)</span> corresponds to the statevector index where <span class="math notranslate nohighlight">\(q_2\)</span> is the LSB and <span class="math notranslate nohighlight">\(q_0\)</span> is the most significant bit (MSB).</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <p>NoisyCircuits helps you quickly:</p>
@@ -111,7 +116,7 @@
 <h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>A conda-style environment manager: <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a>, <a class="reference external" href="https://www.anaconda.com/">Anaconda</a>, or <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">Micromamba</a>.</p></li>
-<li><p>An IBM Quantum account + API token (only needed to pull live hardware data or submit jobs to real devices).</p></li>
+<li><p>An IBM Quantum (IBMQ) account + API token (optional but recommended, only needed to pull live hardware data or submit jobs to real devices). Sample Noise models are provided for testing without an IBMQ account.</p></li>
 </ul>
 </section>
 <section id="steps">
@@ -167,19 +172,13 @@
         title = {NoisyCircuits},
         year = {2025},
         url = {https://github.com/Sats2/NoisyCircuits},
-        version = {1.1.0},
+        version = {1.2.0},
 }
 </pre></div>
 </div>
 <section id="project-status">
 <h3>Project Status<a class="headerlink" href="#project-status" title="Link to this heading"></a></h3>
 <p>NoisyCircuits is in active development. New features and improvements are regularly added. Please check the GitHub repository for the latest updates.</p>
-<ul class="simple">
-<li><p><strong>Version:</strong> 1.1.0 (December 2025)</p></li>
-<li><p><strong>Python Compatibility:</strong> 3.10</p></li>
-<li><p><strong>License:</strong> MIT License</p></li>
-<li><p><strong>Coverage:</strong> <a class="reference external" href="https://github.com/Sats2/NoisyCircuits/actions"><img alt="coverage" src="assets/coverage.svg" /></a></p></li>
-</ul>
 </section>
 </section>
 <section id="getting-help">

@@ -1,15 +1,6 @@
 Tutorials
 ==========
 
-.. toctree::
-    :maxdepth: 1
-    :caption: Tutorials:
-
-    examples/introduction
-    examples/run_on_hardware
-    examples/run_multiple_on_hardware
-    examples/quantum_neural_networks
-
 Overview
 --------
 
@@ -37,6 +28,15 @@ Configuration
 - **IBM Backend:** The package currently supports the IBM Heron RX and Eagle RX backends for noise modeling. Ensure you have access to these backends via your IBM Quantum account (but as of 1st November 2025, the Eagle RX QPU is deprecated and API access is no longer possible).
 - **Parallel Execution:** Configure the `num_cores` parameter based on your system's capabilities to optimize simulation performance.
 - **Noise Threshold:** Adjust the noise threshold settings with `threshold` parameter to filter out low probability noise events during simulations. This speeds up simulations without significantly affecting accuracy as long as only very low probability events are filtered. `Default: 1e-12`, not recommended to set the threshold higher than `1e-4`.
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Tutorials List (Jupyter Notebooks):
+
+    examples/introduction
+    examples/run_on_hardware
+    examples/run_multiple_on_hardware
+    examples/quantum_neural_networks
 
 Downloads
 ----------

@@ -20,7 +20,7 @@ For closed systems, the evolution of the density matrix is defined by the Schrö
     i\hbar\frac{d}{dt}\rho = [\hat{H}, \rho] \\
     \rho' = \varepsilon(\rho) = U\rho U^\dagger
 
-where :math:`\hat{H}` is the Hamiltonian of the system, :math:`U` is the unitary operator representing the evolution of the system, :math:`\rho'` is the density matrix after the evolution, and :math:`\varepsilon(\rho)` is a operator that maps the initial state to the final state. The square brackets denote the commutator operation (:math:`[A, B] = AB - BA`). :cite:p:`tund` Unfortunately, for noisy (or open) quantum systems, the evolution cannot be described solely by unitary operations and the Schrödinger equation is no longer sufficient. The evolution of open systems is instead described by the `Lindblad master equation <https://en.wikipedia.org/wiki/Lindbladian>`_.
+where :math:`\hat{H}` is the Hamiltonian of the system, :math:`U` is the unitary operator representing the evolution of the system, :math:`\rho'` is the density matrix after the evolution, and :math:`\varepsilon(\rho)` is a operator that maps the initial state to the final state. The square brackets denote the commutator operation (:math:`[A, B] = AB - BA`). :cite:p:`tund` Unfortunately, for noisy (or open) quantum systems, the evolution cannot be described solely by unitary operations and the Schrödinger equation is no longer sufficient. The evolution of open systems is instead described by the `Lindblad master equation <https://en.wikipedia.org/wiki/Lindbladian>`_. :cite:p:`master_equation`
 
 .. math::
     \dot{\rho} = \frac{1}{i\hbar}[H, \rho] + \sum_{n,m} \left( A_n\rho A_m^\dagger - \frac{1}{2}\{ A_m^\dagger A_n, \rho \} \right)

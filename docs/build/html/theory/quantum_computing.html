@@ -8,7 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quantum Computing 101 &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -16,6 +17,8 @@
       <script src="../_static/documentation_options.js?v=8d563738"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -92,7 +95,7 @@
           <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
       <li class="breadcrumb-item active">Quantum Computing 101</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/theory/quantum_computing.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintheory/quantum_computing.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -130,7 +133,7 @@
 <h2>Mulitple Qubits and Entanglement<a class="headerlink" href="#mulitple-qubits-and-entanglement" title="Link to this heading"></a></h2>
 <section id="mutli-qubit-systems">
 <h3>Mutli-Qubit Systems<a class="headerlink" href="#mutli-qubit-systems" title="Link to this heading"></a></h3>
-<p>For a system of multiple qubits, the state of the qubit system is obtained from taking the Kronecker product of the states of the different qubits as shown in the equation below for an :math:: <cite>n</cite> qubit system. If the coefficients for each qubit in the system already satisfy the normalization constraint, then the resulting state will also satisfy the normalization constraint.</p>
+<p>For a system of multiple qubits, the state of the qubit system is obtained from taking the Kronecker product of the states of the different qubits as shown in the equation below for an <span class="math notranslate nohighlight">\(n\)</span> qubit system. If the coefficients for each qubit in the system already satisfy the normalization constraint, then the resulting state will also satisfy the normalization constraint.</p>
 <div class="math notranslate nohighlight">
 \[|q_0q_1...q_{n-1}\rangle = |q_0\rangle \otimes |q_1\rangle \otimes ... \otimes |q_{n-1}\rangle\]</div>
 <p>where <span class="math notranslate nohighlight">\(|q_i\rangle\)</span> represents the state of the <span class="math notranslate nohighlight">\(i^{th}\)</span> qubit in the system. For example, let us consider a two-qubit system where the first qubit is in the state <span class="math notranslate nohighlight">\(|q_0\rangle = \alpha_0|0\rangle + \beta_0|1\rangle\)</span> and the second qubit is in the state <span class="math notranslate nohighlight">\(|q_1\rangle = \alpha_1|0\rangle + \beta_1|1\rangle\)</span>. The combined state of the two-qubit system can be expressed as:</p>

@@ -1,3 +1,4 @@
+#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
 import pickle
 import pennylane as qml
 import numpy as np
@@ -5,13 +6,15 @@ from NoisyCircuits.QuantumCircuit import QuantumCircuit
 import os
 import pytest
 from pathlib import Path
+import itertools
 
 qpus = QuantumCircuit.basis_gates_set.keys()
 circuit_list = []
 for qpu in qpus:
     file_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
     noise_model = pickle.load(open(file_path, "rb"))
-    circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 200, 4, True, False, 1e-6)))
+    for sim_backend in QuantumCircuit.available_sim_backends:
+        circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 100, 10, sim_backend, True, False, 1e-6)))
 
 @pytest.fixture
 def circuit(request):
@@ -63,19 +66,22 @@ instruction_map = {
         "ryy": lambda q: qml.IsingYY(q[0], q[1])
     }
 
-def run_true(instructions:list)->np.ndarray:
+def run_true(instructions:list,
+             measure_qubits:list=[0, 1, 2, 3])->np.ndarray:
     """
     Execute the quantum circuit without any decompositions or qubit couplings.
 
     Args:
         instructions (list): Instruction List to construct the circuit
+        measure_qubits (list): List of qubits to measure the probabilities for. Default is [0, 1, 2, 3] for a 4-qubit circuit.
 
     Returns:
         (np.ndarray): Probability of the quantum circuit
     """
     dev = qml.device("lightning.qubit", wires=4)
     @qml.qnode(dev)
-    def _run_circuit(instructions:list):
+    def _run_circuit(instructions:list, 
+                     measure_qubits:list=measure_qubits):
         for entry in instructions:
             gate = entry[0]
             qubits = entry[1]
@@ -84,7 +90,7 @@ def run_true(instructions:list)->np.ndarray:
                 instruction_map[gate](qubits)
             else:
                 instruction_map[gate]([params, qubits])
-        return qml.probs([0, 1, 2, 3])
+        return qml.probs(measure_qubits)
     probs = _run_circuit(instructions)
     return probs
 
@@ -103,7 +109,7 @@ def test_ghz_output(circuit):
     probs_decomp = circuit.run_pure_state([0, 1, 2, 3])
     probs_true = run_true(instructions)
     circuit.shutdown()
-    assert np.allclose(probs_decomp, probs_true), f"Failed GHZ Output Test for QPU - {circuit.qpu}"
+    assert np.allclose(probs_decomp, probs_true), f"Failed GHZ Output Test for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_mcwf_implementation_ghz(circuit):
@@ -118,7 +124,7 @@ def test_mcwf_implementation_ghz(circuit):
     probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
     hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
     circuit.shutdown()
-    assert (hellinger_distance < 0.07), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}"
+    assert (hellinger_distance < 0.07), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_parameterized_circuit(circuit):
@@ -141,7 +147,7 @@ def test_parameterized_circuit(circuit):
     probs_decomp = circuit.run_pure_state([0, 1, 2, 3])
     probs_true = run_true(instructions)
     circuit.shutdown()
-    assert np.allclose(probs_decomp, probs_true), f"Failed Randomized Parameterized Circuit Test for QPU - {circuit.qpu}"
+    assert np.allclose(probs_decomp, probs_true), f"Failed Randomized Parameterized Circuit Test for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_parameterized_circuit_fidelity(circuit):
@@ -161,4 +167,27 @@ def test_parameterized_circuit_fidelity(circuit):
     probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
     circuit.shutdown()
     hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
-    assert (hellinger_distance < 0.07), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}"
+    assert (hellinger_distance < 0.07), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_circuit_marginal_probs(circuit):
+    """
+    Test the marginal probability computation for a reduced set of qubits.
+    """
+    circuit.refresh()
+    instructions = []
+    angles = np.random.uniform(-2*np.pi, 2*np.pi, 4)
+    for i in range(4):
+        circuit.H(qubit=i)
+        instructions.append(["h", [i], None])
+    for i in range(4):
+        circuit.RX(angles[i], i)
+        instructions.append(["rx", [i], angles[i]])
+    for i in range(3):
+        circuit.CZ(i, i+1)
+        instructions.append(["cz", [i, i+1], None])
+    permutations = list(itertools.permutations(range(4)))
+    for perm in permutations:
+        probs_decomp = circuit.run_pure_state(list(perm))
+        probs_true = run_true(instructions, list(perm))
+        assert np.allclose(probs_decomp, probs_true), f"Failed Marginal Probability Test for qubits {perm} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
