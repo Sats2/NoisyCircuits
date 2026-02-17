@@ -8,7 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hardware Considerations &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
@@ -16,6 +17,8 @@
       <script src="../_static/documentation_options.js?v=8d563738"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -85,7 +88,7 @@
           <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
       <li class="breadcrumb-item active">Hardware Considerations</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/theory/hardware.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintheory/hardware.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -126,11 +129,6 @@ e^{-i\theta/2} &amp; 0 \\
 </figcaption>
 </figure>
 <p>Consider the simple example where a CNOT gate is to be applied between qubit <span class="math notranslate nohighlight">\(0\)</span> and qubit <span class="math notranslate nohighlight">\(4\)</span>. Then the sequence of operations would be as follows:</p>
-<div class="math notranslate nohighlight">
-\[\text{SWAP}(4,3) \rightarrow \text{SWAP}(3,2)
-\rightarrow \text{SWAP}(2,1) \rightarrow \text{op-CNOT}(1,0)\text{-op}
-\rightarrow \text{SWAP}(2,1) \rightarrow \text{SWAP}(3,2)
-\rightarrow \text{SWAP}(4,3)\]</div>
 <div class="math notranslate nohighlight">
 \[\text{SWAP}(4,3) \rightarrow \text{SWAP}(3,2) \rightarrow \text{SWAP}(2,1)\]</div>
 <div class="math notranslate nohighlight">

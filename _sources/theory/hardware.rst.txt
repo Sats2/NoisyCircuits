@@ -44,12 +44,6 @@ In the figure below, the qubit map of the IBM Eagle QPU from the backend "IBM_Br
 Consider the simple example where a CNOT gate is to be applied between qubit :math:`0` and qubit :math:`4`. Then the sequence of operations would be as follows:
 
 .. math::
-    \text{SWAP}(4,3) \rightarrow \text{SWAP}(3,2)
-    \rightarrow \text{SWAP}(2,1) \rightarrow \text{op-CNOT}(1,0)\text{-op}
-    \rightarrow \text{SWAP}(2,1) \rightarrow \text{SWAP}(3,2)
-    \rightarrow \text{SWAP}(4,3)
-
-.. math::
     \text{SWAP}(4,3) \rightarrow \text{SWAP}(3,2) \rightarrow \text{SWAP}(2,1)
 
 .. math::

@@ -8,7 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutorials &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -16,6 +17,8 @@
       <script src="_static/documentation_options.js?v=8d563738"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -51,13 +54,16 @@
 <li class="toctree-l1"><a class="reference internal" href="NoisyCircuits.html">User Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="theory.html">Theory</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples/introduction.html">Introduction to NoisyCircuits</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/run_on_hardware.html">Running Circuits on Hardware</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/quantum_neural_networks.html">Quantum Neural Networks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples/introduction.html">Introduction to NoisyCircuits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/run_on_hardware.html">Running Circuits on Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/run_multiple_on_hardware.html#Query-Job-Status">Query Job Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples/quantum_neural_networks.html">Quantum Neural Networks</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#downloads">Downloads</a></li>
 </ul>
 </li>
@@ -82,7 +88,7 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Tutorials</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/Sats2/NoisyCircuits/blob/main/docs/tutorials.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintutorials.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -92,15 +98,6 @@
              
   <section id="tutorials">
 <h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="examples/introduction.html">Introduction to NoisyCircuits</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples/run_on_hardware.html">Running Circuits on Hardware</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples/run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples/quantum_neural_networks.html">Quantum Neural Networks</a></li>
-</ul>
-</div>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <p>This section contains tutorials to help you get started with NoisyCircuits. The tutorials cover a range of topics, from basic usage to more advanced features, and are designed to help you understand how to use the package effectively. Each tutorial is presented as a Jupyter notebook, allowing you to follow along with the code and see the results in real-time.</p>
@@ -129,6 +126,16 @@
 <li><p><strong>Parallel Execution:</strong> Configure the <cite>num_cores</cite> parameter based on your system’s capabilities to optimize simulation performance.</p></li>
 <li><p><strong>Noise Threshold:</strong> Adjust the noise threshold settings with <cite>threshold</cite> parameter to filter out low probability noise events during simulations. This speeds up simulations without significantly affecting accuracy as long as only very low probability events are filtered. <cite>Default: 1e-12</cite>, not recommended to set the threshold higher than <cite>1e-4</cite>.</p></li>
 </ul>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Tutorials List (Jupyter Notebooks):</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/introduction.html">Introduction to NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/run_on_hardware.html">Running Circuits on Hardware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/run_multiple_on_hardware.html#Query-Job-Status">Query Job Status</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/quantum_neural_networks.html">Quantum Neural Networks</a></li>
+</ul>
+</div>
 </section>
 <section id="downloads">
 <h2>Downloads<a class="headerlink" href="#downloads" title="Link to this heading"></a></h2>

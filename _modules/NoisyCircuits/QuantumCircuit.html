@@ -7,7 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoisyCircuits.QuantumCircuit &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
@@ -15,6 +16,8 @@
       <script src="../../_static/documentation_options.js?v=8d563738"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -98,16 +101,15 @@
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OPENBLAS_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MKL_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pennylane</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">qml</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pennylane</span><span class="w"> </span><span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.BuildQubitGateModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuildModel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.DensityMatrixSolver</span><span class="w"> </span><span class="kn">import</span> <span class="n">DensityMatrixSolver</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.PureStateSolver</span><span class="w"> </span><span class="kn">import</span> <span class="n">PureStateSolver</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.ParallelExecutor</span><span class="w"> </span><span class="kn">import</span> <span class="n">RemoteExecutor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.EagleDecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">EagleDecomposition</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.HeronDecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">HeronDecomposition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.solvers</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_solver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.marginal_probs</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_marginal_probs</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gc</span>
 
 
 <div class="viewcode-block" id="QuantumCircuit">
@@ -124,24 +126,28 @@
 <span class="sd">        backend_qpu_type (str): The IBM Backend Architecture type to be used (Eagle or Heron).</span>
 <span class="sd">        num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.</span>
 <span class="sd">        num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.</span>
+<span class="sd">        sim_backend (str, optional): The simulation backend to use, either &#39;qulacs&#39;, &#39;pennylane&#39;, or &#39;qiskit&#39;. Defaults to &#39;pennylane&#39;.</span>
 <span class="sd">        jsonize (bool, optional): If True, the circuit will be serialized to JSON format. Defaults to False.</span>
 <span class="sd">        verbose (bool, optional): If False, suppresses detailed output during initialization. Defaults to True.</span>
 <span class="sd">        threshold (float, optional): The threshold for noise application. Defaults to 1e-12.</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        TypeError: If num_qubits is not an integer.</span>
-<span class="sd">        ValueError: If num_qubits is less than 1.</span>
-<span class="sd">        TypeError: If the noise_model is not a dictionary.</span>
-<span class="sd">        TypeError: If the backend_qpu_type is not a string.</span>
-<span class="sd">        ValueError: If the backend_qpu_type is not one of [&#39;Eagle&#39;, &#39;Heron&#39;].</span>
-<span class="sd">        TypeError: If num_trajectories is not an integer.</span>
-<span class="sd">        ValueError: If num_trajectories is less than 1.</span>
-<span class="sd">        TypeError: If threshold is not a float.</span>
-<span class="sd">        ValueError: If threshold is not between 0 and 1 (exclusive).</span>
-<span class="sd">        TypeError: If num_cores is not an integer.</span>
-<span class="sd">        ValueError: If num_cores is less than 1.</span>
-<span class="sd">        TypeError: If jsonize is not a boolean.</span>
-<span class="sd">        TypeError: If verbose is not a boolean.</span>
+<span class="sd">        TypeError: Raised when the input parameters are of incorrect types.</span>
+<span class="sd">            - num_qubits is not an integer.</span>
+<span class="sd">            - noise_model is not a dictionary.</span>
+<span class="sd">            - backend_qpu_type is not a string.</span>
+<span class="sd">            - num_trajectories is not an integer.</span>
+<span class="sd">            - num_cores is not an integer.</span>
+<span class="sd">            - sim_backend is not a string.</span>
+<span class="sd">            - jsonize is not a boolean.</span>
+<span class="sd">            - verbose is not a boolean.</span>
+<span class="sd">        ValueError: Raised when the input parameters have invalid values.</span>
+<span class="sd">            - num_qubits is not a positive integer.</span>
+<span class="sd">            - backend_qpu_type is not one of the supported types (Eagle or Heron).</span>
+<span class="sd">            - num_trajectories is less than 1.</span>
+<span class="sd">            - threshold is not between 0 and 1 (exclusive).</span>
+<span class="sd">            - num_cores is less than 1 or exceeds available CPU cores.</span>
+<span class="sd">            - sim_backend is not one of the supported backends (qulacs, pennylane, qiskit).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Update QPU Basis Gates Here!</span>
@@ -155,6 +161,7 @@
                     <span class="s2">&quot;gate_decomposition&quot;</span> <span class="p">:</span> <span class="n">HeronDecomposition</span>
                 <span class="p">}</span>
     <span class="p">}</span>
+    <span class="n">available_sim_backends</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;qulacs&quot;</span><span class="p">,</span> <span class="s2">&quot;pennylane&quot;</span><span class="p">,</span> <span class="s2">&quot;qiskit&quot;</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">num_qubits</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
@@ -162,6 +169,7 @@
                  <span class="n">backend_qpu_type</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
                  <span class="n">num_trajectories</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>
                  <span class="n">num_cores</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">sim_backend</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pennylane&quot;</span><span class="p">,</span>
                  <span class="n">jsonize</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
@@ -188,12 +196,18 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Threshold must be a float between 0 and 1 (exclusive).&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_cores</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Number of cores must be an integer.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sim_backend</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Simulation backend must be a string.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sim_backend</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">QuantumCircuit</span><span class="o">.</span><span class="n">available_sim_backends</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulation backend must be one of </span><span class="si">{</span><span class="n">QuantumCircuit</span><span class="o">.</span><span class="n">available_sim_backends</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">num_cores</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of cores must be a positive integer greater than or equal to 1.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">jsonize</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Jsonize must be a boolean.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Verbose must be a boolean.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_cores</span> <span class="o">&gt;</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of cores cannot exceed available CPU cores (</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span> <span class="o">=</span> <span class="n">num_qubits</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">noise_model</span>
         <span class="k">if</span> <span class="n">jsonize</span><span class="p">:</span>
@@ -201,12 +215,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_trajectories</span> <span class="o">=</span> <span class="n">num_trajectories</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span> <span class="o">=</span> <span class="n">num_cores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim_backend</span> <span class="o">=</span> <span class="n">sim_backend</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qpu</span> <span class="o">=</span> <span class="n">backend_qpu_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">basis_gates</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="o">.</span><span class="n">basis_gates_set</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">qpu</span><span class="p">][</span><span class="s2">&quot;basis_gates&quot;</span><span class="p">]</span>
         <span class="n">modeller</span> <span class="o">=</span> <span class="n">BuildModel</span><span class="p">(</span>
                                 <span class="n">noise_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_model</span><span class="p">,</span>
                                 <span class="n">num_qubits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+                                <span class="n">num_cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">,</span>
                                 <span class="n">threshold</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
                                 <span class="n">basis_gates</span><span class="o">=</span><span class="n">basis_gates</span><span class="p">,</span>
                                 <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
@@ -216,6 +234,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_instructions</span> <span class="o">=</span> <span class="n">multi_error</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error</span> <span class="o">=</span> <span class="n">measure_error</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connectivity</span> <span class="o">=</span> <span class="n">connectivity</span>
+        <span class="n">single_qubit_instructions_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_instructions</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="n">two_qubit_instructions_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_instructions</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qubit_coupling_map</span> <span class="o">=</span> <span class="n">modeller</span><span class="o">.</span><span class="n">qubit_coupling_map</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error_operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_measurement_error_operator</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span> <span class="o">=</span> <span class="n">QuantumCircuit</span><span class="o">.</span><span class="n">basis_gates_set</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">qpu</span><span class="p">][</span><span class="s2">&quot;gate_decomposition&quot;</span><span class="p">](</span>
@@ -224,12 +244,52 @@
                                                                                                 <span class="n">qubit_map</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">qubit_coupling_map</span>
                                                                                             <span class="p">)</span>
         <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">num_cpus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">,</span> <span class="n">ignore_reinit_error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_to_driver</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_single_qubit_instruction_reference</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">single_qubit_instructions_array</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_two_qubits_instruction_reference</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">two_qubit_instructions_array</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_two_qubit_gate_index</span> <span class="o">=</span> <span class="p">{</span><span class="n">two_qubit_instructions_array</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">two_qubit_instructions_array</span><span class="p">))}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">RemoteExecutor</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
-                <span class="n">num_qubits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
-                <span class="n">single_qubit_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_instructions</span><span class="p">,</span>
-                <span class="n">two_qubit_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_instructions</span>
-            <span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">)]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">RemoteExecutor</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
+                                        <span class="n">num_qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+                                        <span class="n">single_qubit_noise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_single_qubit_instruction_reference</span><span class="p">,</span>
+                                        <span class="n">two_qubit_noise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_two_qubits_instruction_reference</span><span class="p">,</span>
+                                        <span class="n">two_qubit_noise_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_two_qubit_gate_index</span>
+                            <span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sim_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Getter for the _sim_backend attribute</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (str): Returns the current sim_backend value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span>
+    
+    <span class="nd">@sim_backend</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sim_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">backend</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setter for the _sim_backend attribute and updates the solver modules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            backend (str): The name of the backend.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: Raised when backend is not a string</span>
+<span class="sd">            ValueError: Raised when the specified backend is not available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Specified backend must of type string&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">QuantumCircuit</span><span class="o">.</span><span class="n">available_sim_backends</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Specified backend </span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2"> is not available. Choose from </span><span class="si">{</span><span class="n">QuantumCircuit</span><span class="o">.</span><span class="n">available_sim_backends</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Backend already in use.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">new_solver</span> <span class="o">=</span> <span class="n">load_solver</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">new_solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Successfully switched backend to </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">callable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -302,7 +362,7 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;qubits must be of type list.</span><span class="se">\n</span><span class="s2">All entries in qubits must be integers.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="n">qubit</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">qubit</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One or more qubits are out of range. The valid range is from 0 to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No instructions in the circuit to execute.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">num_trajectories</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">num_trajectories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_trajectories</span>
@@ -310,9 +370,29 @@
             <span class="n">measurement_error_operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_measurement_error_operator</span><span class="p">(</span><span class="n">qubit_list</span><span class="o">=</span><span class="n">qubits</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">measurement_error_operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error_operator</span>
-        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">traj_id</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">traj_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">,</span> <span class="n">qubits</span><span class="p">)</span> <span class="k">for</span> <span class="n">traj_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_trajectories</span><span class="p">)]</span>
-        <span class="n">probs_raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">futures</span><span class="p">))</span>
-        <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">probs_raw</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">reset_probs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reset</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">measured_qubits</span><span class="o">=</span><span class="n">qubits</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">traj_id</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">traj_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">)</span> <span class="k">for</span> <span class="n">traj_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_trajectories</span><span class="p">)</span>
+            <span class="p">]</span>
+        
+        <span class="n">prob_chunks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">qubits</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_cores</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prob_chunks</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_trajectories</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pennylane&quot;</span><span class="p">]:</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pennylane&quot;</span><span class="p">]:</span>
+            <span class="n">trace_qubits</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">]</span>
+            <span class="n">probs_reduced</span> <span class="o">=</span> <span class="n">compute_marginal_probs</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">trace_qubits</span><span class="p">)</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">probs_reduced</span>
+        
         <span class="k">if</span> <span class="n">measurement_error_operator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">measurement_error_operator</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">probs</span></div>
@@ -340,19 +420,24 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Qubits must be a list of integers.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="n">qubit</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">qubit</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One or more qubits are out of range. The valid range is from 0 to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No instructions in the circuit to execute.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">:</span>
             <span class="n">measurement_error_operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_measurement_error_operator</span><span class="p">(</span><span class="n">qubit_list</span><span class="o">=</span><span class="n">qubits</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">measurement_error_operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error_operator</span>
-        <span class="n">density_matrix_solver</span> <span class="o">=</span> <span class="n">DensityMatrixSolver</span><span class="p">(</span>
-            <span class="n">num_qubits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
-            <span class="n">single_qubit_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_instructions</span><span class="p">,</span>
-            <span class="n">two_qubit_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_instructions</span><span class="p">,</span>
-            <span class="n">instruction_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span>
-        <span class="p">)</span>
+        <span class="n">density_matrix_solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">DensityMatrixSolver</span><span class="p">(</span>
+                    <span class="n">num_qubits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+                    <span class="n">single_qubit_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_instructions</span><span class="p">,</span>
+                    <span class="n">two_qubit_noise</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_instructions</span><span class="p">,</span>
+                    <span class="n">instruction_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span>
+                <span class="p">)</span>
         <span class="n">probs</span> <span class="o">=</span> <span class="n">density_matrix_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="n">qubits</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pennylane&quot;</span><span class="p">]:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        
         <span class="k">if</span> <span class="n">measurement_error_operator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">measurement_error_operator</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">probs</span></div>
@@ -378,15 +463,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Qubits must be a list of integers.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No instructions in the circuit to execute.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="n">qubit</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">qubit</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One or more qubits are out of range. The valid range is from 0 to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="n">pure_state_solver</span> <span class="o">=</span> <span class="n">PureStateSolver</span><span class="p">(</span>
-            <span class="n">num_qubits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
-            <span class="n">instruction_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">pure_state_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="n">qubits</span><span class="p">)</span></div>
+        <span class="n">pure_state_solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">PureStateSolver</span><span class="p">(</span>
+                    <span class="n">num_qubits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+                    <span class="n">instruction_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span>
+                    <span class="p">)</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">pure_state_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="n">qubits</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pennylane&quot;</span><span class="p">]:</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sim_backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;pennylane&quot;</span><span class="p">]:</span>
+            <span class="n">trace_qubits</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">]</span>
+            <span class="n">probs_reduced</span> <span class="o">=</span> <span class="n">compute_marginal_probs</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">trace_qubits</span><span class="p">)</span>
+            <span class="n">probs</span> <span class="o">=</span> <span class="n">probs_reduced</span>
+        <span class="k">return</span> <span class="n">probs</span></div>
 
     
 <div class="viewcode-block" id="QuantumCircuit.draw_circuit">
@@ -410,33 +502,26 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Style must be one of [&#39;mpl&#39;, &#39;text&#39;].&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">==</span> <span class="p">[]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No instructions in the circuit to draw.&quot;</span><span class="p">)</span>
-        
-        <span class="nd">@qml</span><span class="o">.</span><span class="n">qnode</span><span class="p">(</span><span class="n">qml</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;default.qubit&quot;</span><span class="p">,</span> <span class="n">wires</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">))</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">circuit</span><span class="p">():</span>
-            <span class="n">instruction_map</span> <span class="o">=</span> <span class="p">{</span>
-                                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;sx&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">SX</span><span class="p">(</span><span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;rz&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">RZ</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;rx&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">,</span><span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">RX</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;ecr&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">ECR</span><span class="p">(</span><span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;cz&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">CZ</span><span class="p">(</span><span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;rzz&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">,</span><span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">IsingZZ</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span>
-                                <span class="s2">&quot;unitary&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">qml</span><span class="o">.</span><span class="n">QubitUnitary</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">),</span>
-            <span class="p">}</span>
-            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">:</span>
-                <span class="n">gate_instruction</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">qubit_added</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">params</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">gate_instruction</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">,</span> <span class="s2">&quot;unitary&quot;</span><span class="p">,</span> <span class="s2">&quot;rzz&quot;</span><span class="p">]:</span>
-                    <span class="n">instruction_map</span><span class="p">[</span><span class="n">gate_instruction</span><span class="p">](</span><span class="n">params</span><span class="p">,</span> <span class="n">qubit_added</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">instruction_map</span><span class="p">[</span><span class="n">gate_instruction</span><span class="p">](</span><span class="n">qubit_added</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">qml</span><span class="o">.</span><span class="n">state</span><span class="p">()</span>
-        
+        <span class="kn">from</span><span class="w"> </span><span class="nn">qiskit</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span> <span class="k">as</span> <span class="n">QiskitQuantumCircuit</span>
+        <span class="n">circuit</span> <span class="o">=</span> <span class="n">QiskitQuantumCircuit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span>
+        <span class="n">instruction_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s2">&quot;sx&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">sx</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s2">&quot;rz&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">rz</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s2">&quot;rx&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">rx</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="s2">&quot;cz&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">cz</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s2">&quot;ecr&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">ecr</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s2">&quot;rzz&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">rzz</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="s2">&quot;unitary&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">unitary</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">gate_name</span><span class="p">,</span> <span class="n">qubit_index</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">:</span>
+            <span class="n">instruction_map</span><span class="p">[</span><span class="n">gate_name</span><span class="p">](</span><span class="n">qubit_index</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">style</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;mpl&quot;</span><span class="p">:</span>
-            <span class="n">qml</span><span class="o">.</span><span class="n">draw_mpl</span><span class="p">(</span><span class="n">circuit</span><span class="p">)()</span>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="s2">&quot;mpl&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">qml</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">circuit</span><span class="p">)()</span></div>
+            <span class="n">circuit</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">circuit</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></div>
 
     
 <div class="viewcode-block" id="QuantumCircuit.shutdown">
