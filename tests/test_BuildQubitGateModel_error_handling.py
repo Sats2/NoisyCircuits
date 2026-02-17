@@ -71,6 +71,57 @@ def test_threshold_default():
     except Exception as e:
         pytest.fail(f"Unexpected exception raised with default threshold: {e}")
 
+def test_num_cores_type():
+    """
+    Test that invalid num_cores types raise TypeError.
+    """
+    with pytest.raises(TypeError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   num_cores="4")
+    with pytest.raises(TypeError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   num_cores=4.5)
+    with pytest.raises(TypeError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   num_cores=[4])
+        
+def test_invalid_num_cores_value():
+    """
+    Test that invalid num_cores values raise ValueError.
+    """
+    with pytest.raises(ValueError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   num_cores=-1)
+    with pytest.raises(ValueError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   num_cores=0)
+    with pytest.raises(ValueError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   num_cores=1000)
+
+def test_default_num_cores():
+    """
+    Test that no exception is raised when using the default num_cores.
+    """
+    try:
+        BuildModel(noise_model=noise_model,
+                            num_qubits=2,
+                            basis_gates=[["u1", "u2", "u3"], ["cx"]])
+    except Exception as e:
+        pytest.fail(f"Unexpected exception raised with default num_cores: {e}")
+
 def test_basis_gates_type():
     """
     Test that the basis_gates parameter raises TypeError for invalid types.

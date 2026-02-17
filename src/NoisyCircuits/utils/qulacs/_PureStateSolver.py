@@ -19,23 +19,6 @@ import qulacs.gate as gate
 import gc
 
 
-def get_probabilities(state:np.ndarray[np.complex128],
-                      qubits:list[int])->np.ndarray[np.float64]:
-    """
-    Computes the measurement probabilities for specified qubits.
-
-    Args:
-        state(np.ndarray[np.complex128]): The statevector of the full quantum system.
-        qubits(list[int]): The list of qubits for which to compute the probabilities.
-    
-    Returns:
-        np.ndarray[np.float64]: The probabilities of measuring each qubit in the computational basis.
-    """
-    state_tensor = state.reshape([2]*int(np.log2(len(state))))
-    sum_axes = tuple(i for i in range(state_tensor.ndim) if i not in qubits)
-    probs = np.sum(np.abs(state_tensor)**2, axis=sum_axes)
-    return probs.flatten()
-
 class PureStateSolver:
     """
     Class to solve quantum circuits using pure statevector simulations without noise.
@@ -87,4 +70,4 @@ class PureStateSolver:
         state_array = state.get_vector()
         del state, circuit, instruction_map, exp
         gc.collect()
-        return get_probabilities(state_array, qubits)
+        return np.square(np.abs(state_array))

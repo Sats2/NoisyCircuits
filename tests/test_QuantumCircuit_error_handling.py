@@ -136,6 +136,43 @@ def test_num_cores_value():
         QuantumCircuit(num_qubits=2, noise_model=noise_model, backend_qpu_type="heron",
                        num_trajectories=10, threshold=1e-4, num_cores=0)
 
+def test_sim_backend_type():
+    """
+    Test that sim_backend parameter raises TypeError for non-string types.
+    """
+    noise_model = pickle.load(open(file_path, "rb"))
+    with pytest.raises(TypeError):
+        QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=4, sim_backend=123)
+    with pytest.raises(TypeError):
+        QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=4, sim_backend=["pennylane"])
+    with pytest.raises(TypeError):
+        QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=4, sim_backend={"backend": "pennylane"})
+        
+def test_sim_backend_value():
+    """
+    Test that sim_backend parameter raises ValueError for invalid string values.
+    """
+    noise_model = pickle.load(open(file_path, "rb"))
+    with pytest.raises(ValueError):
+        QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=4, sim_backend="invalid_backend")
+    with pytest.raises(ValueError):
+        QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=4, sim_backend="")
+
+def test_sim_backend_default():
+    """
+    Test that sim_backend parameter defaults to "pennylane" when not provided.
+    """
+    noise_model = pickle.load(open(file_path, "rb"))
+    circuit = QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=4)
+    assert circuit.sim_backend == "pennylane"
+    circuit.shutdown()
+
 def test_jsonize_type():
     """
     Test that jsonize parameter raises TypeError for non-boolean types.
