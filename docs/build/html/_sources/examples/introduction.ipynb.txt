@@ -45,7 +45,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": null,
    "id": "5ad90c5b",
    "metadata": {},
    "outputs": [],
@@ -59,7 +59,8 @@
     "jsonize = True\n",
     "verbose = True\n",
     "# Options: \"heron\", \"eagle\". Note that \"eagle\" is now deprecated and only available in simulation mode (i.e., no noise model from hardware).\n",
-    "qpu_type = \"heron\" "
+    "qpu_type = \"heron\" \n",
+    "sim_backend = \"qulacs\" # Choose between \"qulacs\", \"pennylane\" and \"qiskit\""
    ]
   },
   {
@@ -115,7 +116,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": null,
    "id": "53afe932",
    "metadata": {},
    "outputs": [
@@ -160,9 +161,9 @@
     "nqc = QC(num_qubits=num_qubits, \n",
     "         noise_model=noise_model, \n",
     "         num_cores=num_cores,\n",
-    "         backend_qpu_type=\"heron\", \n",
+    "         backend_qpu_type=qpu_type, \n",
     "         num_trajectories=num_trajectories, \n",
-    "         sim_backend=\"qulacs\",\n",
+    "         sim_backend=sim_backend,\n",
     "         threshold=threshold, \n",
     "         jsonize=jsonize,\n",
     "         verbose=verbose)"

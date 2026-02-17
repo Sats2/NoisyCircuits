@@ -135,7 +135,7 @@
 <li><p><strong>jsonize:</strong> a boolean variable indicating whether the noise model needs to be jsonized or if the input noise model is already in a json format.</p></li>
 </ol>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum token</span>
@@ -148,6 +148,7 @@
 <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Options: &quot;heron&quot;, &quot;eagle&quot;. Note that &quot;eagle&quot; is now deprecated and only available in simulation mode (i.e., no noise model from hardware).</span>
 <span class="n">qpu_type</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span>
+<span class="n">sim_backend</span> <span class="o">=</span> <span class="s2">&quot;qulacs&quot;</span> <span class="c1"># Choose between &quot;qulacs&quot;, &quot;pennylane&quot; and &quot;qiskit&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -180,15 +181,15 @@
 <section id="Initialize-the-Circuit-Instance">
 <h3>Initialize the Circuit Instance<a class="headerlink" href="#Initialize-the-Circuit-Instance" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nqc</span> <span class="o">=</span> <span class="n">QC</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
          <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
          <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
-         <span class="n">backend_qpu_type</span><span class="o">=</span><span class="s2">&quot;heron&quot;</span><span class="p">,</span>
+         <span class="n">backend_qpu_type</span><span class="o">=</span><span class="n">qpu_type</span><span class="p">,</span>
          <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
-         <span class="n">sim_backend</span><span class="o">=</span><span class="s2">&quot;qulacs&quot;</span><span class="p">,</span>
+         <span class="n">sim_backend</span><span class="o">=</span><span class="n">sim_backend</span><span class="p">,</span>
          <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
          <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
          <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>

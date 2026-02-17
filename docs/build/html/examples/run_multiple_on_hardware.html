@@ -145,7 +145,7 @@
 <section id="Define-all-Necessary-Parameters">
 <h2>Define all Necessary Parameters<a class="headerlink" href="#Define-all-Necessary-Parameters" title="Link to this heading"></a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum API token</span>
@@ -157,6 +157,7 @@
 <span class="n">num_trajectories</span> <span class="o">=</span> <span class="mi">500</span>
 <span class="n">qpu</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span> <span class="c1"># Only possible option for IBM backends at the moment</span>
 <span class="n">num_cores</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">sim_backend</span> <span class="o">=</span> <span class="s2">&quot;pennylane&quot;</span> <span class="c1"># Choose between &quot;pennylane&quot;, &quot;qulacs&quot; and &quot;qiskit&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -189,18 +190,17 @@ qiskit_runtime_service.backends:WARNING:2025-11-24 17:25:58,931: Using instance:
 <section id="Build-all-Quantum-Circuits">
 <h2>Build all Quantum Circuits<a class="headerlink" href="#Build-all-Quantum-Circuits" title="Link to this heading"></a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">circuit</span> <span class="o">=</span> <span class="n">nqc</span><span class="p">(</span>
-    <span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
-    <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
-    <span class="n">backend_qpu_type</span><span class="o">=</span><span class="n">qpu</span><span class="p">,</span>
-    <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
-    <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
-    <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
-<span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">circuit</span> <span class="o">=</span> <span class="n">nqc</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
+         <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
+         <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
+         <span class="n">backend_qpu_type</span><span class="o">=</span><span class="n">qpu</span><span class="p">,</span>
+         <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
+         <span class="n">sim_backend</span><span class="o">=</span><span class="n">sim_backend</span><span class="p">,</span>
+         <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
+         <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
 <span class="c1"># List to store all probabilities from Pure State Simulation</span>
 <span class="n">probs_pure_list</span> <span class="o">=</span> <span class="p">[]</span>

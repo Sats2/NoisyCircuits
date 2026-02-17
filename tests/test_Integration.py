@@ -14,7 +14,7 @@ for qpu in qpus:
     file_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
     noise_model = pickle.load(open(file_path, "rb"))
     for sim_backend in QuantumCircuit.available_sim_backends:
-        circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 100, 10, sim_backend, True, False, 1e-6)))
+        circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 200, 4, sim_backend, True, False, 1e-6)))
 
 @pytest.fixture
 def circuit(request):

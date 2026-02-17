@@ -21,4 +21,5 @@ dependencies:
     - sphinx-rtd-theme
     - nbsphinx
     - sphinxcontrib-bibtex
+    - sphinx-copybutton
     - ipykernel
