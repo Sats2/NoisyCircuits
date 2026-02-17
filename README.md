@@ -220,7 +220,7 @@ If you use NoisyCircuits in your research, please cite the software as follows:
    title = {NoisyCircuits},
    year = {2025},
    url = {https://github.com/Sats2/NoisyCircuits},
-   version = {1.1.0},
+   version = {1.2.0},
 }
 ```
 
