@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>User Guide &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
@@ -152,7 +152,7 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="NoisyCircuits.QuantumCircuit.QuantumCircuit">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.QuantumCircuit.</span></span><span class="sig-name descname"><span class="pre">QuantumCircuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_qpu_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_trajectories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'qulacs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jsonize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.QuantumCircuit.</span></span><span class="sig-name descname"><span class="pre">QuantumCircuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend_qpu_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_trajectories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'pennylane'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jsonize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/QuantumCircuit.html#QuantumCircuit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.QuantumCircuit.QuantumCircuit" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (<span class="math notranslate nohighlight">\(\sqrt{X}\)</span>, <span class="math notranslate nohighlight">\(X\)</span>, <span class="math notranslate nohighlight">\(R_Z(\theta)\)</span> and <span class="math notranslate nohighlight">\(ECR\)</span>) / Heron (<span class="math notranslate nohighlight">\(\sqrt{X}\)</span>, <span class="math notranslate nohighlight">\(X\)</span>, <span class="math notranslate nohighlight">\(R_Z(\theta)\)</span>, <span class="math notranslate nohighlight">\(R_X(\theta)\)</span>, <span class="math notranslate nohighlight">\(CZ\)</span> and <span class="math notranslate nohighlight">\(RZZ(\theta)\)</span>) QPUs.</p>
 <p>Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates, please refer to the Decomposition <a class="reference internal" href="NoisyCircuits.utils.html#module-NoisyCircuits.utils.Decomposition" title="NoisyCircuits.utils.Decomposition"><code class="xref py py-func docutils literal notranslate"><span class="pre">NoisyCircuits.utils.Decomposition()</span></code></a> class documentation.</p>
@@ -164,6 +164,7 @@
 <li><p><strong>backend_qpu_type</strong> (<em>str</em>) – The IBM Backend Architecture type to be used (Eagle or Heron).</p></li>
 <li><p><strong>num_trajectories</strong> (<em>int</em>) – The number of trajectories for the Monte-Carlo simulation.</p></li>
 <li><p><strong>num_cores</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of cores to use for parallel execution. Defaults to 2.</p></li>
+<li><p><strong>sim_backend</strong> (<em>str</em><em>, </em><em>optional</em>) – The simulation backend to use, either ‘qulacs’, ‘pennylane’, or ‘qiskit’. Defaults to ‘pennylane’.</p></li>
 <li><p><strong>jsonize</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the circuit will be serialized to JSON format. Defaults to False.</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, suppresses detailed output during initialization. Defaults to True.</p></li>
 <li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The threshold for noise application. Defaults to 1e-12.</p></li>
@@ -171,22 +172,22 @@
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>TypeError</strong> – If num_qubits is not an integer.</p></li>
-<li><p><strong>ValueError</strong> – If num_qubits is less than 1.</p></li>
-<li><p><strong>TypeError</strong> – If the noise_model is not a dictionary.</p></li>
-<li><p><strong>TypeError</strong> – If the backend_qpu_type is not a string.</p></li>
-<li><p><strong>ValueError</strong> – If the backend_qpu_type is not one of [‘Eagle’, ‘Heron’].</p></li>
-<li><p><strong>TypeError</strong> – If num_trajectories is not an integer.</p></li>
-<li><p><strong>ValueError</strong> – If num_trajectories is less than 1.</p></li>
-<li><p><strong>TypeError</strong> – If num_cores is not an integer.</p></li>
-<li><p><strong>ValueError</strong> – If num_cores is less than 1.</p></li>
-<li><p><strong>ValueError</strong> – If num_cores exceeds the available CPU cores.</p></li>
-<li><p><strong>TypeError</strong> – If sim_backend is not a string.</p></li>
-<li><p><strong>ValueError</strong> – If sim_backend is not available.</p></li>
-<li><p><strong>TypeError</strong> – If jsonize is not a boolean.</p></li>
-<li><p><strong>TypeError</strong> – If verbose is not a boolean.</p></li>
-<li><p><strong>TypeError</strong> – If threshold is not a float.</p></li>
-<li><p><strong>ValueError</strong> – If threshold is not between 0 and 1 (exclusive).</p></li>
+<li><p><strong>TypeError</strong> – Raised when the input parameters are of incorrect types.
+    - num_qubits is not an integer.
+    - noise_model is not a dictionary.
+    - backend_qpu_type is not a string.
+    - num_trajectories is not an integer.
+    - num_cores is not an integer.
+    - sim_backend is not a string.
+    - jsonize is not a boolean.
+    - verbose is not a boolean.</p></li>
+<li><p><strong>ValueError</strong> – Raised when the input parameters have invalid values.
+    - num_qubits is not a positive integer.
+    - backend_qpu_type is not one of the supported types (Eagle or Heron).
+    - num_trajectories is less than 1.
+    - threshold is not between 0 and 1 (exclusive).
+    - num_cores is less than 1 or exceeds available CPU cores.
+    - sim_backend is not one of the supported backends (qulacs, pennylane, qiskit).</p></li>
 </ul>
 </dd>
 </dl>

@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Introduction to NoisyCircuits &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
@@ -67,6 +67,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="run_on_hardware.html">Running Circuits on Hardware</a></li>
 <li class="toctree-l3"><a class="reference internal" href="run_multiple_on_hardware.html">Running Multiple Circuits on Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="run_multiple_on_hardware.html#Query-Job-Status">Query Job Status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quantum_neural_networks.html">Quantum Neural Networks</a></li>
 </ul>
 </li>
@@ -107,7 +108,7 @@
 <h1>Introduction to NoisyCircuits<a class="headerlink" href="#Introduction-to-NoisyCircuits" title="Link to this heading"></a></h1>
 <section id="Library-Imports">
 <h2>Library Imports<a class="headerlink" href="#Library-Imports" title="Link to this heading"></a></h2>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -116,16 +117,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-2025-11-24 14:21:19,383 INFO util.py:154 -- Missing packages: [&#39;ipywidgets&#39;]. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.
-</pre></div></div>
 </div>
 </section>
 <section id="Setup-Input-Fields">
@@ -147,7 +141,7 @@
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum token</span>
 <span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_fez&quot;</span>
 <span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">num_trajectories</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1e-4</span>
 <span class="n">jsonize</span> <span class="o">=</span> <span class="kc">True</span>
@@ -160,24 +154,13 @@
 <section id="Getting-the-Noise-Model">
 <h3>Getting the Noise Model<a class="headerlink" href="#Getting-the-Noise-Model" title="Link to this heading"></a></h3>
 <p>Run the code below to obtain the noise model from IBM backend calibration data.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-qiskit_runtime_service._discover_account:WARNING:2025-11-24 14:21:42,256: Loading account with the given token. A saved account will not be used.
-qiskit_runtime_service.__init__:WARNING:2025-11-24 14:21:45,579: Instance was not set at service instantiation. Free and trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and available plans: (open), the available account instances are: Open_Sys. If you need a specific instance set it explicitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService().
-qiskit_runtime_service.backends:WARNING:2025-11-24 14:21:45,582: Using instance: Open_Sys, plan: open
-qiskit_runtime_service.backends:WARNING:2025-11-24 14:21:45,945: Using instance: Open_Sys, plan: open
-</pre></div></div>
 </div>
 <p>Run the code below to use a sample noise model generated from IBM calibration data.</p>
 <div class="nbinput nblast docutils container">
@@ -205,19 +188,38 @@ qiskit_runtime_service.backends:WARNING:2025-11-24 14:21:45,945: Using instance:
          <span class="n">num_cores</span><span class="o">=</span><span class="n">num_cores</span><span class="p">,</span>
          <span class="n">backend_qpu_type</span><span class="o">=</span><span class="s2">&quot;heron&quot;</span><span class="p">,</span>
          <span class="n">num_trajectories</span><span class="o">=</span><span class="n">num_trajectories</span><span class="p">,</span>
+         <span class="n">sim_backend</span><span class="o">=</span><span class="s2">&quot;qulacs&quot;</span><span class="p">,</span>
          <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
          <span class="n">jsonize</span><span class="o">=</span><span class="n">jsonize</span><span class="p">,</span>
          <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Available qubits in roerror_map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]
+Requested qubits: [0, 1]
+Completed Extraction of Measurement Errors.
+Completed Extraction of two-qubit gate Errors.
+Starting post-processing on Single Qubit Errors.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Completed Extraction of two-qubit gate Errors.
-Starting post-processing on Single Qubit Errors.
 Completed post-processing on Single Qubit Errors.
 Processing two-qubit gate errors.
 Qubit pair (0, 1): 18/48 errors above threshold (30 filtered out)
@@ -226,15 +228,10 @@ Two Qubit Gate errors processed.
 Building Noise Operators for Two Qubit Gate Errors.
 Completed building Noise Operators for Two Qubit Gate Errors.
 Extracting Measurement Errors.
-Available qubits in roerror_map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]
-Requested qubits: [0, 1]
-Completed Extraction of Measurement Errors.
 Preparing Qubit Connectivity Map for Requested Qubits
 Qubit Connectivity Map Prepared.
 Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.
-2025-11-24 14:22:05,159 INFO worker.py:2012 -- Started a local Ray instance.
-/Users/adam-ukj7r05xnu2fywx/miniconda3/envs/NoisyCircuits_New_Branch/lib/python3.10/site-packages/ray/_private/worker.py:2051: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
-  warnings.warn(
+2026-02-17 14:30:21,074 INFO worker.py:1927 -- Started a local Ray instance.
 </pre></div></div>
 </div>
 </section>
@@ -258,8 +255,8 @@ Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Me
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the EPR Pair Circuit</span>
-<span class="n">nqc</span><span class="o">.</span><span class="n">H</span><span class="p">(</span><span class="n">qubit</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">nqc</span><span class="o">.</span><span class="n">CX</span><span class="p">(</span><span class="n">control</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">H</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">CX</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -296,14 +293,14 @@ array([5.00000000e-01, 3.39184123e-33, 3.39184123e-33, 5.00000000e-01])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-tensor([0.48032117, 0.02057075, 0.01992805, 0.47918003], requires_grad=True)
+array([0.47978989, 0.02075711, 0.02045535, 0.47899765])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Running with MCWF method, here the number of trajectories can be modified from the originally specified value</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with MCWF Simulation</span>
 <span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -314,14 +311,14 @@ tensor([0.48032117, 0.02057075, 0.01992805, 0.47918003], requires_grad=True)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-tensor([0.48256871, 0.01757185, 0.01756723, 0.48229221], requires_grad=True)
+array([0.4828629 , 0.01725612, 0.01725288, 0.4826281 ])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># MCWF converges to the output from the density matrix method as the number of trajectories increases, but at the cost of more computational time.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with MCWF Simulation</span>
 <span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -332,7 +329,7 @@ tensor([0.48256871, 0.01757185, 0.01756723, 0.48229221], requires_grad=True)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-tensor([0.48094121, 0.01919909, 0.01919402, 0.48066568], requires_grad=True)
+array([0.48053472, 0.01958415, 0.01957976, 0.48030137])
 </pre></div></div>
 </div>
 <p>For the MCWF method, using more trajectories ensures better convergence to the density matrix result.</p>
@@ -358,7 +355,7 @@ tensor([0.48094121, 0.01919909, 0.01919402, 0.48066568], requires_grad=True)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with pure state simulation</span>
-<span class="n">nqc</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">run_pure_state</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -368,7 +365,7 @@ tensor([0.48094121, 0.01919909, 0.01919402, 0.48066568], requires_grad=True)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([0.63948479, 0.29930649, 0.04169409, 0.01951463])
+array([0.68117888, 0.31882112])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -376,7 +373,7 @@ array([0.63948479, 0.29930649, 0.04169409, 0.01951463])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with the density matrix simulation</span>
-<span class="n">nqc</span><span class="o">.</span><span class="n">run_with_density_matrix</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">run_with_density_matrix</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -386,7 +383,7 @@ array([0.63948479, 0.29930649, 0.04169409, 0.01951463])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-tensor([0.61218666, 0.30444565, 0.05366529, 0.0297024 ], requires_grad=True)
+array([0.66539623, 0.33460377])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -394,7 +391,7 @@ tensor([0.61218666, 0.30444565, 0.05366529, 0.0297024 ], requires_grad=True)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with MCWF Simulation</span>
-<span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">nqc</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qubits</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -404,7 +401,7 @@ tensor([0.61218666, 0.30444565, 0.05366529, 0.0297024 ], requires_grad=True)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-tensor([0.60631076, 0.30501247, 0.05658733, 0.03208945], requires_grad=True)
+array([0.66282392, 0.33717608])
 </pre></div></div>
 </div>
 </section>

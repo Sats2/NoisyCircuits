@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoisyCircuits.utils package &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
@@ -110,14 +110,14 @@
 <p>The connectivity chart is created from the two qubit gate instruction set where the directionality and the connection between qubits in the hardware is considered. An example usage is as follows:</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.BuildQubitGateModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuildModel</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BuildModel</span><span class="p">(</span><span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span> <span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">basis_gates</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;u1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cx&quot;</span><span class="p">]],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BuildModel</span><span class="p">(</span><span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span> <span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">num_cores</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">basis_gates</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;sx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cx&quot;</span><span class="p">]],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">single_qubit_noise</span><span class="p">,</span> <span class="n">two_qubit_noise</span><span class="p">,</span> <span class="n">connectivity</span><span class="p">,</span> <span class="n">measurement_noise</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">build_qubit_gate_model</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Additionally, it needs to be noted that the QuantumCircuit module automatically builds the noise model without the user requiring to call this in the script.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.BuildQubitGateModel.</span></span><span class="sig-name descname"><span class="pre">BuildModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.BuildQubitGateModel.</span></span><span class="sig-name descname"><span class="pre">BuildModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Module that generates the noise operators for each gate on each qubit from the noise model.</p>
 <dl class="field-list simple">
@@ -125,6 +125,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>noise_model</strong> (<em>dict</em>) – The noise model to use. Provided as a JSON-ised dictionary.</p></li>
 <li><p><strong>num_qubits</strong> (<em>int</em>) – The number of qubits in the model.</p></li>
+<li><p><strong>num_cores</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of cores to use for parallel processing. Defaults to 2.</p></li>
 <li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The threshold for noise. Defaults to 1e-12.</p></li>
 <li><p><strong>basis_gates</strong> (<em>list</em><em>[</em><em>list</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of basis gates for single qubit and two qubit operators.</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em>) – Flag to indicate whether logging is required or not. Defaults to True.</p></li>
@@ -134,53 +135,13 @@
 <dd class="field-even"><ul class="simple">
 <li><p><strong>TypeError</strong> – If noise_model is not a dictionary or num_qubits is not an integer.</p></li>
 <li><p><strong>ValueError</strong> – If num_qubits is not a positive integer or threshold is not between 0 and 1.</p></li>
+<li><p><strong>TypeError</strong> – If num_cores is not an integer.</p></li>
+<li><p><strong>ValueError</strong> – If num_cores is not a positive integer, or greater than the number of available CPU cores.</p></li>
 <li><p><strong>TypeError</strong> – If threshold is not a float or int.</p></li>
 <li><p><strong>ValueError</strong> – If basis_gates is None or not a list of lists of strings.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix">
-<span class="sig-name descname"><span class="pre">build_full_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_full_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix" title="Link to this definition"></a></dt>
-<dd><p>Extends a single-qubit operator P to a full system operator by applying P to the nth qubit and identity to all others.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>P</strong> (<em>np.ndarray</em>) – The single-qubit operator to extend.</p></li>
-<li><p><strong>n</strong> (<em>int</em>) – The index of the qubit to which P is applied.</p></li>
-<li><p><strong>system</strong> (<em>int</em>) – The total number of qubits in the system.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The full system operator as a sparse CSR matrix.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix_2qubit">
-<span class="sig-name descname"><span class="pre">build_full_matrix_2qubit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit_pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_full_matrix_2qubit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_full_matrix_2qubit" title="Link to this definition"></a></dt>
-<dd><p>Extends a 2 qubit operator P to a full system operator by applying P to the specified qubit pair and identity to all others.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>P</strong> (<em>np.ndarray</em>) – The two-qubit operator to extend (4x4 matrix).</p></li>
-<li><p><strong>qubit_pairt</strong> (<em>tuple</em>) – Tuple of qubit indices to which P is applied.</p></li>
-<li><p><strong>system</strong> (<em>int</em>) – Total number of qubits in the system.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The full system operator (2^system x 2^system matrix).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model">
 <span class="sig-name descname"><span class="pre">build_qubit_gate_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_qubit_gate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model" title="Link to this definition"></a></dt>
@@ -194,165 +155,6 @@
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[dict, dict, dict, dict]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system">
-<span class="sig-name descname"><span class="pre">extend_kraus_to_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kraus_ops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extend_kraus_to_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system" title="Link to this definition"></a></dt>
-<dd><p>Extends Kraus operators to the full system.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>kraus_ops</strong> (<em>list</em>) – List of Kraus operators for the subsystem.</p></li>
-<li><p><strong>qubit_idx</strong> (<em>int</em>) – Index of the qubit to which the operators are applied.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of extended Kraus operators for the full system.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system_multiqubit">
-<span class="sig-name descname"><span class="pre">extend_kraus_to_system_multiqubit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kraus_ops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qubit_pair</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extend_kraus_to_system_multiqubit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extend_kraus_to_system_multiqubit" title="Link to this definition"></a></dt>
-<dd><p>Extends Kraus operators for a two-qubit gate to the full system.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>kraus_ops</strong> (<em>list</em>) – List of Kraus operators for the two-qubit gate.</p></li>
-<li><p><strong>qubit_pair</strong> (<em>tuple</em>) – Tuple of qubit indices for which the Kraus operators are defined.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of extended Kraus operators for the full system.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_measurement_errors">
-<span class="sig-name descname"><span class="pre">extract_measurement_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extract_measurement_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_measurement_errors" title="Link to this definition"></a></dt>
-<dd><p>Extracts the measurement errors from the noise model data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>list</em>) – List of Noise model entries from Qiskit JSON.</p></li>
-<li><p><strong>extract_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of qubits for which to extract measurement errors.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If requested qubit index exceeds available qubit indices in measurement error data.</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary of measurement errors for the specified qubits.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_single_qubit_qerrors">
-<span class="sig-name descname"><span class="pre">extract_single_qubit_qerrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_ops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extract_single_qubit_qerrors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_single_qubit_qerrors" title="Link to this definition"></a></dt>
-<dd><p>Extracts single-qubit quantum errors for the specified gates and qubits.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>list</em>) – List of Noise model entries from Qiskit JSON.</p></li>
-<li><p><strong>target_ops</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – Gate operations to include.</p></li>
-<li><p><strong>allowed_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Qubits to include in output.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Nested dictionary of format: single_qubit_instructions[q][op] = {instructions, probabilities, kraus}</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_two_qubit_errors">
-<span class="sig-name descname"><span class="pre">extract_two_qubit_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_qubits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.extract_two_qubit_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.extract_two_qubit_errors" title="Link to this definition"></a></dt>
-<dd><p>Extracts ECR errors from the noise model data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>list</em>) – List of Noise model entries from Qiskit JSON.</p></li>
-<li><p><strong>allowed_qubits</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – List of allowed qubits.</p></li>
-<li><p><strong>basis_gates</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of basis gates to consider.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of extracted ECR errors.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.get_two_qubit_gate_noise_operators">
-<span class="sig-name descname"><span class="pre">get_two_qubit_gate_noise_operators</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">two_qubit_gate_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.get_two_qubit_gate_noise_operators"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.get_two_qubit_gate_noise_operators" title="Link to this definition"></a></dt>
-<dd><p>Constructs the Error Operators for the two-qubit gates from the processed error instructions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>two_qubit_gate_errors</strong> (<em>dict</em>) – The processed two-qubit gate errors.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of two-qubit gate error operators.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_single_qubit_errors">
-<span class="sig-name descname"><span class="pre">post_process_single_qubit_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">single_qubit_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.post_process_single_qubit_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_single_qubit_errors" title="Link to this definition"></a></dt>
-<dd><p>Post-processes the single-qubit errors to create a dictionary for qubits with their respective error instructions that can be directly applied without further processing.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>single_qubit_errors</strong> (<em>dict</em>) – The dictionary of single-qubit errors extracted from the noise model.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of post-processed single-qubit errors.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_two_qubit_errors">
-<span class="sig-name descname"><span class="pre">post_process_two_qubit_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">two_qubit_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.post_process_two_qubit_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.post_process_two_qubit_errors" title="Link to this definition"></a></dt>
-<dd><p>Post-processes the ECR errors to create a dictionary of instructions, probabilities, and Kraus operators for each qubit pair.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>two_qubit_errors</strong> (<em>dict</em>) – The two-qubit gate errors to process.</p></li>
-<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The probability threshold for filtering errors. Defaults to 1e-12.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dictionary containing the processed two-qubit errors.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

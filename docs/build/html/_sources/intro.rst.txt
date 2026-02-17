@@ -1,7 +1,7 @@
 NoisyCircuits
 =============
 
-Create and simulate noisy quantum circuits using IBM (Heron R.X / Eagle R.X) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise.
+Create and simulate noisy quantum circuits using IBM (Heron R.X / Eagle R.X) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise. The package implements the quantum circuit mapping according to the "Big-Endian" convention, where the first qubit in the list of qubits corresponds to the least significant bit (LSB) in the statevector representation. For example, in a 3-qubit system, the state :math:`|q_0 q_1 q_2\rangle` corresponds to the statevector index where :math:`q_2` is the LSB and :math:`q_0` is the most significant bit (MSB).
 
 Overview
 --------
@@ -70,7 +70,7 @@ If you use NoisyCircuits in your research, please cite the software as follows:
   		title = {NoisyCircuits},
   		year = {2025},
   		url = {https://github.com/Sats2/NoisyCircuits},
-  		version = {1.1.2},
+  		version = {1.2.0},
 	}
 
 Project Status

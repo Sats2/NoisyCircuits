@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoisyCircuits &mdash; NoisyCircuits 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
 
   
@@ -20,6 +20,8 @@
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="_static/copybutton.js?v=f281be69"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -97,7 +99,7 @@
              
   <section id="noisycircuits">
 <h1>NoisyCircuits<a class="headerlink" href="#noisycircuits" title="Link to this heading"></a></h1>
-<p>Create and simulate noisy quantum circuits using IBM (Heron R.X / Eagle R.X) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise.</p>
+<p>Create and simulate noisy quantum circuits using IBM (Heron R.X / Eagle R.X) calibration data. NoisyCircuits implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation under realistic noise. The package implements the quantum circuit mapping according to the “Big-Endian” convention, where the first qubit in the list of qubits corresponds to the least significant bit (LSB) in the statevector representation. For example, in a 3-qubit system, the state <span class="math notranslate nohighlight">\(|q_0 q_1 q_2\rangle\)</span> corresponds to the statevector index where <span class="math notranslate nohighlight">\(q_2\)</span> is the LSB and <span class="math notranslate nohighlight">\(q_0\)</span> is the most significant bit (MSB).</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <p>NoisyCircuits helps you quickly:</p>
@@ -170,7 +172,7 @@
         title = {NoisyCircuits},
         year = {2025},
         url = {https://github.com/Sats2/NoisyCircuits},
-        version = {1.1.2},
+        version = {1.2.0},
 }
 </pre></div>
 </div>
