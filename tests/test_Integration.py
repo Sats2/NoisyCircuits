@@ -12,7 +12,8 @@ circuit_list = []
 for qpu in qpus:
     file_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
     noise_model = pickle.load(open(file_path, "rb"))
-    circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 200, 4, True, False, 1e-6)))
+    for sim_backend in QuantumCircuit.available_sim_backends:
+        circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 100, 10, sim_backend, True, False, 1e-6)))
 
 @pytest.fixture
 def circuit(request):
@@ -104,7 +105,7 @@ def test_ghz_output(circuit):
     probs_decomp = circuit.run_pure_state([0, 1, 2, 3])
     probs_true = run_true(instructions)
     circuit.shutdown()
-    assert np.allclose(probs_decomp, probs_true), f"Failed GHZ Output Test for QPU - {circuit.qpu}"
+    assert np.allclose(probs_decomp, probs_true), f"Failed GHZ Output Test for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_mcwf_implementation_ghz(circuit):
@@ -119,7 +120,7 @@ def test_mcwf_implementation_ghz(circuit):
     probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
     hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
     circuit.shutdown()
-    assert (hellinger_distance < 0.07), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}"
+    assert (hellinger_distance < 0.07), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_parameterized_circuit(circuit):
@@ -142,7 +143,7 @@ def test_parameterized_circuit(circuit):
     probs_decomp = circuit.run_pure_state([0, 1, 2, 3])
     probs_true = run_true(instructions)
     circuit.shutdown()
-    assert np.allclose(probs_decomp, probs_true), f"Failed Randomized Parameterized Circuit Test for QPU - {circuit.qpu}"
+    assert np.allclose(probs_decomp, probs_true), f"Failed Randomized Parameterized Circuit Test for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_parameterized_circuit_fidelity(circuit):
@@ -162,4 +163,4 @@ def test_parameterized_circuit_fidelity(circuit):
     probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
     circuit.shutdown()
     hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
-    assert (hellinger_distance < 0.07), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}"
+    assert (hellinger_distance < 0.07), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"

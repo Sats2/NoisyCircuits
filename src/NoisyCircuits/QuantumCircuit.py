@@ -43,27 +43,28 @@ class QuantumCircuit:
         backend_qpu_type (str): The IBM Backend Architecture type to be used (Eagle or Heron).
         num_trajectories (int): The number of trajectories for the Monte-Carlo simulation.
         num_cores (int, optional): The number of cores to use for parallel execution. Defaults to 2.
+        sim_backend (str, optional): The simulation backend to use, either 'qulacs', 'pennylane', or 'qiskit'. Defaults to 'pennylane'.
         jsonize (bool, optional): If True, the circuit will be serialized to JSON format. Defaults to False.
         verbose (bool, optional): If False, suppresses detailed output during initialization. Defaults to True.
         threshold (float, optional): The threshold for noise application. Defaults to 1e-12.
 
     Raises:
-        TypeError: If num_qubits is not an integer.
-        ValueError: If num_qubits is less than 1.
-        TypeError: If the noise_model is not a dictionary.
-        TypeError: If the backend_qpu_type is not a string.
-        ValueError: If the backend_qpu_type is not one of ['Eagle', 'Heron'].
-        TypeError: If num_trajectories is not an integer.
-        ValueError: If num_trajectories is less than 1.
-        TypeError: If num_cores is not an integer.
-        ValueError: If num_cores is less than 1.
-        ValueError: If num_cores exceeds the available CPU cores.
-        TypeError: If sim_backend is not a string.
-        ValueError: If sim_backend is not available.
-        TypeError: If jsonize is not a boolean.
-        TypeError: If verbose is not a boolean.
-        TypeError: If threshold is not a float.
-        ValueError: If threshold is not between 0 and 1 (exclusive).
+        TypeError: Raised when the input parameters are of incorrect types.
+            - num_qubits is not an integer.
+            - noise_model is not a dictionary.
+            - backend_qpu_type is not a string.
+            - num_trajectories is not an integer.
+            - num_cores is not an integer.
+            - sim_backend is not a string.
+            - jsonize is not a boolean.
+            - verbose is not a boolean.
+        ValueError: Raised when the input parameters have invalid values.
+            - num_qubits is not a positive integer.
+            - backend_qpu_type is not one of the supported types (Eagle or Heron).
+            - num_trajectories is less than 1.
+            - threshold is not between 0 and 1 (exclusive).
+            - num_cores is less than 1 or exceeds available CPU cores.
+            - sim_backend is not one of the supported backends (qulacs, pennylane, qiskit).
     """
 
     # Update QPU Basis Gates Here!
@@ -85,7 +86,7 @@ class QuantumCircuit:
                  backend_qpu_type:str,
                  num_trajectories:int,
                  num_cores:int=2,
-                 sim_backend:str="qulacs",
+                 sim_backend:str="pennylane",
                  jsonize:bool=False,
                  verbose:bool=True,
                  threshold:float=1e-12)->None:
@@ -140,6 +141,7 @@ class QuantumCircuit:
         modeller = BuildModel(
                                 noise_model=self.noise_model,
                                 num_qubits=self.num_qubits,
+                                num_cores=self.num_cores,
                                 threshold=self.threshold,
                                 basis_gates=basis_gates,
                                 verbose=self.verbose
