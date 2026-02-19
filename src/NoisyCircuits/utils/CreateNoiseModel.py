@@ -1,8 +1,13 @@
 """
 This module allows the user to create the raw noise model dictionary from user provided calibration data (CSV file) from an actual Quantum Hardware without the requirement for any tokens. This raw noise model can be provided to the QuantumCircuit or BuildQubitGateModel modules for post-processing. The BuildQubitGateModel module returns the post-processed noise operators for each standardized gate on each qubit whereas the QuantumCircuit module uses the post-processed noise model to perform quantum circuit simulations under noise.
 
+Additionally, the user must specify the basis gates for the quantum hardware in order to create the noise model. The basis gates must be provided in a list of lists format where the first list contains the single qubit basis gates and the second list contains the two qubit basis gates. For example, if the single qubit basis gates are "x", "sx" and "rz" and the two qubit basis gate is "cz", then the basis gates should be provided as [["x", "sx", "rz"], ["cz"]].
+
 Example:
     >>> from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
+    >>> calibration_file_path = "path/to/calibration_data.csv"
+    >>> basis_gates = [["x", "sx", "rz"], ["cz"]]
+    >>> noise_model = CreateNoiseModel(calibration_data_file=calibration_file_path, basis_gates=basis_gates).create_noise_model()
 """
 
 from qiskit_aer.noise import NoiseModel, thermal_relaxation_error, depolarizing_error, readout_error
