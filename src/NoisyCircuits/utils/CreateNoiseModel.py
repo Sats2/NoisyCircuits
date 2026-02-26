@@ -231,3 +231,88 @@ class CreateNoiseModel:
         return noise_model.to_dict(serializable=True)
 
 #TODO: Add functionality to read-in backend information from quantum hardware.
+import requests
+
+class GetNoiseModel:
+    """
+    This class allows the user to obtain the noise model from the calibration data of IBM Quantum Hardware using IBM Rest API. This class retreives the calibration data of the specified backend and processes it to create the noise model in dictionary format. 
+
+    A valid IBM Quantum API token and CRN is required to access the calibration data of the backend.
+
+    Args:
+        backend_name (str): The name of the IBM Quantum backend.
+        token (str): The IBM Quantum API token.
+        service_crn (str): The CRN of the IBM Quantum service instance.
+
+    Raises:
+        TypeError: If backend_name, token or service_crn is not a string.
+        ValueError: If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user's account.
+    """
+    def __init__(self,
+                 backend_name:str,
+                 token:str,
+                 service_crn:str)->None:
+        """
+        Constructor for the GetNoiseModel class.
+        """
+        if not isinstance(backend_name, str):
+            raise TypeError("backend_name must be a string")
+        if not isinstance(token, str):
+            raise TypeError("token must be a string")
+        if not isinstance(service_crn, str):
+            raise TypeError("service_crn must be a string")
+        self.backend_name = backend_name
+        self.token = token
+        self.service_crn = service_crn
+        self._api_url = "https://quantum.cloud.ibm.com/api/v1/backends/{}/properties".format(backend_name)
+        self._get_IAM_token()
+        self._headers = {
+            "Accept": "application/json",
+            "IBM-API-Version": "2026-02-15",
+            "Authorization": "Bearer {}".format(self._access_token),
+            "Service-CRN": self.service_crn
+        }
+
+    def _get_IAM_token(self)->None:
+        """
+        Private method to obtain the IAM token for authentication with the IBM Quantum API using the provided token.
+        """
+        iam_response = requests.post(
+            "https://iam.cloud.ibm.com/identity/token",
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            data = "grant_type=urn:ibm:params:oauth:grant-tpye:apikey&apikey={}".format(self.token),
+        )
+        self._access_token = iam_response.json()["access_token"]
+
+    def _get_calibration_json(self)->None:
+        """
+        Private method of the class to obtain the raw calibration data in JSON format from the IBM Quantum API for the specified backend.
+
+        Raises:
+            ValueError: If the API request fails or if the backend is not found in the user's account, an error is raised with the detailed error message from the API response.
+        """
+        response = requests.request(
+            "GET", 
+            self._api_url,
+            headers = self._headers,
+        )
+        if response.status_code != 200:
+            raise ValueError("Failed to retrieve calibration data from IBM Quantum API. Detailed error: {}".format(response.text))
+        self.calibration_json = response.json()
+
+    def _convert_json_to_csv(self, 
+                             save_csv:bool=False,
+                             destination:str=None,
+                             file_name:str=None
+                             )->None:
+        """
+        Private method of the class that converts the raw calibration data in the JSON format obtained from IBM Quantum API to a dataframe and optionally saves it as a CSV file.
+
+        Args:
+            save_csv (bool, optional): Flag to decide whether to save the converted calibration data as a CSV file. Defaults to False.
+            desitnation (str, optional): The directory where the CSV file should be saved if required by the user. If None and the csv needs to be saved, the file will be saved in the current working directory. Defaults to None.
+            
+        """
+        data = pd.DataFrame()
