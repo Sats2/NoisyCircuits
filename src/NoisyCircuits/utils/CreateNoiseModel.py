@@ -272,6 +272,34 @@ class GetNoiseModel:
             "Authorization": "Bearer {}".format(self._access_token),
             "Service-CRN": self.service_crn
         }
+        self._basis_gates = self._get_basis_gates()
+
+    def _get_basis_gates(self)->list[list[str]]:
+        """
+        Private method to obtain the basis gates for the specified backend from IBM Quantum REST API using the QPU family information.
+
+        Returns:
+            list[list[str]]: A list of lists containing the single qubit and two qubit basis gates for the specified backend.
+        
+        Raises:
+            ValueError: If the API request fails or if the QPU family is not supported, an error is raised with the detailed error message from the API response or with the unsupported QPU family information.
+        """
+        basis_gates_url = "https://quantum.cloud.ibm.com/api/v1/backends/{}/configuration".format(self.backend_name)
+        response = requests.request(
+            "GET",
+            basis_gates_url,
+            headers = self._headers,
+        )
+        if response.status_code != 200:
+            raise ValueError("Failed to retrieve basis gates from IBM Quantum API. Detailed error: {}".format(response.text))
+        qpu_family = response.json()["processor_type"]["family"].lower()
+        if qpu_family == "heron":
+            basis_gates = [["x", "sx", "rz", "rx"], ["cz", "rzz"]]
+        elif qpu_family == "eagle":
+            basis_gates = [["x", "sx", "rz"], ["ecr"]]
+        else:
+            raise ValueError("Unsupported QPU Family: {}".format(qpu_family))
+        return basis_gates
 
     def _get_IAM_token(self)->None:
         """
@@ -315,4 +343,38 @@ class GetNoiseModel:
             desitnation (str, optional): The directory where the CSV file should be saved if required by the user. If None and the csv needs to be saved, the file will be saved in the current working directory. Defaults to None.
             
         """
-        data = pd.DataFrame()
+        column_names = ["Qubits", "T1 (us)", "T2 (us)", "Prob meas 0 prep 1", "Prob meas 1 prep 0", "Single Qubit Gate Length (ns)"]
+        for gate in self._basis_gates[0]:
+            column_names.append(f"{gate} Error")
+        column_names.append("Gate Length (ns)")
+        for gate in self._basis_gates[1]:
+            column_names.append(f"{gate} Gate Length (ns)")
+            column_names.append(f"{gate} Error")
+        data = pd.DataFrame(columns=column_names)
+        add_column_data = {
+            "qubits": [],
+            "T1": [],
+            "T2": [],
+            "prob_meas0_prep1": [],
+            "prob_meas1_prep0": []
+        }
+        for qubit, items in enumerate(self.calibration_json["qubits"]):
+            add_column_data["qubits"].append(qubit)
+            for entry in items:
+                add_column_data[entry["name"]].append(entry["value"])
+        data["Qubits"] = add_column_data["qubits"]
+        data["T1 (us)"] = add_column_data["T1"]
+        data["T2 (us)"] = add_column_data["T2"]
+        data["Prob meas 0 prep 1"] = add_column_data["prob_meas0_prep1"]
+        data["Prob meas 1 prep 0"] = add_column_data["prob_meas1_prep0"]
+        for gate in self._basis_gates[1]:
+            data.loc[:, "{} Error".format(gate)] = ""
+            data.loc[:, "{} Gate Length (ns)".format(gate)] = ""
+        for item in self.calibration_json["gates"]:
+            if item["gate"] in self._basis_gates[0]:
+                col_name = f"{item['gate']} Error"
+                error_rate = item["parameters"][0]["value"] if item["parameters"][0]["name"] == "gate_error" else np.nan
+                gate_length = item["parameters"][0]["value"] if item["parameters"][0]["name"] == "gate_length" else np.nan
+                qubit_index = item["qubits"][0]
+                data.loc[qubit_index, col_name] = error_rate
+                data.loc[qubit_index, "Single Qubit Gate Length (ns)"] = gate_length
