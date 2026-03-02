@@ -1,9 +1,25 @@
 """
-This module allows the user to create the raw noise model dictionary from user provided calibration data (CSV file) from an actual Quantum Hardware without the requirement for any tokens. This raw noise model can be provided to the QuantumCircuit or BuildQubitGateModel modules for post-processing. The BuildQubitGateModel module returns the post-processed noise operators for each standardized gate on each qubit whereas the QuantumCircuit module uses the post-processed noise model to perform quantum circuit simulations under noise.
+This module allows users to create a noise model from user provided calibration data in a CSV file format. The calibration data should include specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.
 
-Additionally, the user must specify the basis gates for the quantum hardware in order to create the noise model. The basis gates must be provided in a list of lists format where the first list contains the single qubit basis gates and the second list contains the two qubit basis gates. For example, if the single qubit basis gates are "x", "sx" and "rz" and the two qubit basis gate is "cz", then the basis gates should be provided as [["x", "sx", "rz"], ["cz"]].
+Alternatively, users can obtain the noise model from the calibration data of IBM Quantum Hardware using IBM Rest API. This class retrieves the calibration data of the specified backend and processes it to create the noise model in dictionary format.
 
-The definition of the header in the CSV file (in table view) should be as follows:
+See the documentation of the specific classes for more details on the expected format of the calibration data and the usage of the classes to create or obtain the noise model.
+"""
+
+from qiskit_aer.noise import NoiseModel, thermal_relaxation_error, depolarizing_error, ReadoutError
+import pandas as pd
+import numpy as np
+import requests
+import os
+import time
+
+class CreateNoiseModel:
+    """
+    A class to create a noise model from user provided calibration data. The calibration data should be provided in a CSV file format with specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.
+
+    Additionally, the user must specify the basis gates for the quantum hardware in order to create the noise model. The basis gates must be provided in a list of lists format where the first list contains the single qubit basis gates and the second list contains the two qubit basis gates. For example, if the single qubit basis gates are "x", "sx" and "rz" and the two qubit basis gate is "cz", then the basis gates should be provided as [["x", "sx", "rz"], ["cz"]].
+
+    The definition of the header in the CSV file (in table view) should be as follows:
 
     +-------+---------+---------+-------------+-------------+--------------+--------------+-------------+--------------+
     | Qubit | T1 (us) | T2 (us) | Prob meas 0 | Prob meas 1 | Single Qubit | Single Qubit | Gate Length | Two Qubit    |
@@ -23,24 +39,6 @@ The definition of the header in the CSV file (in table view) should be as follow
 
     For a better example of the content of the CSV file, please refer to the example CSV file provided in the NoisyCircuits repository within the noise_models directory.
 
-Example:
-    >>> from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
-    >>> calibration_file_path = "path/to/calibration_data.csv"
-    >>> basis_gates = [["x", "sx", "rz"], ["cz"]]
-    >>> noise_model = CreateNoiseModel(calibration_data_file=calibration_file_path, basis_gates=basis_gates).create_noise_model()
-"""
-
-from qiskit_aer.noise import NoiseModel, thermal_relaxation_error, depolarizing_error, ReadoutError
-import pandas as pd
-import numpy as np
-import requests
-import os
-import time
-
-class CreateNoiseModel:
-    """
-    A class to create a noise model from user provided calibration data. The calibration data should be provided in a CSV file format with specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.
-
     Args:
         calibration_data_file (str): The path to the CSV file containing the calibration data.
     
@@ -50,6 +48,12 @@ class CreateNoiseModel:
             - basis_gates should be a list of lists of strings representing the basis gates for the quantum hardware.
         FileNotFoundError: If the specified CSV file is not found.
         ValueError: If the CSV file does not contain the required columns or if the data is not in the expected format.
+
+    Example:
+    >>> from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
+    >>> calibration_file_path = "path/to/calibration_data.csv"
+    >>> basis_gates = [["x", "sx", "rz"], ["cz"]]
+    >>> noise_model = CreateNoiseModel(calibration_data_file=calibration_file_path, basis_gates=basis_gates).create_noise_model()
     """
     def __init__(self, 
                  calibration_data_file:str,
@@ -247,6 +251,14 @@ class GetNoiseModel:
     Raises:
         TypeError: If backend_name, token or service_crn is not a string.
         ValueError: If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user's account.
+
+    Example:
+    >>> from NoisyCircuits.utils.CreateNoiseModel import GetNoiseModel
+    >>> backend_name = "ibm_perth"
+    >>> token = "your_ibm_quantum_api_token"
+    >>> service_crn = "your_ibm_quantum_service_crn"
+    >>> noise_model_generator = GetNoiseModel(backend_name=backend_name, token=token, service_crn=service_crn)
+    >>> noise_model = noise_model_generator.get_noise_model(save_csv=True, destination="path/to/save/csv", file_name="calibration_data.csv")
     """
     def __init__(self,
                  backend_name:str,
