@@ -33,7 +33,9 @@ Example:
 from qiskit_aer.noise import NoiseModel, thermal_relaxation_error, depolarizing_error, ReadoutError
 import pandas as pd
 import numpy as np
-
+import requests
+import os
+import time
 
 class CreateNoiseModel:
     """
@@ -230,8 +232,6 @@ class CreateNoiseModel:
                             noise_model.add_quantum_error(thermal_error.compose(depol_error), gate, [qubits[i], qubits[target_qubits]])
         return noise_model.to_dict(serializable=True)
 
-#TODO: Add functionality to read-in backend information from quantum hardware.
-import requests
 
 class GetNoiseModel:
     """
@@ -378,3 +378,88 @@ class GetNoiseModel:
                 qubit_index = item["qubits"][0]
                 data.loc[qubit_index, col_name] = error_rate
                 data.loc[qubit_index, "Single Qubit Gate Length (ns)"] = gate_length
+            elif item["gate"] in self._basis_gates[1]:
+                col_name = f"{item['gate']} Error"
+                control_qubit = item["qubits"][0]
+                target_qubit = item["qubits"][1]
+                error_rate = item["parameters"][0]["value"] if item["parameters"][0]["name"] == "gate_error" else np.nan
+                gate_length = item["parameters"][1]["value"] if item["parameters"][1]["name"] == "gate_length" else np.nan
+                gate_length_string = f"{target_qubit};{gate_length};"
+                error_rate_string = f"{target_qubit}:{error_rate};"
+                data.loc[control_qubit, f"{item['gate']} Gate Length (ns)"] += gate_length_string
+                data.loc[control_qubit, col_name] += error_rate_string
+            else:
+                continue
+        data.loc[:, "Gate Length (ns)"] = ""
+        for gate in self._basis_gates[1]:
+            for qubit in range(len(data)):
+                gate_length_value = data["{} Gate Length (ns)".format(gate)][qubit]
+                error_rate_value = data["{} Error".format(gate)][qubit]
+                if gate_length_value == "":
+                    pass
+                else:
+                    gate_length_value = gate_length_value[:-1]
+                if error_rate_value == "":
+                    pass
+                else:
+                    error_rate_value = error_rate_value[:-1]
+                data.loc[qubit, "Gate Length (ns)"] += gate_length_value
+                data.loc[qubit, "{} Error".format(gate)] = error_rate_value
+        drop_cols = []
+        for gate in self._basis_gates[1]:
+            drop_cols.append("{} Gate Length (ns)".format(gate))
+        data.drop(columns=drop_cols, inplace=True)
+        if save_csv:
+            file_path = os.path.join(destination, file_name)
+            data.to_csv(file_path, index=False)
+        return data
+
+    def get_noise_model(self,
+                        save_csv:bool=False,
+                        destination:str=None,
+                        file_name:str=None
+                        )->dict:       
+        """
+        Method to obtain the noise model in dictionary format from the calibration data of the specified backend. 
+
+        Args:
+            save_csv (bool, optional): Flag to enable saving the converted calibration data as a CSV file. Defaults to False.
+            destination (str, optional): The directory where the CSV file should be saved if required by the used. Defaults to None, in which case the file will be saved in the current working directory. Relevant only if save_csv is set to True.
+            file_name (str, optional): The name of the CSV file to save the converted calibration data. Defaults to None, in which case the file will be saved with a computer generated name. Relevant only if save_csv is set to True.
+
+        Returns:
+            dict: The noise model of the specified backend in dictionary format.
+        
+        Raises:
+            TypeError: If any of the input arguments are not of the expected type, an error is raised with a detailed message indicating the expected type for each argument.
+            NotADirectoryError: If the specified destination for saving the CSV file is not a valid directory, an error is raised with a detailed message indicating the issue with the provided destination path.
+        """
+        if not isinstance(save_csv, bool):
+            raise TypeError("save_csv must be a boolean value")
+        if save_csv:
+            if destination is not None:
+                if not isinstance(destination, str):
+                    raise TypeError("destination must be a string representing the directory to save the CSV file")
+                if not os.path.isdir(destination):
+                    raise NotADirectoryError("The specified destination is not a directory. Provide a valid path or set destination to None to save in the current working directory.")
+            else:
+                destination = os.getcwd()
+            if file_name is not None:
+                if not isinstance(file_name, str):
+                    raise TypeError("file_name must be a string")
+                if not file_name.endswith(".csv"):
+                    file_name += ".csv"
+            else:
+                time_stamp = time.strftime("%Y%m%d-%H%M%S")
+                file_name = f"calibration_data_{self.backend_name}_{time_stamp}.csv"
+        self._get_calibration_json()
+        calibration_data = self._convert_json_to_csv(save_csv=save_csv, destination=destination, file_name=file_name)
+        tmp_file = os.path.join(os.getcwd(), "temp_calibration_data.csv")
+        calibration_data.to_csv(tmp_file, index=False)
+        noise_model_generator = CreateNoiseModel(
+                                                calibration_data_file=tmp_file,
+                                                basis_gates=self._basis_gates
+                                            )
+        noise_model = noise_model_generator.create_noise_model()
+        os.remove(tmp_file)
+        return noise_model
