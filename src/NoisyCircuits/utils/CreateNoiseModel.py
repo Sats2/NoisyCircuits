@@ -7,6 +7,7 @@ See the documentation of the specific classes for more details on the expected f
 """
 
 from qiskit_aer.noise import NoiseModel, thermal_relaxation_error, depolarizing_error, ReadoutError
+from qiskit.quantum_info import average_gate_fidelity
 import pandas as pd
 import numpy as np
 import requests
@@ -72,6 +73,16 @@ class CreateNoiseModel:
             raise TypeError("basis_gates must be a list of lists of strings representing the basis gates for the quantum hardware")
         self.basis_gates = basis_gates
 
+    def _compute_depolarizing_probability(self, 
+                                          gate_error:float,
+                                          F_thermal:float,
+                                          dim:int
+                                          )->float:
+        depol_prob = dim * (gate_error - (1 - F_thermal)) / (dim * F_thermal - 1)
+        n = int(np.log2(dim))
+        max_depol_prob = 4**n / (4**n - 1)
+        return min(max(0, depol_prob), max_depol_prob)
+
     def create_noise_model(self)->dict:
         """
         Method to create the noise model from the calibration data.
@@ -105,11 +116,12 @@ class CreateNoiseModel:
             for gate in self.basis_gates[0]:
                 gate_error = row["{} Error".format(gate)]
                 if np.isnan(gate_error):
-                    gate_error = mean_errors[gate]
-                    print("Warning: Using Mean Error Rate {:.6f} for gate {} on qubit {} due to missing values.".format(gate_error, gate, qubits[i]))
+                    gate_error = 1.0
                 thermal_error = thermal_relaxation_error(t1[i], t2[i], single_qubit_gate_length)
-                depol_error = depolarizing_error(float(gate_error), 1)
-                noise_model.add_quantum_error(thermal_error.compose(depol_error), gate, [qubits[i]])
+                F_thermal = average_gate_fidelity(thermal_error)
+                depol_prob = self._compute_depolarizing_probability(gate_error, F_thermal, 2)
+                depol_error = depolarizing_error(depol_prob, 1)
+                noise_model.add_quantum_error(depol_error.compose(thermal_error), gate, [qubits[i]])
 
             for gate in self.basis_gates[1]:
                 gate_error = row["{} Error".format(gate)]
@@ -316,14 +328,19 @@ class GetNoiseModel:
     def _get_IAM_token(self)->None:
         """
         Private method to obtain the IAM token for authentication with the IBM Quantum API using the provided token.
+
+        Raises:
+            ValueError: If the API request fails, an error is raised with the detailed error message from the API response.
         """
         iam_response = requests.post(
             "https://iam.cloud.ibm.com/identity/token",
             headers = {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            data = "grant_type=urn:ibm:params:oauth:grant-tpye:apikey&apikey={}".format(self.token),
+            data = "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey={}".format(self.token),
         )
+        if iam_response.status_code != 200:
+            raise ValueError("Failed to obtain IAM token from IBM Quantum API. Detailed error: {}".format(iam_response.text))
         self._access_token = iam_response.json()["access_token"]
 
     def _get_calibration_json(self)->None:
@@ -355,7 +372,7 @@ class GetNoiseModel:
             desitnation (str, optional): The directory where the CSV file should be saved if required by the user. If None and the csv needs to be saved, the file will be saved in the current working directory. Defaults to None.
             
         """
-        column_names = ["Qubits", "T1 (us)", "T2 (us)", "Prob meas 0 prep 1", "Prob meas 1 prep 0", "Single Qubit Gate Length (ns)"]
+        column_names = ["Qubit", "T1 (us)", "T2 (us)", "Prob meas 0 prep 1", "Prob meas 1 prep 0", "Single Qubit Gate Length (ns)"]
         for gate in self._basis_gates[0]:
             column_names.append(f"{gate} Error")
         column_names.append("Gate Length (ns)")
@@ -373,8 +390,9 @@ class GetNoiseModel:
         for qubit, items in enumerate(self.calibration_json["qubits"]):
             add_column_data["qubits"].append(qubit)
             for entry in items:
-                add_column_data[entry["name"]].append(entry["value"])
-        data["Qubits"] = add_column_data["qubits"]
+                if entry["name"] in add_column_data.keys():
+                    add_column_data[entry["name"]].append(entry["value"])
+        data["Qubit"] = add_column_data["qubits"]
         data["T1 (us)"] = add_column_data["T1"]
         data["T2 (us)"] = add_column_data["T2"]
         data["Prob meas 0 prep 1"] = add_column_data["prob_meas0_prep1"]
@@ -386,7 +404,7 @@ class GetNoiseModel:
             if item["gate"] in self._basis_gates[0]:
                 col_name = f"{item['gate']} Error"
                 error_rate = item["parameters"][0]["value"] if item["parameters"][0]["name"] == "gate_error" else np.nan
-                gate_length = item["parameters"][0]["value"] if item["parameters"][0]["name"] == "gate_length" else np.nan
+                gate_length = item["parameters"][1]["value"] if item["parameters"][1]["name"] == "gate_length" else np.nan
                 qubit_index = item["qubits"][0]
                 data.loc[qubit_index, col_name] = error_rate
                 data.loc[qubit_index, "Single Qubit Gate Length (ns)"] = gate_length
@@ -396,7 +414,7 @@ class GetNoiseModel:
                 target_qubit = item["qubits"][1]
                 error_rate = item["parameters"][0]["value"] if item["parameters"][0]["name"] == "gate_error" else np.nan
                 gate_length = item["parameters"][1]["value"] if item["parameters"][1]["name"] == "gate_length" else np.nan
-                gate_length_string = f"{target_qubit};{gate_length};"
+                gate_length_string = f"{target_qubit}:{gate_length};"
                 error_rate_string = f"{target_qubit}:{error_rate};"
                 data.loc[control_qubit, f"{item['gate']} Gate Length (ns)"] += gate_length_string
                 data.loc[control_qubit, col_name] += error_rate_string
@@ -415,7 +433,8 @@ class GetNoiseModel:
                     pass
                 else:
                     error_rate_value = error_rate_value[:-1]
-                data.loc[qubit, "Gate Length (ns)"] += gate_length_value
+                if data.loc[qubit, "Gate Length (ns)"] == "":
+                    data.loc[qubit, "Gate Length (ns)"] = gate_length_value
                 data.loc[qubit, "{} Error".format(gate)] = error_rate_value
         drop_cols = []
         for gate in self._basis_gates[1]:
