@@ -794,12 +794,13 @@ class BuildModel:
             extract_qubits (list[int]): List of qubits for which to extract measurement errors.
         
         Raises:
-            ValueError: If requested qubit index exceeds available qubit indices in measurement error data.
+            ValueError: When a requested number of qubits exceeds the number of qubits in the system or when the requested qubits are not in the system.
         
         Returns:
             dict: Dictionary of measurement errors for the specified qubits.
         """
-        roerror_map = {}
+        measurement_errors = {}
+        system_qubits = []
         for entry in data:
             if entry.get("type") != "roerror":
                 continue
@@ -807,34 +808,17 @@ class BuildModel:
             target_ops = ["measure"]
             if target_ops and not any(op in target_ops for op in operations):
                 continue
-            gate_qubits_list = entry.get("gate_qubits", []) 
-            prob_matrices = entry.get("probabilities", [])
-            for gate_qubits, matrix in zip(gate_qubits_list, prob_matrices):
-                if len(gate_qubits) == 1:
-                    qubit = gate_qubits[0]
-                    roerror_map[qubit] = {
-                        "operation": "measure",
-                        "matrix": matrix
-                    }
-        measurement_errors = {}
-        self.logger.info(f"Available qubits in roerror_map: {list(roerror_map.keys())}")
-        self.logger.info(f"Requested qubits: {extract_qubits}")
-        if all(qubit not in roerror_map.keys() for qubit in extract_qubits):
-            self.logger.warning("Warning: No measurement error data found for the requested qubits. Using identity matrices for all.")
-        if max(extract_qubits) > max(roerror_map.keys()):
-            raise ValueError("Error: Requested qubit index (indices) exceeds available qubit indices in measurement error data.")
-        for qubit in extract_qubits:
-            if qubit not in roerror_map:
-                self.logger.warning(f"Warning: No measurement error data found for qubit {qubit}. Using identity matrix.")
-                # Use identity matrix (no error) if measurement error data is not available
-                matrix = np.eye(2)
-            else:
-                matrix = np.zeros((2,2))
-                matrix[0,0] = roerror_map[qubit]["matrix"][0]
-                matrix[0,1] = roerror_map[qubit]["matrix"][1]
-                matrix[1,0] = roerror_map[qubit]["matrix"][1]
-                matrix[1,1] = roerror_map[qubit]["matrix"][0]
-            measurement_errors[qubit] = matrix
+            gate_qubits_list = entry.get("gate_qubits", [])
+            system_qubits.append(gate_qubits_list[0][0])
+            if gate_qubits_list[0][0] in extract_qubits:
+                prob_matrix = entry.get("probabilities", [])
+                measurement_errors[gate_qubits_list[0][0]] = np.array(prob_matrix).T
+        if len(extract_qubits) > len(system_qubits):
+            raise ValueError("Requested measurement errors for qubits that exceed the number of qubits in the system.")
+        if not measurement_errors:
+            self.logger.warning("No measurement errors found for the specified qubits.")
+        if max(extract_qubits) > max(system_qubits):
+            self.logger.warning("Requested measurement errors for qubits that that are not in the system.")
         return measurement_errors
 
     def build_qubit_gate_model(self)->tuple[dict, dict, dict, dict]:
