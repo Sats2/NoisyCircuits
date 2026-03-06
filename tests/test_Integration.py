@@ -1,4 +1,3 @@
-#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
 import pickle
 import pennylane as qml
 import numpy as np

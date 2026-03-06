@@ -67,13 +67,22 @@ class CreateNoiseModel:
         if not isinstance(calibration_data_file, str):
             raise TypeError("calibration_data_file must be a Path-like string")
         self.calibration_data_file = calibration_data_file
+        if not isinstance(basis_gates, list) or not all(isinstance(gate_list, list) for gate_list in basis_gates) or not all(isinstance(gate, str) for gate_list in basis_gates for gate in gate_list):
+            raise TypeError("basis_gates must be a list of lists of strings representing the basis gates for the quantum hardware")
         try:
             self.calibration_data = pd.read_csv(calibration_data_file, delimiter=",")
         except FileNotFoundError:
             raise FileNotFoundError(f"CSV file '{calibration_data_file}' not found. Please check the file path and try again.")
-        if not isinstance(basis_gates, list) or not all(isinstance(gate_list, list) for gate_list in basis_gates) or not all(isinstance(gate, str) for gate_list in basis_gates for gate in gate_list):
-            raise TypeError("basis_gates must be a list of lists of strings representing the basis gates for the quantum hardware")
         self.basis_gates = basis_gates
+        column_names = self.calibration_data.columns.tolist()
+        for gate_list in self.basis_gates:
+            for gate in gate_list:
+                if f"{gate.lower()} Error" not in column_names:
+                    raise ValueError(f"CSV file is missing required column '{gate} Error' for gate '{gate}' in basis gates.")
+        other_required_columns = ["Qubit", "T1 (us)", "T2 (us)", "Prob meas 0 prep 1", "Prob meas 1 prep 0", "Single Qubit Gate Length (ns)", "Gate Length (ns)"]
+        for col in other_required_columns:
+            if col not in column_names:
+                raise ValueError(f"CSV file is missing required column '{col}'.")
 
     def _compute_depolarizing_probability(self, 
                                           gate_error:float,
