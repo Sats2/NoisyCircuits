@@ -78,6 +78,7 @@ def test_missing_column_names():
     with pytest.raises(ValueError):
         CreateNoiseModel(calibration_data_file=modified_file_path,
                          basis_gates=[["x", "sx", "rz"], ["cz"]])
+    os.remove(modified_file_path)
 
 
 """
