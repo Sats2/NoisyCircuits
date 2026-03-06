@@ -406,6 +406,7 @@ class QuantumCircuit:
         if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to draw.")
         from qiskit import QuantumCircuit as QiskitQuantumCircuit
+        import matplotlib.pyplot as plt
         circuit = QiskitQuantumCircuit(self.num_qubits)
         instruction_map = {
             "x": lambda q, p: circuit.x(q[0]),
@@ -421,8 +422,9 @@ class QuantumCircuit:
             instruction_map[gate_name](qubit_index, parameters)
         if style.lower() == "mpl":
             circuit.draw(output="mpl")
+            plt.show()
         else:
-            circuit.draw()
+            print(circuit.draw())
         del circuit
         gc.collect()
     

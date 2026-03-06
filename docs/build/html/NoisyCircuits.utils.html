@@ -56,8 +56,8 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">NoisyCircuits.utils package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.BuildQubitGateModel">NoisyCircuits.utils.BuildQubitGateModel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.CreateNoiseModel">NoisyCircuits.utils.CreateNoiseModel module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.Decomposition">NoisyCircuits.utils.Decomposition module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-NoisyCircuits.utils.GetNoiseModel">NoisyCircuits.utils.GetNoiseModel module</a></li>
 </ul>
 </li>
 </ul>
@@ -145,16 +145,201 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model">
 <span class="sig-name descname"><span class="pre">build_qubit_gate_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/BuildQubitGateModel.html#BuildModel.build_qubit_gate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.BuildQubitGateModel.BuildModel.build_qubit_gate_model" title="Link to this definition"></a></dt>
-<dd><p>Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.</p>
+<dd><p>Builds the qubit gate model by extracting single-qubit and two-qubit gate errors from the noise model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ValueError</strong> – If the noise model does not contain information regarding the specified basis gates.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing the single-qubit error instructions, ECR error instructions, measurement error instructions and the connectivity map.</p>
+<dd class="field-even"><p>A tuple containing the single-qubit gate error instructions, two-qubit gate error instructions, measurement error instructions and the connectivity map.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple[dict, dict, dict, dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-NoisyCircuits.utils.CreateNoiseModel">
+<span id="noisycircuits-utils-createnoisemodel-module"></span><h2>NoisyCircuits.utils.CreateNoiseModel module<a class="headerlink" href="#module-NoisyCircuits.utils.CreateNoiseModel" title="Link to this heading"></a></h2>
+<p>This module allows users to create a noise model from user provided calibration data in a CSV file format. The calibration data should include specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.</p>
+<p>Alternatively, users can obtain the noise model from the calibration data of IBM Quantum Hardware using IBM Rest API. This class retrieves the calibration data of the specified backend and processes it to create the noise model in dictionary format.</p>
+<p>See the documentation of the specific classes for more details on the expected format of the calibration data and the usage of the classes to create or obtain the noise model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.CreateNoiseModel.CreateNoiseModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.CreateNoiseModel.</span></span><span class="sig-name descname"><span class="pre">CreateNoiseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">calibration_data_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis_gates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/CreateNoiseModel.html#CreateNoiseModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.CreateNoiseModel.CreateNoiseModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to create a noise model from user provided calibration data. The calibration data should be provided in a CSV file format with specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.</p>
+<p>Additionally, the user must specify the basis gates for the quantum hardware in order to create the noise model. The basis gates must be provided in a list of lists format where the first list contains the single qubit basis gates and the second list contains the two qubit basis gates. For example, if the single qubit basis gates are “x”, “sx” and “rz” and the two qubit basis gate is “cz”, then the basis gates should be provided as [[“x”, “sx”, “rz”], [“cz”]].</p>
+<p>The definition of the header in the CSV file (in table view) should be as follows:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Qubit</p></th>
+<th class="head"><p>T1 (us)</p></th>
+<th class="head"><p>T2 (us)</p></th>
+<th class="head"><p>Prob meas 0
+prep 1</p></th>
+<th class="head"><p>Prob meas 1
+prep 0</p></th>
+<th class="head"><p>Single Qubit
+Gate Length
+(ns)</p></th>
+<th class="head"><p>Single Qubit
+Basis Gate
+Error</p></th>
+<th class="head"><p>Gate Length
+(ns)</p></th>
+<th class="head"><p>Two Qubit
+Basis Gate
+Error</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>An example of the content of the CSV file (in table view) where the basis gates are [[“x”, “sx”], [“cz”]] is as follows:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Qubit</p></th>
+<th class="head"><p>T1 (us)</p></th>
+<th class="head"><p>T2 (us)</p></th>
+<th class="head"><p>Prob meas 0 prep 1</p></th>
+<th class="head"><p>Prob meas 1 prep 0</p></th>
+<th class="head"><p>Single Qubit Gate Length (ns)</p></th>
+<th class="head"><p>x Error</p></th>
+<th class="head"><p>sx Error</p></th>
+<th class="head"><p>Gate Length (ns)</p></th>
+<th class="head"><p>cz Error</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>50.534</p></td>
+<td><p>19.955</p></td>
+<td><p>0.0789</p></td>
+<td><p>0.1316</p></td>
+<td><p>24</p></td>
+<td><p>0.002118</p></td>
+<td><p>0.002118</p></td>
+<td><p>1:68</p></td>
+<td><p>1:0.0207</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>153.049</p></td>
+<td><p>144.814</p></td>
+<td><p>0.0696</p></td>
+<td><p>0.1243</p></td>
+<td><p>24</p></td>
+<td><p>0.00052</p></td>
+<td><p>0.00052</p></td>
+<td><p>2:68;0:68</p></td>
+<td><p>2:0.00479;0:0.0207</p></td>
+</tr>
+</tbody>
+</table>
+<p>For a better example of the content of the CSV file, please refer to the example CSV file provided in the NoisyCircuits repository within the noise_models directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>calibration_data_file</strong> (<em>str</em>) – The path to the CSV file containing the calibration data.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – Raised when the input arguements are not of the expected type.
+    - calibration_data_file should be a string representing the path to the CSV file.
+    - basis_gates should be a list of lists of strings representing the basis gates for the quantum hardware.</p></li>
+<li><p><strong>FileNotFoundError</strong> – If the specified CSV file is not found.</p></li>
+<li><p><strong>ValueError</strong> – If the CSV file does not contain the required columns or if the data is not in the expected format.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.CreateNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateNoiseModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calibration_file_path</span> <span class="o">=</span> <span class="s2">&quot;path/to/calibration_data.csv&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">basis_gates</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cz&quot;</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">CreateNoiseModel</span><span class="p">(</span><span class="n">calibration_data_file</span><span class="o">=</span><span class="n">calibration_file_path</span><span class="p">,</span> <span class="n">basis_gates</span><span class="o">=</span><span class="n">basis_gates</span><span class="p">)</span><span class="o">.</span><span class="n">create_noise_model</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.CreateNoiseModel.CreateNoiseModel.create_noise_model">
+<span class="sig-name descname"><span class="pre">create_noise_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/CreateNoiseModel.html#CreateNoiseModel.create_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.CreateNoiseModel.CreateNoiseModel.create_noise_model" title="Link to this definition"></a></dt>
+<dd><p>Method to create the noise model from the calibration data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The noise model of the specified backend in dictionary format.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.CreateNoiseModel.GetNoiseModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.CreateNoiseModel.</span></span><span class="sig-name descname"><span class="pre">GetNoiseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service_crn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/CreateNoiseModel.html#GetNoiseModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.CreateNoiseModel.GetNoiseModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class allows the user to obtain the noise model from the calibration data of IBM Quantum Hardware using IBM Rest API. This class retreives the calibration data of the specified backend and processes it to create the noise model in dictionary format.</p>
+<p>A valid IBM Quantum API token and CRN is required to access the calibration data of the backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>backend_name</strong> (<em>str</em>) – The name of the IBM Quantum backend.</p></li>
+<li><p><strong>token</strong> (<em>str</em>) – The IBM Quantum API token.</p></li>
+<li><p><strong>service_crn</strong> (<em>str</em>) – The CRN of the IBM Quantum service instance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If backend_name, token or service_crn is not a string.</p></li>
+<li><p><strong>ValueError</strong> – If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user’s account.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.CreateNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_perth&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;your_ibm_quantum_api_token&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">service_crn</span> <span class="o">=</span> <span class="s2">&quot;your_ibm_quantum_service_crn&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noise_model_generator</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span> <span class="n">service_crn</span><span class="o">=</span><span class="n">service_crn</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">noise_model_generator</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">(</span><span class="n">save_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">destination</span><span class="o">=</span><span class="s2">&quot;path/to/save/csv&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;calibration_data.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="NoisyCircuits.utils.CreateNoiseModel.GetNoiseModel.get_noise_model">
+<span class="sig-name descname"><span class="pre">get_noise_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_csv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/CreateNoiseModel.html#GetNoiseModel.get_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.CreateNoiseModel.GetNoiseModel.get_noise_model" title="Link to this definition"></a></dt>
+<dd><p>Method to obtain the noise model in dictionary format from the calibration data of the specified backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_csv</strong> (<em>bool</em><em>, </em><em>optional</em>) – Flag to enable saving the converted calibration data as a CSV file. Defaults to False.</p></li>
+<li><p><strong>destination</strong> (<em>str</em><em>, </em><em>optional</em>) – The directory where the CSV file should be saved if required by the used. Defaults to None, in which case the file will be saved in the current working directory. Relevant only if save_csv is set to True.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the CSV file to save the converted calibration data. Defaults to None, in which case the file will be saved with a computer generated name. Relevant only if save_csv is set to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The noise model of the specified backend in dictionary format.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If any of the input arguments are not of the expected type, an error is raised with a detailed message indicating the expected type for each argument.</p></li>
+<li><p><strong>NotADirectoryError</strong> – If the specified destination for saving the CSV file is not a valid directory, an error is raised with a detailed message indicating the issue with the provided destination path.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -744,55 +929,6 @@ i &amp; 0
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.Decomposition.</span></span><span class="sig-name descname"><span class="pre">ShapeMismatchError</span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/Decomposition.html#ShapeMismatchError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.Decomposition.ShapeMismatchError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Exception raised for errors in the shape of input arrays.</p>
-</dd></dl>
-
-</section>
-<section id="module-NoisyCircuits.utils.GetNoiseModel">
-<span id="noisycircuits-utils-getnoisemodel-module"></span><h2>NoisyCircuits.utils.GetNoiseModel module<a class="headerlink" href="#module-NoisyCircuits.utils.GetNoiseModel" title="Link to this heading"></a></h2>
-<p>This module allows the user to get the raw noise model dictionary from the calibration data of IBM quantum hardware (user’s choice) using their IBM token. This raw noise model can be provided to the QuantumCircuit or BuildQubitGateModel modules for post-processing. The BuildQubitGateModel module returns the post-processed noise operators for each standardized gate on each qubit whereas the QuantumCircuit module uses the post-processed noise model to perform quantum circuit simulations under noise.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.GetNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
-</pre></div>
-</div>
-<dl class="py class">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.GetNoiseModel.GetNoiseModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NoisyCircuits.utils.GetNoiseModel.</span></span><span class="sig-name descname"><span class="pre">GetNoiseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ibm_quantum_platform'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/NoisyCircuits/utils/GetNoiseModel.html#GetNoiseModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.GetNoiseModel.GetNoiseModel" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A class to retrieve the noise model of a specified IBM Quantum backend.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>backend_name</strong> (<em>str</em>) – The name of the IBM Quantum backend.</p></li>
-<li><p><strong>token</strong> (<em>str</em>) – The IBM Quantum API token.</p></li>
-<li><p><strong>channel</strong> (<em>str</em>) – The IBM Quantum channel to use. Default is “ibm_quantum_platform”.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>TypeError</strong> – If backend_name, token or channel is not a string.</p></li>
-<li><p><strong>ValueError</strong> – If channel is not one of the accepted values.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="NoisyCircuits.utils.GetNoiseModel.GetNoiseModel.get_noise_model">
-<span class="sig-name descname"><span class="pre">get_noise_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/NoisyCircuits/utils/GetNoiseModel.html#GetNoiseModel.get_noise_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#NoisyCircuits.utils.GetNoiseModel.GetNoiseModel.get_noise_model" title="Link to this definition"></a></dt>
-<dd><p>Method to retrieve the noise model from the specified backend.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – If the backend_name is invalid or not found in the user’s account,
-    or if there is an issue connecting to the IBM Quantum Runtime Service.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The noise model of the specified backend in dictionary format.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>

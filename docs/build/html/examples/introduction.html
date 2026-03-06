@@ -108,18 +108,26 @@
 <h1>Introduction to NoisyCircuits<a class="headerlink" href="#Introduction-to-NoisyCircuits" title="Link to this heading"></a></h1>
 <section id="Library-Imports">
 <h2>Library Imports<a class="headerlink" href="#Library-Imports" title="Link to this heading"></a></h2>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span> <span class="k">as</span> <span class="n">QC</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.GetNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.CreateNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span><span class="p">,</span> <span class="n">CreateNoiseModel</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-05 15:11:27,259 INFO util.py:154 -- Missing packages: [&#39;ipywidgets&#39;]. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.
+</pre></div></div>
 </div>
 </section>
 <section id="Setup-Input-Fields">
@@ -138,40 +146,51 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">token</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your IBM Quantum token</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">api_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">api_json</span><span class="p">[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your Token</span>
+<span class="n">service_crn</span> <span class="o">=</span> <span class="n">api_json</span><span class="p">[</span><span class="s2">&quot;service-crn&quot;</span><span class="p">]</span> <span class="c1"># Replace with your Service CRN</span>
 <span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_fez&quot;</span>
 <span class="n">num_qubits</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">num_cores</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">num_trajectories</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1e-4</span>
 <span class="n">jsonize</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="c1"># Options: &quot;heron&quot;, &quot;eagle&quot;. Note that &quot;eagle&quot; is now deprecated and only available in simulation mode (i.e., no noise model from hardware).</span>
 <span class="n">qpu_type</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span>
-<span class="n">sim_backend</span> <span class="o">=</span> <span class="s2">&quot;qulacs&quot;</span> <span class="c1"># Choose between &quot;qulacs&quot;, &quot;pennylane&quot; and &quot;qiskit&quot;</span>
+<span class="n">sim_backend</span> <span class="o">=</span> <span class="s2">&quot;pennylane&quot;</span> <span class="c1"># Choose between &quot;qulacs&quot;, &quot;pennylane&quot; and &quot;qiskit&quot;</span>
 </pre></div>
 </div>
 </div>
 <section id="Getting-the-Noise-Model">
 <h3>Getting the Noise Model<a class="headerlink" href="#Getting-the-Noise-Model" title="Link to this heading"></a></h3>
 <p>Run the code below to obtain the noise model from IBM backend calibration data.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span><span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span> <span class="n">service_crn</span><span class="o">=</span><span class="n">service_crn</span><span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Warning: Found relaxation time anomaly for qubit 72 with $T_2 \geq 2T_1$. Setting $T_2 = 2T_1$.
+</pre></div></div>
 </div>
 <p>Run the code below to use a sample noise model generated from IBM calibration data.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;eagle&quot;</span><span class="p">:</span>
     <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../noise_models/Noise_Model_Eagle_QPU.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
 <span class="k">elif</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;heron&quot;</span><span class="p">:</span>
-    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../noise_models/Noise_Model_Heron_QPU.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">CreateNoiseModel</span><span class="p">(</span><span class="n">calibration_data_file</span><span class="o">=</span><span class="s2">&quot;../noise_models/Sample_Noise_Model_Heron_QPU.csv&quot;</span><span class="p">,</span>
+                                   <span class="n">basis_gates</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;rzz&quot;</span><span class="p">,</span> <span class="s2">&quot;cz&quot;</span><span class="p">]])</span><span class="o">.</span><span class="n">create_noise_model</span><span class="p">()</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid qpu_type. Choose either &#39;heron&#39; or &#39;eagle&#39;.&quot;</span><span class="p">)</span>
 </pre></div>
@@ -181,7 +200,7 @@
 <section id="Initialize-the-Circuit-Instance">
 <h3>Initialize the Circuit Instance<a class="headerlink" href="#Initialize-the-Circuit-Instance" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nqc</span> <span class="o">=</span> <span class="n">QC</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
@@ -201,8 +220,6 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Available qubits in roerror_map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155]
-Requested qubits: [0, 1]
 Completed Extraction of Measurement Errors.
 Completed Extraction of two-qubit gate Errors.
 Starting post-processing on Single Qubit Errors.
@@ -213,7 +230,7 @@ Starting post-processing on Single Qubit Errors.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Successfully switched backend to qulacs.
+Successfully switched backend to pennylane.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -223,8 +240,10 @@ Successfully switched backend to qulacs.
 <div class="highlight"><pre>
 Completed post-processing on Single Qubit Errors.
 Processing two-qubit gate errors.
-Qubit pair (0, 1): 18/48 errors above threshold (30 filtered out)
-Qubit pair (1, 0): 18/48 errors above threshold (30 filtered out)
+Qubit pair (0, 1): 17/48 errors above threshold (31 filtered out)
+Qubit pair (1, 0): 17/48 errors above threshold (31 filtered out)
+Qubit pair (0, 1): 17/48 errors above threshold (31 filtered out)
+Qubit pair (1, 0): 17/48 errors above threshold (31 filtered out)
 Two Qubit Gate errors processed.
 Building Noise Operators for Two Qubit Gate Errors.
 Completed building Noise Operators for Two Qubit Gate Errors.
@@ -232,7 +251,9 @@ Extracting Measurement Errors.
 Preparing Qubit Connectivity Map for Requested Qubits
 Qubit Connectivity Map Prepared.
 Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.
-2026-02-17 14:30:21,074 INFO worker.py:1927 -- Started a local Ray instance.
+2026-03-05 15:11:54,714 INFO worker.py:2007 -- Started a local Ray instance.
+/Users/adam-ukj7r05xnu2fywx/miniconda3/envs/NoisyCircuits/lib/python3.10/site-packages/ray/_private/worker.py:2046: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0
+  warnings.warn(
 </pre></div></div>
 </div>
 </section>
@@ -294,7 +315,7 @@ array([5.00000000e-01, 3.39184123e-33, 3.39184123e-33, 5.00000000e-01])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([0.47978989, 0.02075711, 0.02045535, 0.47899765])
+array([0.48116973, 0.03265812, 0.026005  , 0.46016716])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -312,7 +333,7 @@ array([0.47978989, 0.02075711, 0.02045535, 0.47899765])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([0.4828629 , 0.01725612, 0.01725288, 0.4826281 ])
+array([0.48718334, 0.02632328, 0.0202111 , 0.46628227])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -330,7 +351,7 @@ array([0.4828629 , 0.01725612, 0.01725288, 0.4826281 ])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([0.48053472, 0.01958415, 0.01957976, 0.48030137])
+array([0.48196407, 0.03201985, 0.02494568, 0.4610704 ])
 </pre></div></div>
 </div>
 <p>For the MCWF method, using more trajectories ensures better convergence to the density matrix result.</p>
@@ -352,7 +373,7 @@ array([0.48053472, 0.01958415, 0.01957976, 0.48030137])
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with pure state simulation</span>
@@ -360,13 +381,20 @@ array([0.48053472, 0.01958415, 0.01957976, 0.48030137])
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
-</pre></div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 array([0.68117888, 0.31882112])
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+[2026-03-05 15:12:25,275 E 141402 141779] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -384,7 +412,7 @@ array([0.68117888, 0.31882112])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([0.66539623, 0.33460377])
+array([0.66666893, 0.33333107])
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -402,7 +430,7 @@ array([0.66539623, 0.33460377])
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([0.66282392, 0.33717608])
+array([0.66236085, 0.33763915])
 </pre></div></div>
 </div>
 </section>

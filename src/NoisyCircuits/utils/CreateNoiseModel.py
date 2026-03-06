@@ -26,7 +26,9 @@ class CreateNoiseModel:
     | Qubit | T1 (us) | T2 (us) | Prob meas 0 | Prob meas 1 | Single Qubit | Single Qubit | Gate Length | Two Qubit    |
     |       |         |         | prep 1      | prep 0      | Gate Length  | Basis Gate   | (ns)        | Basis Gate   |
     |       |         |         |             |             | (ns)         | Error        |             | Error        |
-    +=======+=========+=========+===============+=============+=============+==============+==============+=============+
+    +=======+=========+=========+=============+=============+==============+==============+=============+==============+
+    |       |         |         |             |             |              |              |             |              |
+    +-------+---------+---------+-------------+-------------+--------------+--------------+-------------+--------------+
 
     An example of the content of the CSV file (in table view) where the basis gates are [["x", "sx"], ["cz"]] is as follows:
 
@@ -51,10 +53,10 @@ class CreateNoiseModel:
         ValueError: If the CSV file does not contain the required columns or if the data is not in the expected format.
 
     Example:
-    >>> from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
-    >>> calibration_file_path = "path/to/calibration_data.csv"
-    >>> basis_gates = [["x", "sx", "rz"], ["cz"]]
-    >>> noise_model = CreateNoiseModel(calibration_data_file=calibration_file_path, basis_gates=basis_gates).create_noise_model()
+        >>> from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
+        >>> calibration_file_path = "path/to/calibration_data.csv"
+        >>> basis_gates = [["x", "sx", "rz"], ["cz"]]
+        >>> noise_model = CreateNoiseModel(calibration_data_file=calibration_file_path, basis_gates=basis_gates).create_noise_model()
     """
     def __init__(self, 
                  calibration_data_file:str,
@@ -263,12 +265,12 @@ class GetNoiseModel:
         ValueError: If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user's account.
 
     Example:
-    >>> from NoisyCircuits.utils.CreateNoiseModel import GetNoiseModel
-    >>> backend_name = "ibm_perth"
-    >>> token = "your_ibm_quantum_api_token"
-    >>> service_crn = "your_ibm_quantum_service_crn"
-    >>> noise_model_generator = GetNoiseModel(backend_name=backend_name, token=token, service_crn=service_crn)
-    >>> noise_model = noise_model_generator.get_noise_model(save_csv=True, destination="path/to/save/csv", file_name="calibration_data.csv")
+        >>> from NoisyCircuits.utils.CreateNoiseModel import GetNoiseModel
+        >>> backend_name = "ibm_perth"
+        >>> token = "your_ibm_quantum_api_token"
+        >>> service_crn = "your_ibm_quantum_service_crn"
+        >>> noise_model_generator = GetNoiseModel(backend_name=backend_name, token=token, service_crn=service_crn)
+        >>> noise_model = noise_model_generator.get_noise_model(save_csv=True, destination="path/to/save/csv", file_name="calibration_data.csv")
     """
     def __init__(self,
                  backend_name:str,

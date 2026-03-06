@@ -1,0 +1,619 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoisyCircuits.utils.CreateNoiseModel &mdash; NoisyCircuits 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NoisyCircuits.utils.CreateNoiseModel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NoisyCircuits.utils.CreateNoiseModel</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module allows users to create a noise model from user provided calibration data in a CSV file format. The calibration data should include specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.</span>
+
+<span class="sd">Alternatively, users can obtain the noise model from the calibration data of IBM Quantum Hardware using IBM Rest API. This class retrieves the calibration data of the specified backend and processes it to create the noise model in dictionary format.</span>
+
+<span class="sd">See the documentation of the specific classes for more details on the expected format of the calibration data and the usage of the classes to create or obtain the noise model.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit_aer.noise</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoiseModel</span><span class="p">,</span> <span class="n">thermal_relaxation_error</span><span class="p">,</span> <span class="n">depolarizing_error</span><span class="p">,</span> <span class="n">ReadoutError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">qiskit.quantum_info</span><span class="w"> </span><span class="kn">import</span> <span class="n">average_gate_fidelity</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<div class="viewcode-block" id="CreateNoiseModel">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.CreateNoiseModel.CreateNoiseModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CreateNoiseModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to create a noise model from user provided calibration data. The calibration data should be provided in a CSV file format with specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.</span>
+
+<span class="sd">    Additionally, the user must specify the basis gates for the quantum hardware in order to create the noise model. The basis gates must be provided in a list of lists format where the first list contains the single qubit basis gates and the second list contains the two qubit basis gates. For example, if the single qubit basis gates are &quot;x&quot;, &quot;sx&quot; and &quot;rz&quot; and the two qubit basis gate is &quot;cz&quot;, then the basis gates should be provided as [[&quot;x&quot;, &quot;sx&quot;, &quot;rz&quot;], [&quot;cz&quot;]].</span>
+
+<span class="sd">    The definition of the header in the CSV file (in table view) should be as follows:</span>
+
+<span class="sd">    +-------+---------+---------+-------------+-------------+--------------+--------------+-------------+--------------+</span>
+<span class="sd">    | Qubit | T1 (us) | T2 (us) | Prob meas 0 | Prob meas 1 | Single Qubit | Single Qubit | Gate Length | Two Qubit    |</span>
+<span class="sd">    |       |         |         | prep 1      | prep 0      | Gate Length  | Basis Gate   | (ns)        | Basis Gate   |</span>
+<span class="sd">    |       |         |         |             |             | (ns)         | Error        |             | Error        |</span>
+<span class="sd">    +=======+=========+=========+=============+=============+==============+==============+=============+==============+</span>
+<span class="sd">    |       |         |         |             |             |              |              |             |              |</span>
+<span class="sd">    +-------+---------+---------+-------------+-------------+--------------+--------------+-------------+--------------+</span>
+
+<span class="sd">    An example of the content of the CSV file (in table view) where the basis gates are [[&quot;x&quot;, &quot;sx&quot;], [&quot;cz&quot;]] is as follows:</span>
+
+<span class="sd">    +-------+---------+---------+--------------------+--------------------+-------------------------------+----------+----------+------------------+--------------------+</span>
+<span class="sd">    | Qubit | T1 (us) | T2 (us) | Prob meas 0 prep 1 | Prob meas 1 prep 0 | Single Qubit Gate Length (ns) |  x Error | sx Error | Gate Length (ns) |      cz Error      |</span>
+<span class="sd">    +=======+=========+=========+====================+====================+===============================+==========+==========+==================+====================+</span>
+<span class="sd">    |   0   |  50.534 |  19.955 |       0.0789       |       0.1316       |               24              | 0.002118 | 0.002118 |       1:68       |      1:0.0207      |</span>
+<span class="sd">    +-------+---------+---------+--------------------+--------------------+-------------------------------+----------+----------+------------------+--------------------+</span>
+<span class="sd">    |   1   | 153.049 | 144.814 |       0.0696       |       0.1243       |               24              |  0.00052 |  0.00052 |     2:68;0:68    | 2:0.00479;0:0.0207 |</span>
+<span class="sd">    +-------+---------+---------+--------------------+--------------------+-------------------------------+----------+----------+------------------+--------------------+</span>
+
+<span class="sd">    For a better example of the content of the CSV file, please refer to the example CSV file provided in the NoisyCircuits repository within the noise_models directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        calibration_data_file (str): The path to the CSV file containing the calibration data.</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: Raised when the input arguements are not of the expected type.</span>
+<span class="sd">            - calibration_data_file should be a string representing the path to the CSV file.</span>
+<span class="sd">            - basis_gates should be a list of lists of strings representing the basis gates for the quantum hardware.</span>
+<span class="sd">        FileNotFoundError: If the specified CSV file is not found.</span>
+<span class="sd">        ValueError: If the CSV file does not contain the required columns or if the data is not in the expected format.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel</span>
+<span class="sd">        &gt;&gt;&gt; calibration_file_path = &quot;path/to/calibration_data.csv&quot;</span>
+<span class="sd">        &gt;&gt;&gt; basis_gates = [[&quot;x&quot;, &quot;sx&quot;, &quot;rz&quot;], [&quot;cz&quot;]]</span>
+<span class="sd">        &gt;&gt;&gt; noise_model = CreateNoiseModel(calibration_data_file=calibration_file_path, basis_gates=basis_gates).create_noise_model()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">calibration_data_file</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+                 <span class="n">basis_gates</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor for the CreateNoiseModel class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">calibration_data_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;calibration_data_file must be a Path-like string&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data_file</span> <span class="o">=</span> <span class="n">calibration_data_file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">calibration_data_file</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV file &#39;</span><span class="si">{</span><span class="n">calibration_data_file</span><span class="si">}</span><span class="s2">&#39; not found. Please check the file path and try again.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis_gates</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">gate_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">for</span> <span class="n">gate_list</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">gate_list</span> <span class="ow">in</span> <span class="n">basis_gates</span> <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">gate_list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;basis_gates must be a list of lists of strings representing the basis gates for the quantum hardware&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span> <span class="o">=</span> <span class="n">basis_gates</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_depolarizing_probability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                                          <span class="n">gate_error</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                                          <span class="n">F_thermal</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                                          <span class="n">dim</span><span class="p">:</span><span class="nb">int</span>
+                                          <span class="p">)</span><span class="o">-&gt;</span><span class="nb">float</span><span class="p">:</span>
+        <span class="n">depol_prob</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">*</span> <span class="p">(</span><span class="n">gate_error</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">F_thermal</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">dim</span> <span class="o">*</span> <span class="n">F_thermal</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+        <span class="n">max_depol_prob</span> <span class="o">=</span> <span class="mi">4</span><span class="o">**</span><span class="n">n</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span><span class="o">**</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">depol_prob</span><span class="p">),</span> <span class="n">max_depol_prob</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateNoiseModel.create_noise_model">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.CreateNoiseModel.CreateNoiseModel.create_noise_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_noise_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method to create the noise model from the calibration data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The noise model of the specified backend in dictionary format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">noise_model</span> <span class="o">=</span> <span class="n">NoiseModel</span><span class="p">()</span>
+        <span class="n">qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data</span><span class="p">[</span><span class="s2">&quot;Qubit&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data</span><span class="p">[</span><span class="s2">&quot;T1 (us)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data</span><span class="p">[</span><span class="s2">&quot;T2 (us)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">relaxation_time_anomaly_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t1</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">relaxation_time_anomaly_index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">relaxation_time_anomaly_index</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Warning: Found relaxation time anomaly for qubit </span><span class="si">{}</span><span class="s2"> with $T_2 \geq 2T_1$. Setting $T_2 = 2T_1$.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+                <span class="n">t2</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">t1</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">mean_errors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">mean_errors</span><span class="p">[</span><span class="n">gate</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)):</span>
+            <span class="n">qubits</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="n">q</span><span class="p">])</span>
+            <span class="n">t1</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">t1</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+            <span class="n">t2</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">t2</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration_data</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">p01</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;Prob meas 0 prep 1&quot;</span><span class="p">])</span>
+            <span class="n">p10</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;Prob meas 1 prep 0&quot;</span><span class="p">])</span>
+            <span class="n">single_qubit_gate_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;Single Qubit Gate Length (ns)&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e-9</span>
+            <span class="n">two_qubit_gate_length</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;Gate Length (ns)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+            <span class="n">readout_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p10</span><span class="p">,</span> <span class="n">p10</span><span class="p">],</span> <span class="p">[</span><span class="n">p01</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">p01</span><span class="p">]])</span>
+            <span class="n">noise_model</span><span class="o">.</span><span class="n">add_readout_error</span><span class="p">(</span><span class="n">ReadoutError</span><span class="p">(</span><span class="n">readout_matrix</span><span class="p">),</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+            <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">gate_error</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">gate_error</span><span class="p">):</span>
+                    <span class="n">gate_error</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">single_qubit_gate_length</span><span class="p">)</span>
+                <span class="n">F_thermal</span> <span class="o">=</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">)</span>
+                <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="n">gate_error</span><span class="p">,</span> <span class="n">F_thermal</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+
+            <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">gate_error</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">connected_qubits_errors</span> <span class="o">=</span> <span class="n">gate_error</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">connected_qubits_errors</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">two_qubit_gate_length</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)):</span>
+                        <span class="n">target_qubits</span><span class="p">,</span> <span class="n">target_error</span> <span class="o">=</span> <span class="n">connected_qubits_errors</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                        <span class="n">gate_target</span><span class="p">,</span> <span class="n">gate_length</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_target</span><span class="p">):</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found Mismazch in target qubits for gate </span><span class="si">{}</span><span class="s2"> for qubits </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">target_qubits</span><span class="p">,</span> <span class="n">gate_target</span><span class="p">))</span>
+                        <span class="n">target_qubits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                        <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_length</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                        <span class="n">gate_error</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_error</span><span class="p">)</span>
+                        <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                            <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="n">gate_error</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                        <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">]])</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">applied_qubits</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">qubit_connections</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">two_qubit_gate_length</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)):</span>
+                        <span class="n">target_qubits</span><span class="p">,</span> <span class="n">target_error</span> <span class="o">=</span> <span class="n">connected_qubits_errors</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                        <span class="n">gate_target</span><span class="p">,</span> <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_target</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qubit_connections</span><span class="p">)):</span>
+                                <span class="n">gate_target</span><span class="p">,</span> <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_target</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">):</span>
+                                    <span class="k">break</span>
+                        <span class="n">target_qubits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                        <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_time</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                        <span class="n">gate_error</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_error</span><span class="p">)</span>
+                        <span class="n">applied_qubits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                        <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                            <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="n">gate_error</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                        <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">]])</span>
+                    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">qubit_connections</span><span class="p">:</span>
+                        <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_qubits</span><span class="p">:</span>
+                            <span class="n">target_qubits</span> <span class="o">=</span> <span class="n">idx</span>
+                            <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">qubit_connections</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_time</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                            <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                                <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                            <span class="p">)</span>
+                            <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                            <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">]])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No Error Data found for gate </span><span class="si">{}</span><span class="s2"> on qubit </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                    <span class="n">applied_qubits</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Attempting to apply error data from other two qubit gates for qubit </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="n">g</span> <span class="o">==</span> <span class="n">gate</span><span class="p">:</span>
+                                <span class="k">continue</span>
+                            <span class="n">gate_error</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">g</span><span class="p">)]</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">connected_qubits_errors</span> <span class="o">=</span> <span class="n">gate_error</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+                            <span class="k">except</span><span class="p">:</span>
+                                <span class="n">connected_qubits_errors</span> <span class="o">=</span> <span class="p">[]</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">two_qubit_gate_length</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="k">break</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">qubit_connections</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">two_qubit_gate_length</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">connected_qubits_errors</span><span class="p">)):</span>
+                                <span class="n">target_qubits</span><span class="p">,</span> <span class="n">target_error</span> <span class="o">=</span> <span class="n">connected_qubits_errors</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">two_qubit_gate_length</span><span class="p">)):</span>
+                                    <span class="n">gate_target</span><span class="p">,</span> <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_target</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">):</span>
+                                        <span class="k">break</span>
+                                <span class="n">target_qubits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                                <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_time</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                                <span class="n">gate_error</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_error</span><span class="p">)</span>
+                                <span class="n">applied_qubits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                                <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                                    <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                                <span class="p">)</span>
+                                <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="n">gate_error</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                                <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                                <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">]])</span>
+                            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">qubit_connections</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">applied_qubits</span><span class="p">:</span>
+                                    <span class="n">target_qubits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                                    <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">qubit_connections</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                                    <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_time</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                                    <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">t1</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)]],</span> <span class="n">t2</span><span class="p">[</span><span class="n">t2</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)]],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                                        <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                                    <span class="p">)</span>
+                                    <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                                    <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                                    <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">idx</span><span class="p">)]])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No error data found for any two qubit gates on qubit </span><span class="si">{}</span><span class="s2">. Applying maximum error rate for gate </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate</span><span class="p">))</span>
+                            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">two_qubit_gate_length</span><span class="p">)):</span>
+                                <span class="n">target_qubits</span><span class="p">,</span> <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                                <span class="n">target_qubits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                                <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_time</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                                <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                                    <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                                <span class="p">)</span>
+                                <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_probability</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                                <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                                <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">]])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Only a single two qubit gate found in basis gates. Applying maximum error rate for gate </span><span class="si">{}</span><span class="s2"> on qubit </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">two_qubit_gate_length</span><span class="p">)):</span>
+                            <span class="n">target_qubits</span><span class="p">,</span> <span class="n">gate_time</span> <span class="o">=</span> <span class="n">two_qubit_gate_length</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                            <span class="n">target_qubits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_qubits</span><span class="p">)</span>
+                            <span class="n">gate_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gate_time</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-9</span>
+                            <span class="n">thermal_error</span> <span class="o">=</span> <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                                <span class="n">thermal_relaxation_error</span><span class="p">(</span><span class="n">t1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gate_time</span><span class="p">)</span>
+                            <span class="p">)</span>
+                            <span class="n">depol_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_depolarizing_error</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">average_gate_fidelity</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+                            <span class="n">depol_error</span> <span class="o">=</span> <span class="n">depolarizing_error</span><span class="p">(</span><span class="n">depol_prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                            <span class="n">noise_model</span><span class="o">.</span><span class="n">add_quantum_error</span><span class="p">(</span><span class="n">depol_error</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="n">thermal_error</span><span class="p">),</span> <span class="n">gate</span><span class="p">,</span> <span class="p">[</span><span class="n">qubits</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qubits</span><span class="p">[</span><span class="n">target_qubits</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">noise_model</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">serializable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GetNoiseModel">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.CreateNoiseModel.GetNoiseModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GetNoiseModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class allows the user to obtain the noise model from the calibration data of IBM Quantum Hardware using IBM Rest API. This class retreives the calibration data of the specified backend and processes it to create the noise model in dictionary format. </span>
+
+<span class="sd">    A valid IBM Quantum API token and CRN is required to access the calibration data of the backend.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        backend_name (str): The name of the IBM Quantum backend.</span>
+<span class="sd">        token (str): The IBM Quantum API token.</span>
+<span class="sd">        service_crn (str): The CRN of the IBM Quantum service instance.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If backend_name, token or service_crn is not a string.</span>
+<span class="sd">        ValueError: If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user&#39;s account.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from NoisyCircuits.utils.CreateNoiseModel import GetNoiseModel</span>
+<span class="sd">        &gt;&gt;&gt; backend_name = &quot;ibm_perth&quot;</span>
+<span class="sd">        &gt;&gt;&gt; token = &quot;your_ibm_quantum_api_token&quot;</span>
+<span class="sd">        &gt;&gt;&gt; service_crn = &quot;your_ibm_quantum_service_crn&quot;</span>
+<span class="sd">        &gt;&gt;&gt; noise_model_generator = GetNoiseModel(backend_name=backend_name, token=token, service_crn=service_crn)</span>
+<span class="sd">        &gt;&gt;&gt; noise_model = noise_model_generator.get_noise_model(save_csv=True, destination=&quot;path/to/save/csv&quot;, file_name=&quot;calibration_data.csv&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">backend_name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+                 <span class="n">token</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+                 <span class="n">service_crn</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor for the GetNoiseModel class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;backend_name must be a string&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;token must be a string&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">service_crn</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;service_crn must be a string&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend_name</span> <span class="o">=</span> <span class="n">backend_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_crn</span> <span class="o">=</span> <span class="n">service_crn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_api_url</span> <span class="o">=</span> <span class="s2">&quot;https://quantum.cloud.ibm.com/api/v1/backends/</span><span class="si">{}</span><span class="s2">/properties&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">backend_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_IAM_token</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;IBM-API-Version&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-02-15&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_access_token</span><span class="p">),</span>
+            <span class="s2">&quot;Service-CRN&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_crn</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_basis_gates</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_basis_gates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private method to obtain the basis gates for the specified backend from IBM Quantum REST API using the QPU family information.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[list[str]]: A list of lists containing the single qubit and two qubit basis gates for the specified backend.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the API request fails or if the QPU family is not supported, an error is raised with the detailed error message from the API response or with the unsupported QPU family information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">basis_gates_url</span> <span class="o">=</span> <span class="s2">&quot;https://quantum.cloud.ibm.com/api/v1/backends/</span><span class="si">{}</span><span class="s2">/configuration&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_name</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+            <span class="n">basis_gates_url</span><span class="p">,</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to retrieve basis gates from IBM Quantum API. Detailed error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+        <span class="n">qpu_family</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;processor_type&quot;</span><span class="p">][</span><span class="s2">&quot;family&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">qpu_family</span> <span class="o">==</span> <span class="s2">&quot;heron&quot;</span><span class="p">:</span>
+            <span class="n">basis_gates</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cz&quot;</span><span class="p">,</span> <span class="s2">&quot;rzz&quot;</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="n">qpu_family</span> <span class="o">==</span> <span class="s2">&quot;eagle&quot;</span><span class="p">:</span>
+            <span class="n">basis_gates</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ecr&quot;</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported QPU Family: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">qpu_family</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">basis_gates</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_IAM_token</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private method to obtain the IAM token for authentication with the IBM Quantum API using the provided token.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the API request fails, an error is raised with the detailed error message from the API response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iam_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="s2">&quot;https://iam.cloud.ibm.com/identity/token&quot;</span><span class="p">,</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/x-www-form-urlencoded&quot;</span>
+            <span class="p">},</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;grant_type=urn:ibm:params:oauth:grant-type:apikey&amp;apikey=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">iam_response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to obtain IAM token from IBM Quantum API. Detailed error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iam_response</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_access_token</span> <span class="o">=</span> <span class="n">iam_response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;access_token&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_calibration_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private method of the class to obtain the raw calibration data in JSON format from the IBM Quantum API for the specified backend.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the API request fails or if the backend is not found in the user&#39;s account, an error is raised with the detailed error message from the API response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s2">&quot;GET&quot;</span><span class="p">,</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">_api_url</span><span class="p">,</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_headers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to retrieve calibration data from IBM Quantum API. Detailed error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calibration_json</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_json_to_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                             <span class="n">save_csv</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">destination</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">file_name</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span>
+                             <span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private method of the class that converts the raw calibration data in the JSON format obtained from IBM Quantum API to a dataframe and optionally saves it as a CSV file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            save_csv (bool, optional): Flag to decide whether to save the converted calibration data as a CSV file. Defaults to False.</span>
+<span class="sd">            desitnation (str, optional): The directory where the CSV file should be saved if required by the user. If None and the csv needs to be saved, the file will be saved in the current working directory. Defaults to None.</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Qubit&quot;</span><span class="p">,</span> <span class="s2">&quot;T1 (us)&quot;</span><span class="p">,</span> <span class="s2">&quot;T2 (us)&quot;</span><span class="p">,</span> <span class="s2">&quot;Prob meas 0 prep 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Prob meas 1 prep 0&quot;</span><span class="p">,</span> <span class="s2">&quot;Single Qubit Gate Length (ns)&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gate</span><span class="si">}</span><span class="s2"> Error&quot;</span><span class="p">)</span>
+        <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Gate Length (ns)&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gate</span><span class="si">}</span><span class="s2"> Gate Length (ns)&quot;</span><span class="p">)</span>
+            <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gate</span><span class="si">}</span><span class="s2"> Error&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">column_names</span><span class="p">)</span>
+        <span class="n">add_column_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;qubits&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;T1&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;T2&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;prob_meas0_prep1&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;prob_meas1_prep0&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">qubit</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calibration_json</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]):</span>
+            <span class="n">add_column_data</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">qubit</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">add_column_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">add_column_data</span><span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Qubit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_column_data</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;T1 (us)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_column_data</span><span class="p">[</span><span class="s2">&quot;T1&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;T2 (us)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_column_data</span><span class="p">[</span><span class="s2">&quot;T2&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Prob meas 0 prep 1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_column_data</span><span class="p">[</span><span class="s2">&quot;prob_meas0_prep1&quot;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Prob meas 1 prep 0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_column_data</span><span class="p">[</span><span class="s2">&quot;prob_meas1_prep0&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Gate Length (ns)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration_json</span><span class="p">[</span><span class="s2">&quot;gates&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;gate&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">col_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;gate&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> Error&quot;</span>
+                <span class="n">error_rate</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;gate_error&quot;</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">gate_length</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;gate_length&quot;</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">qubit_index</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">qubit_index</span><span class="p">,</span> <span class="n">col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_rate</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">qubit_index</span><span class="p">,</span> <span class="s2">&quot;Single Qubit Gate Length (ns)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gate_length</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;gate&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">col_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;gate&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> Error&quot;</span>
+                <span class="n">control_qubit</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">target_qubit</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;qubits&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">error_rate</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;gate_error&quot;</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">gate_length</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;gate_length&quot;</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">gate_length_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_qubit</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">gate_length</span><span class="si">}</span><span class="s2">;&quot;</span>
+                <span class="n">error_rate_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_qubit</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">error_rate</span><span class="si">}</span><span class="s2">;&quot;</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">control_qubit</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;gate&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> Gate Length (ns)&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">gate_length_string</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">control_qubit</span><span class="p">,</span> <span class="n">col_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">error_rate_string</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="s2">&quot;Gate Length (ns)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+                <span class="n">gate_length_value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Gate Length (ns)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)][</span><span class="n">qubit</span><span class="p">]</span>
+                <span class="n">error_rate_value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)][</span><span class="n">qubit</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">gate_length_value</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">gate_length_value</span> <span class="o">=</span> <span class="n">gate_length_value</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">error_rate_value</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">error_rate_value</span> <span class="o">=</span> <span class="n">error_rate_value</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">qubit</span><span class="p">,</span> <span class="s2">&quot;Gate Length (ns)&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">qubit</span><span class="p">,</span> <span class="s2">&quot;Gate Length (ns)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gate_length_value</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">qubit</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">)]</span> <span class="o">=</span> <span class="n">error_rate_value</span>
+        <span class="n">drop_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">drop_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Gate Length (ns)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gate</span><span class="p">))</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">drop_cols</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_csv</span><span class="p">:</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+<div class="viewcode-block" id="GetNoiseModel.get_noise_model">
+<a class="viewcode-back" href="../../../NoisyCircuits.utils.html#NoisyCircuits.utils.CreateNoiseModel.GetNoiseModel.get_noise_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_noise_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">save_csv</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">destination</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">file_name</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span>
+                        <span class="p">)</span><span class="o">-&gt;</span><span class="nb">dict</span><span class="p">:</span>       
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method to obtain the noise model in dictionary format from the calibration data of the specified backend. </span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            save_csv (bool, optional): Flag to enable saving the converted calibration data as a CSV file. Defaults to False.</span>
+<span class="sd">            destination (str, optional): The directory where the CSV file should be saved if required by the used. Defaults to None, in which case the file will be saved in the current working directory. Relevant only if save_csv is set to True.</span>
+<span class="sd">            file_name (str, optional): The name of the CSV file to save the converted calibration data. Defaults to None, in which case the file will be saved with a computer generated name. Relevant only if save_csv is set to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The noise model of the specified backend in dictionary format.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If any of the input arguments are not of the expected type, an error is raised with a detailed message indicating the expected type for each argument.</span>
+<span class="sd">            NotADirectoryError: If the specified destination for saving the CSV file is not a valid directory, an error is raised with a detailed message indicating the issue with the provided destination path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">save_csv</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;save_csv must be a boolean value&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_csv</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">destination</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;destination must be a string representing the directory to save the CSV file&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">destination</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span><span class="s2">&quot;The specified destination is not a directory. Provide a valid path or set destination to None to save in the current working directory.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">destination</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;file_name must be a string&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">):</span>
+                    <span class="n">file_name</span> <span class="o">+=</span> <span class="s2">&quot;.csv&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">time_stamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;calibration_data_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">time_stamp</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_calibration_json</span><span class="p">()</span>
+        <span class="n">calibration_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_json_to_csv</span><span class="p">(</span><span class="n">save_csv</span><span class="o">=</span><span class="n">save_csv</span><span class="p">,</span> <span class="n">destination</span><span class="o">=</span><span class="n">destination</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">tmp_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;temp_calibration_data.csv&quot;</span><span class="p">)</span>
+        <span class="n">calibration_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">noise_model_generator</span> <span class="o">=</span> <span class="n">CreateNoiseModel</span><span class="p">(</span>
+                                                <span class="n">calibration_data_file</span><span class="o">=</span><span class="n">tmp_file</span><span class="p">,</span>
+                                                <span class="n">basis_gates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span>
+                                            <span class="p">)</span>
+        <span class="n">noise_model</span> <span class="o">=</span> <span class="n">noise_model_generator</span><span class="o">.</span><span class="n">create_noise_model</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tmp_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">noise_model</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

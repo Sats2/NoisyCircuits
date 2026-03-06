@@ -823,13 +823,13 @@ class BuildModel:
 
     def build_qubit_gate_model(self)->tuple[dict, dict, dict, dict]:
         """
-        Builds the qubit gate model by extracting single-qubit and ECR errors from the noise model.
+        Builds the qubit gate model by extracting single-qubit and two-qubit gate errors from the noise model.
         
         Raises:
             ValueError: If the noise model does not contain information regarding the specified basis gates.
 
         Returns:
-            tuple[dict, dict, dict, dict]: A tuple containing the single-qubit error instructions, ECR error instructions, measurement error instructions and the connectivity map.
+            tuple[dict, dict, dict, dict]: A tuple containing the single-qubit gate error instructions, two-qubit gate error instructions, measurement error instructions and the connectivity map.
         """
         single_qubit_errors = self._extract_single_qubit_qerrors(
             self.noise_model["errors"],

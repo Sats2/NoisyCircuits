@@ -12,18 +12,18 @@ NoisyCircuits.utils.BuildQubitGateModel module
    :undoc-members:
    :show-inheritance:
 
-NoisyCircuits.utils.Decomposition module
-----------------------------------------
+NoisyCircuits.utils.CreateNoiseModel module
+-------------------------------------------
 
-.. automodule:: NoisyCircuits.utils.Decomposition
+.. automodule:: NoisyCircuits.utils.CreateNoiseModel
    :members:
    :undoc-members:
    :show-inheritance:
 
-NoisyCircuits.utils.GetNoiseModel module
+NoisyCircuits.utils.Decomposition module
 ----------------------------------------
 
-.. automodule:: NoisyCircuits.utils.GetNoiseModel
+.. automodule:: NoisyCircuits.utils.Decomposition
    :members:
    :undoc-members:
    :show-inheritance:
