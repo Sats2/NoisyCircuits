@@ -20,7 +20,7 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2026-03-05 15:11:27,259\tINFO util.py:154 -- Missing packages: ['ipywidgets']. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.\n"
+      "2026-03-09 13:17:36,117\tINFO util.py:154 -- Missing packages: ['ipywidgets']. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.\n"
      ]
     }
    ],
@@ -53,7 +53,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 16,
    "id": "5ad90c5b",
    "metadata": {},
    "outputs": [],
@@ -66,6 +66,7 @@
     "num_cores = 20\n",
     "num_trajectories = 20\n",
     "threshold = 1e-4\n",
+    "noise_model = None\n",
     "jsonize = True\n",
     "verbose = True\n",
     "# Options: \"heron\", \"eagle\". Note that \"eagle\" is now deprecated and only available in simulation mode (i.e., no noise model from hardware).\n",
@@ -80,7 +81,7 @@
    "source": [
     "### Getting the Noise Model\n",
     "\n",
-    "Run the code below to obtain the noise model from IBM backend calibration data."
+    "Run the code below to obtain the noise model from IBM backend calibration data. This requires a valid IBM Quantum Token as well as a service-crn for available quantum backend instances. If not available, please skip this cell and execute the next cell to utilize the sample noise data."
    ]
   },
   {
@@ -116,13 +117,16 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "if qpu_type == \"eagle\":\n",
-    "    noise_model = pickle.load(open(\"../noise_models/Noise_Model_Eagle_QPU.pkl\", \"rb\"))\n",
-    "elif qpu_type == \"heron\":\n",
-    "    noise_model = CreateNoiseModel(calibration_data_file=\"../noise_models/Sample_Noise_Model_Heron_QPU.csv\", \n",
-    "                                   basis_gates=[[\"x\", \"sx\", \"rz\", \"rx\"], [\"rzz\", \"cz\"]]).create_noise_model()\n",
-    "else:\n",
-    "    raise ValueError(\"Invalid qpu_type. Choose either 'heron' or 'eagle'.\")"
+    "if noise_model is None:\n",
+    "    if qpu_type == \"eagle\":\n",
+    "        file_path = \"https://raw.githubusercontent.com/Sats2/NoisyCircuits/main/noise_models/Noise_Model_Eagle_QPU.pkl\"\n",
+    "        noise_model = pickle.load(open(file_path, \"rb\"))\n",
+    "    elif qpu_type == \"heron\":\n",
+    "        file_path = \"https://raw.githubusercontent.com/Sats2/NoisyCircuits/main/noise_models/Sample_Noise_Model_Heron_QPU.csv\"\n",
+    "        noise_model = CreateNoiseModel(calibration_data_file=file_path, \n",
+    "                                    basis_gates=[[\"x\", \"sx\", \"rz\", \"rx\"], [\"cz\", \"rzz\"]]).create_noise_model()\n",
+    "    else:\n",
+    "        raise ValueError(\"Invalid qpu_type. Choose either 'heron' or 'eagle'.\")"
    ]
   },
   {
@@ -172,7 +176,7 @@
       "Preparing Qubit Connectivity Map for Requested Qubits\n",
       "Qubit Connectivity Map Prepared.\n",
       "Returning Single Qubit Error Instructions, Two Qubit Gate Error Instructions, Measurement Errors and Connectivity Map.\n",
-      "2026-03-05 15:11:54,714\tINFO worker.py:2007 -- Started a local Ray instance.\n",
+      "2026-03-09 13:18:02,844\tINFO worker.py:2007 -- Started a local Ray instance.\n",
       "/Users/adam-ukj7r05xnu2fywx/miniconda3/envs/NoisyCircuits/lib/python3.10/site-packages/ray/_private/worker.py:2046: FutureWarning: Tip: In future versions of Ray, Ray will no longer override accelerator visible devices env var if num_gpus=0 or num_gpus=None (default). To enable this behavior and turn off this error message, set RAY_ACCEL_ENV_VAR_OVERRIDE_ON_ZERO=0\n",
       "  warnings.warn(\n"
      ]
@@ -256,7 +260,7 @@
     {
      "data": {
       "text/plain": [
-       "array([0.48116973, 0.03265812, 0.026005  , 0.46016716])"
+       "array([0.48472261, 0.03088778, 0.01758682, 0.46680279])"
       ]
      },
      "execution_count": 8,
@@ -278,7 +282,7 @@
     {
      "data": {
       "text/plain": [
-       "array([0.48718334, 0.02632328, 0.0202111 , 0.46628227])"
+       "array([0.48931892, 0.02535658, 0.01266101, 0.4726635 ])"
       ]
      },
      "execution_count": 9,
@@ -300,7 +304,7 @@
     {
      "data": {
       "text/plain": [
-       "array([0.48196407, 0.03201985, 0.02494568, 0.4610704 ])"
+       "array([0.48657377, 0.02858423, 0.0158844 , 0.4689576 ])"
       ]
      },
      "execution_count": 10,
@@ -348,7 +352,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 12,
    "id": "5e00d991",
    "metadata": {},
    "outputs": [
@@ -361,13 +365,6 @@
      "execution_count": 12,
      "metadata": {},
      "output_type": "execute_result"
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "[2026-03-05 15:12:25,275 E 141402 141779] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14\n"
-     ]
     }
    ],
    "source": [
@@ -384,7 +381,7 @@
     {
      "data": {
       "text/plain": [
-       "array([0.66666893, 0.33333107])"
+       "array([0.66565228, 0.33434772])"
       ]
      },
      "execution_count": 13,
@@ -406,7 +403,7 @@
     {
      "data": {
       "text/plain": [
-       "array([0.66236085, 0.33763915])"
+       "array([0.66590558, 0.33409442])"
       ]
      },
      "execution_count": 14,

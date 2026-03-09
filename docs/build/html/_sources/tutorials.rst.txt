@@ -29,9 +29,18 @@ Configuration
 - **Parallel Execution:** Configure the `num_cores` parameter based on your system's capabilities to optimize simulation performance.
 - **Noise Threshold:** Adjust the noise threshold settings with `threshold` parameter to filter out low probability noise events during simulations. This speeds up simulations without significantly affecting accuracy as long as only very low probability events are filtered. `Default: 1e-12`, not recommended to set the threshold higher than `1e-4`.
 
+Tutorials List
+--------------
+
+* :doc:`Introduction to NoisyCircuits <examples/introduction>`
+* :doc:`Running Single Circuits on Hardware <examples/run_on_hardware>`
+* :doc:`Running Multiple Circuits on Hardware <examples/run_multiple_on_hardware>`
+* :doc:`Application - Quantum Neural Networks <examples/quantum_neural_networks>`
+
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorials List (Jupyter Notebooks):
+    :caption: Tutorials
+    :hidden:
 
     examples/introduction
     examples/run_on_hardware

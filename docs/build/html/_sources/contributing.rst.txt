@@ -77,18 +77,8 @@ The repository is organized as follows
     │       └── EagleDecomposition.py                   # Gate Decomposition for Eagle QPU
     │       └── HeronDecomposition.py                   # Gate Decomposition for Heron QPU
     │       └── SwapSequence.py                         # Module that ensures correct qubit coupling
-    ├── tests/                                          # Unit test suite
-    │   ├── test_BuildQubitGateModel_error_handling.py  # Unit tests for BuildQubitGateModel module
-    │   ├── test_Decomposition_error_handling.py        # Unit tests for Decomposition module's error handling.
-    |   ├── test_GateDecomposition.py                   # Unit tests for Gate Decomposition modules for all QPU implementations.
-    │   ├── test_GetNoiseModel_error_handling.py        # Unit tests for GetNoiseModel module's error handling.
-    |   ├── test_Integration.py                         # Integration tests for multiple modules working together.
-    │   ├── test_QuantumCircuit_error_handling.py       # Unit tests for QuantumCircuit class
-    │   ├── test_RunOnHardware_error_handling.py        # Unit tests for RunOnHardware class.
+    ├── tests/                                          # Unit and Integration test suite
     ├── noise_models/                                   # Directory with sample noise models
-    │   ├── README.md                                   # Detailed documentation
-    │   ├── Noise_Model_Eagle_QPU.pkl                   # Sample Noise Model for the Eagle QPU taken from IBM Brisbane calibration data
-    │   ├── Noise_Model_Heron_QPU.pkl                   # Sample Noise Model for the Heron QPU taken from IBM Fez calibration data
     ├── examples/                                       # Example suite and examples
     │   ├── README.md                                   # Detailed documentation
     │   ├── introduction.ipynb                          # Getting started tutorial

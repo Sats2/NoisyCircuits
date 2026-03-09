@@ -42,7 +42,7 @@ The supported gated are fully decomposed into the hardware basis gates and this 
 
 - Python 3.10 or higher
 - A conda-based environment manager ([Miniconda](https://docs.conda.io/en/latest/miniconda.html), [Anaconda](https://www.anaconda.com/), or [Micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html))
-- IBM Quantum account and API token (for noise model access)
+- IBM Quantum account and API token (for noise model access, optional. Sample Noise Data is made available.)
 
 ### Installation Steps
 

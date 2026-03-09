@@ -1,8 +1,8 @@
 NoisyCircuits.utils package
 ===========================
 
-Submodules
-----------
+.. Submodules
+.. ----------
 
 NoisyCircuits.utils.BuildQubitGateModel module
 ----------------------------------------------

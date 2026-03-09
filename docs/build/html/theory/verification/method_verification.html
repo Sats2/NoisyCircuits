@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Method Verification &mdash; NoisyCircuits 1.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Hardware Considerations" href="../hardware.html" />
+    <link rel="prev" title="Method Comparisons" href="../comparison.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../quantum_computing.html">Quantum Computing 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quantum_noise.html">Quantum Noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mcwf_method.html">Monte-Carlo Wave Function (MCWF) Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quantum_simulator.html">Quantum Circuit Simulators</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../comparison.html">Method Comparisons</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#metrics">Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#setup">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#noise-filtering">Noise Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#mcwf-vs-density-matrix-simulation">MCWF Vs Density Matrix Simulation</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../comparison.html#reproducibility">Reproducibility</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Method Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../hardware.html">Hardware Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../theory.html">Theory</a></li>
+          <li class="breadcrumb-item"><a href="../comparison.html">Method Comparisons</a></li>
+      <li class="breadcrumb-item active">Method Verification</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintheory/verification/method_verification.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Method-Verification">
+<h1>Method Verification<a class="headerlink" href="#Method-Verification" title="Link to this heading"></a></h1>
+<p>In this script, the probabilities from the MCWF method is compared against the probabilities from a density matrix simulation to validate the MCWF method as a valid implementation for noisy statevector simulations.</p>
+<section id="Import-Libraries">
+<h2>Import Libraries<a class="headerlink" href="#Import-Libraries" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantumCircuit</span> <span class="k">as</span> <span class="n">QC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.CreateNoiseModel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GetNoiseModel</span><span class="p">,</span> <span class="n">CreateNoiseModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Initialize-the-Noise-Model">
+<h2>Initialize the Noise Model<a class="headerlink" href="#Initialize-the-Noise-Model" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">api_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;ibm_api.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">))</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">api_json</span><span class="p">[</span><span class="s2">&quot;apikey&quot;</span><span class="p">]</span> <span class="c1"># Replace with your Token</span>
+<span class="n">service_crn</span> <span class="o">=</span> <span class="n">api_json</span><span class="p">[</span><span class="s2">&quot;service-crn&quot;</span><span class="p">]</span> <span class="c1"># Replace with your Service CRN</span>
+<span class="n">backend_name</span> <span class="o">=</span> <span class="s2">&quot;ibm_fez&quot;</span>
+<span class="n">qpu_type</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span>
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+<p>Run the code below to use the latest noise model from IBM hardware calibration data. This requires a valid IBM Quantum Token as well as a service-crn for available quantum backend instances. If a valid token is not available, then skip the below cell and execute the next cell to use the sample noise data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_model</span> <span class="o">=</span> <span class="n">GetNoiseModel</span><span class="p">(</span>
+    <span class="n">backend_name</span><span class="o">=</span><span class="n">backend_name</span><span class="p">,</span>
+    <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span>
+    <span class="n">service_crn</span><span class="o">=</span><span class="n">service_crn</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">get_noise_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Warning: Found relaxation time anomaly for qubit 72 with $T_2 \geq 2T_1$. Setting $T_2 = 2T_1$.
+</pre></div></div>
+</div>
+<p>Run the code below in case API access is not feasible, and use the sample noise model provided with the software</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;eagle&quot;</span><span class="p">:</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/Sats2/NoisyCircuits/main/noise_models/Noise_Model_Eagle_QPU.pkl&quot;</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
+<span class="k">elif</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;heron&quot;</span><span class="p">:</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;https://raw.githubusercontent.com/Sats2/NoisyCircuits/main/noise_models/Sample_Noise_Model_Heron_QPU.csv&quot;</span>
+    <span class="n">noise_model</span> <span class="o">=</span> <span class="n">CreateNoiseModel</span><span class="p">(</span><span class="n">calibration_data_file</span><span class="o">=</span><span class="n">file_path</span><span class="p">,</span>
+                                   <span class="n">basis_gates</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;cz&quot;</span><span class="p">,</span> <span class="s2">&quot;rzz&quot;</span><span class="p">]])</span><span class="o">.</span><span class="n">create_noise_model</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid qpu_type. Choose either &#39;heron&#39; or &#39;eagle&#39;.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-the-Randomized-Circuit">
+<h2>Define the Randomized Circuit<a class="headerlink" href="#Define-the-Randomized-Circuit" title="Link to this heading"></a></h2>
+<p>Define the function that can generate a randomized circuit that can be executed using density matrix simulation and as an MCWF execution.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">build_random_circuit</span><span class="p">(</span><span class="n">circuit</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">):</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;eagle&quot;</span><span class="p">:</span>
+        <span class="n">gate</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;X&quot;</span> <span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+            <span class="s2">&quot;SX&quot;</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">SX</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">two_qubit_gate</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">ECR</span>
+    <span class="k">elif</span> <span class="n">qpu_type</span> <span class="o">==</span> <span class="s2">&quot;heron&quot;</span><span class="p">:</span>
+        <span class="n">gate</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;X&quot;</span> <span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="n">q</span><span class="p">),</span>
+            <span class="s2">&quot;SX&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">SX</span><span class="p">(</span><span class="n">q</span><span class="p">),</span>
+            <span class="s2">&quot;RX&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">q</span><span class="p">:</span> <span class="n">circuit</span><span class="o">.</span><span class="n">RX</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span> <span class="n">q</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">two_qubit_gate</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">CZ</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported QPU type. Supported types are &#39;heron&#39; and &#39;eagle&#39;.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">):</span>
+            <span class="n">choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">gate</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="n">gate</span><span class="p">[</span><span class="n">choice</span><span class="p">](</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">two_qubit_gate</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-the-Metrics">
+<h2>Define the Metrics<a class="headerlink" href="#Define-the-Metrics" title="Link to this heading"></a></h2>
+<p>Define the function that can compute the desired validation metrics between the reference probability distribution (from the density matrix) and the probability distribution from the MCWF method. The chosen metrics are:</p>
+<ol class="arabic simple">
+<li><p><strong>Battacharyya Coefficient:</strong> Defines the overlap between two probability distributions and is bounded between <span class="math notranslate nohighlight">\([0,1]\)</span>, where a value of <span class="math notranslate nohighlight">\(1\)</span> indicates a similar distributions. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+BC(p,q) = \sum_{i=1}^{N} \sqrt{p_iq_i}
+\end{equation*}</span> Interpretation: The closer the two distributions are in similarity, the closer value of the Battacharyya Coefficient is to <span class="math notranslate nohighlight">\(1\)</span>.</p></li>
+<li><p><strong>Battacharyya Distance:</strong> Provides a distance measure that indicates the dissimilarity between two probability distributions and lies between <span class="math notranslate nohighlight">\([0, \infty]\)</span>, where a value of <span class="math notranslate nohighlight">\(0\)</span> indicates a similar distribution and higher the value, the greater the dissimilarity between the two distributions. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+BD(p,q) = -\text{log}(BC(p,q))
+\end{equation*}</span></p></li>
+<li><p><strong>Hellinger Distance:</strong> Provides a measure of the geometric difference between two probability distributions and is bounded between <span class="math notranslate nohighlight">\([0,1]\)</span>, where a value of <span class="math notranslate nohighlight">\(0\)</span> indicates a similar distribution. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+HD(p,q) = \frac{1}{\sqrt{2}} \sqrt{\sum_{i=1}^{N}(\sqrt{p_i} - \sqrt{q_i})^2}
+\end{equation*}</span></p></li>
+<li><p><strong>Jenson-Shannon (JS) Divergence:</strong> It is the smoothed, symmetric version of the KL divergence, measuring the average information divergence between the two distributions and is bounded between <span class="math notranslate nohighlight">\([0, \text{log}(2)]\)</span> where lower the value the lesser the information loss. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+JSD(p||q) = \frac{1}{2}(KL(p||m) + KL(q||m)) \text{ with } m = \frac{p+q}{2}
+\end{equation*}</span></p></li>
+</ol>
+<p><span class="math">\begin{equation*}
+KL(a||b) = \sum_{i=1}^{N}a_i\text{log}(\frac{a_i}{b_i})
+\end{equation*}</span></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_metrics</span><span class="p">(</span><span class="n">pd_1</span><span class="p">,</span> <span class="n">pd_2</span><span class="p">):</span>
+    <span class="n">battacharyya_coefficient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pd_1</span> <span class="o">*</span> <span class="n">pd_2</span><span class="p">))</span>
+    <span class="n">battacharyya_distance</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">battacharyya_coefficient</span><span class="p">)</span>
+    <span class="n">hellinger_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pd_1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pd_2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">pd_1</span> <span class="o">+</span> <span class="n">pd_2</span><span class="p">)</span>
+    <span class="n">js</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pd_1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e-10</span> <span class="o">+</span> <span class="n">pd_1</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span> <span class="o">+</span> <span class="n">pd_2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e-10</span> <span class="o">+</span> <span class="n">pd_2</span> <span class="o">/</span> <span class="n">m</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">battacharyya_coefficient</span><span class="p">,</span> <span class="n">battacharyya_distance</span><span class="p">,</span> <span class="n">hellinger_distance</span><span class="p">,</span> <span class="n">js</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-Randomized-Test-Parameters">
+<h2>Define Randomized Test Parameters<a class="headerlink" href="#Define-Randomized-Test-Parameters" title="Link to this heading"></a></h2>
+<p>Define the range for the number of qubits to use and the total number of single qubit gates per qubit. Note that an entanglement gate is applied to after each single qubit gate (recommended to start with 2 qubits).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">qubit_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
+<span class="n">depth_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">metrics_identifier</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Battacharyya Coefficient&quot;</span><span class="p">,</span> <span class="s2">&quot;Battacharyya Distance&quot;</span><span class="p">,</span> <span class="s2">&quot;Hellinger Distance&quot;</span><span class="p">,</span> <span class="s2">&quot;Jensen-Shannon Divergence&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_metrics</span><span class="p">(</span><span class="n">dict_list</span><span class="p">,</span> <span class="n">trajectory_list</span><span class="p">):</span>
+    <span class="n">depths</span> <span class="o">=</span> <span class="n">depth_list</span>
+    <span class="n">qubits</span> <span class="o">=</span> <span class="n">qubit_list</span>
+
+    <span class="k">for</span> <span class="n">depth</span> <span class="ow">in</span> <span class="n">depths</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">traj_idx</span><span class="p">,</span> <span class="n">traj_count</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trajectory_list</span><span class="p">):</span>
+                <span class="n">metric_values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">num_qubits</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dict_list</span><span class="p">[</span><span class="n">traj_idx</span><span class="p">]:</span>
+                        <span class="n">metric_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dict_list</span><span class="p">[</span><span class="n">traj_idx</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="n">metric</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">metric_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].plot(qubits, metric_values, label=f&quot;Trajectories: {traj_count}&quot;, marker=&#39;o&#39;)
+
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].set_title(f&quot;{metric}&quot;)
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].set_xlabel(&quot;Number of Qubits&quot;)
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].set_xticks(qubits)
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].set_ylabel(metric)
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].legend()
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="k">2</span>].grid()
+        <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Comparison for Depth=</span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">run_experiment</span><span class="p">(</span><span class="n">sim_backend</span><span class="p">):</span>
+    <span class="n">mcwf_10t_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mcwf_100t_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mcwf_200t_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mcwf_500t_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mcwf_1000t_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Results_Log_File_</span><span class="si">{}</span><span class="s2">.log&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sim_backend</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">num_qubits</span> <span class="ow">in</span> <span class="n">qubit_list</span><span class="p">:</span>
+        <span class="n">circ</span> <span class="o">=</span> <span class="n">QC</span><span class="p">(</span><span class="n">num_qubits</span><span class="o">=</span><span class="n">num_qubits</span><span class="p">,</span>
+                <span class="n">noise_model</span><span class="o">=</span><span class="n">noise_model</span><span class="p">,</span>
+                <span class="n">backend_qpu_type</span><span class="o">=</span><span class="n">qpu_type</span><span class="p">,</span>
+                <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">sim_backend</span> <span class="o">=</span> <span class="n">sim_backend</span><span class="p">,</span>
+                <span class="n">num_cores</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+                <span class="n">jsonize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">depth</span> <span class="ow">in</span> <span class="n">depth_list</span><span class="p">:</span>
+            <span class="n">circ</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;===========================================================================</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running Circuit with </span><span class="si">{</span><span class="n">num_qubits</span><span class="si">}</span><span class="s2"> qubits and depth </span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">build_random_circuit</span><span class="p">(</span><span class="n">circ</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">)</span>
+            <span class="n">probs_density_matrix</span> <span class="o">=</span> <span class="n">circ</span><span class="o">.</span><span class="n">run_with_density_matrix</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)))</span>
+            <span class="n">probs_mcwf_10t</span> <span class="o">=</span> <span class="n">circ</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)),</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">probs_mcwf_100t</span> <span class="o">=</span> <span class="n">circ</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)),</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">probs_mcwf_200t</span> <span class="o">=</span> <span class="n">circ</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)),</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+            <span class="n">probs_mcwf_500t</span> <span class="o">=</span> <span class="n">circ</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)),</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+            <span class="n">probs_mcwf_1000t</span> <span class="o">=</span> <span class="n">circ</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">)),</span> <span class="n">num_trajectories</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+            <span class="n">metrics_10t</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">probs_density_matrix</span><span class="p">,</span> <span class="n">probs_mcwf_10t</span><span class="p">)</span>
+            <span class="n">metrics_100t</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">probs_density_matrix</span><span class="p">,</span> <span class="n">probs_mcwf_100t</span><span class="p">)</span>
+            <span class="n">metrics_200t</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">probs_density_matrix</span><span class="p">,</span> <span class="n">probs_mcwf_200t</span><span class="p">)</span>
+            <span class="n">metrics_500t</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">probs_density_matrix</span><span class="p">,</span> <span class="n">probs_mcwf_500t</span><span class="p">)</span>
+            <span class="n">metrics_1000t</span> <span class="o">=</span> <span class="n">compute_metrics</span><span class="p">(</span><span class="n">probs_density_matrix</span><span class="p">,</span> <span class="n">probs_mcwf_1000t</span><span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+            <span class="n">mcwf_10t_results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;num_qubits&quot;</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[(</span><span class="n">metric</span><span class="p">,</span> <span class="n">metrics_10t</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)]</span>
+            <span class="p">)</span>
+            <span class="n">mcwf_100t_results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;num_qubits&quot;</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[(</span><span class="n">metric</span><span class="p">,</span> <span class="n">metrics_100t</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)]</span>
+            <span class="p">)</span>
+            <span class="n">mcwf_200t_results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;num_qubits&quot;</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[(</span><span class="n">metric</span><span class="p">,</span> <span class="n">metrics_200t</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)]</span>
+            <span class="p">)</span>
+            <span class="n">mcwf_500t_results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;num_qubits&quot;</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[(</span><span class="n">metric</span><span class="p">,</span> <span class="n">metrics_500t</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)]</span>
+            <span class="p">)</span>
+            <span class="n">mcwf_1000t_results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="p">[(</span><span class="s2">&quot;num_qubits&quot;</span><span class="p">,</span> <span class="n">num_qubits</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;depth&quot;</span><span class="p">,</span> <span class="n">depth</span><span class="p">)]</span> <span class="o">+</span>
+                <span class="p">[(</span><span class="n">metric</span><span class="p">,</span> <span class="n">metrics_1000t</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)]</span>
+            <span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metrics for MCWF with </span><span class="si">{</span><span class="mi">10</span><span class="si">}</span><span class="s2"> Trajectories:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metrics_identifier</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metrics_10t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metrics for MCWF with </span><span class="si">{</span><span class="mi">100</span><span class="si">}</span><span class="s2"> Trajectories:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metrics_identifier</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metrics_100t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metrics for MCWF with </span><span class="si">{</span><span class="mi">200</span><span class="si">}</span><span class="s2"> Trajectories:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metrics_identifier</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metrics_200t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metrics for MCWF with </span><span class="si">{</span><span class="mi">500</span><span class="si">}</span><span class="s2"> Trajectories:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metrics_identifier</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metrics_500t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metrics for MCWF with </span><span class="si">{</span><span class="mi">1000</span><span class="si">}</span><span class="s2"> Trajectories:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics_identifier</span><span class="p">)):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metrics_identifier</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">metrics_1000t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;===========================================================================</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">circ</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mcwf_10t_results</span><span class="p">,</span> <span class="n">mcwf_100t_results</span><span class="p">,</span> <span class="n">mcwf_200t_results</span><span class="p">,</span> <span class="n">mcwf_500t_results</span><span class="p">,</span> <span class="n">mcwf_1000t_results</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Perform-the-Verification-with-the-Randomized-Circuits-for-Various-Backends">
+<h2>Perform the Verification with the Randomized Circuits for Various Backends<a class="headerlink" href="#Perform-the-Verification-with-the-Randomized-Circuits-for-Various-Backends" title="Link to this heading"></a></h2>
+<section id="Backend---Qiskit">
+<h3>Backend - Qiskit<a class="headerlink" href="#Backend---Qiskit" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_output</span> <span class="o">=</span> <span class="n">run_experiment</span><span class="p">(</span><span class="n">sim_backend</span><span class="o">=</span><span class="s2">&quot;qiskit&quot;</span><span class="p">)</span>
+<span class="n">plot_metrics</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">experiment_output</span><span class="p">),</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qiskit.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 16:56:33,224 INFO worker.py:1839 -- Calling ray.init() again after it has already been called.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qiskit.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 16:58:23,340 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 16:58:53,928 E 432690 442614] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qiskit.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:01:51,971 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:02:22,636 E 432690 447005] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qiskit.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:06:21,806 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:06:52,420 E 432690 451697] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qiskit.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:12:08,447 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:12:39,117 E 432690 456759] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qiskit.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:19:14,098 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:19:44,751 E 432690 462646] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_19_12.png" src="../../_images/theory_verification_method_verification_19_12.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_19_13.png" src="../../_images/theory_verification_method_verification_19_13.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_19_14.png" src="../../_images/theory_verification_method_verification_19_14.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_19_15.png" src="../../_images/theory_verification_method_verification_19_15.png" />
+</div>
+</div>
+</section>
+<section id="Backend---Pennylane">
+<h3>Backend - Pennylane<a class="headerlink" href="#Backend---Pennylane" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_output</span> <span class="o">=</span> <span class="n">run_experiment</span><span class="p">(</span><span class="n">sim_backend</span><span class="o">=</span><span class="s2">&quot;pennylane&quot;</span><span class="p">)</span>
+<span class="n">plot_metrics</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">experiment_output</span><span class="p">),</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to pennylane.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:27:33,293 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:28:03,938 E 432690 468698] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to pennylane.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:29:12,546 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:29:43,135 E 432690 472499] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to pennylane.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:32:17,219 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:32:47,798 E 432690 477154] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to pennylane.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:36:09,095 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:36:39,703 E 432690 483081] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to pennylane.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:41:01,581 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:41:32,127 E 432690 488803] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to pennylane.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:47:31,621 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:48:02,231 E 432690 494661] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_21_12.png" src="../../_images/theory_verification_method_verification_21_12.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_21_13.png" src="../../_images/theory_verification_method_verification_21_13.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_21_14.png" src="../../_images/theory_verification_method_verification_21_14.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_21_15.png" src="../../_images/theory_verification_method_verification_21_15.png" />
+</div>
+</div>
+</section>
+<section id="Backend---Qulacs">
+<h3>Backend - Qulacs<a class="headerlink" href="#Backend---Qulacs" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_output</span> <span class="o">=</span> <span class="n">run_experiment</span><span class="p">(</span><span class="n">sim_backend</span><span class="o">=</span><span class="s2">&quot;qulacs&quot;</span><span class="p">)</span>
+<span class="n">plot_metrics</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">experiment_output</span><span class="p">),</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 17:58:57,557 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 17:59:28,146 E 432690 501178] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 18:00:04,474 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 18:00:35,069 E 432690 504663] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 18:02:14,410 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 18:02:45,006 E 432690 508275] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 18:04:48,903 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 18:05:19,491 E 432690 511812] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 18:07:48,040 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 18:08:18,648 E 432690 515394] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Successfully switched backend to qulacs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-06 18:11:32,971 INFO worker.py:2007 -- Started a local Ray instance.
+[2026-03-06 18:12:03,581 E 432690 519011] core_worker_process.cc:842: Failed to establish connection to the metrics exporter agent. Metrics will not be exported. Exporter agent status: RpcError: Running out of retries to initialize the metrics agent. rpc_code: 14
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_23_12.png" src="../../_images/theory_verification_method_verification_23_12.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_23_13.png" src="../../_images/theory_verification_method_verification_23_13.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_23_14.png" src="../../_images/theory_verification_method_verification_23_14.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_23_15.png" src="../../_images/theory_verification_method_verification_23_15.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<p><strong>Download this Notebook</strong> - <a class="reference download internal" download="" href="../../_downloads/ceebe044c4197fff5b7c1928ccb79ba1/method_verification.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">/theory/verification/method_verification.ipynb</span></code></a></p>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../comparison.html" class="btn btn-neutral float-left" title="Method Comparisons" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../hardware.html" class="btn btn-neutral float-right" title="Hardware Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

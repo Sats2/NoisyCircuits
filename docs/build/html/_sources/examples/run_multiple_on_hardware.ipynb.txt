@@ -7,7 +7,7 @@
    "source": [
     "# Running Multiple Circuits on Hardware\n",
     "\n",
-    "This tutorial shows how a quantum circuit can be run on actual quantum hardware.\n",
+    "This tutorial shows how a quantum circuit can be run on actual quantum hardware. This requires a valid IBM Quantum Token as well as a service-crn for available quantum backend instances. Please make sure you have sufficient time available to execute the code on the quantum hardware.\n",
     "\n",
     "## Import all Necessary Libraries"
    ]

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Method Comparisons &mdash; NoisyCircuits 1.0.0 documentation</title>
+  <title>Method Comparisons &mdash; NoisyCircuits 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/documentation_options.js?v=1f29e9d3"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -25,7 +25,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Hardware Considerations" href="hardware.html" />
+    <link rel="next" title="Method Verification" href="verification/method_verification.html" />
     <link rel="prev" title="Quantum Circuit Simulators" href="quantum_simulator.html" /> 
 </head>
 
@@ -62,6 +62,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#noise-filtering">Noise Filtering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mcwf-vs-density-matrix-simulation">MCWF Vs Density Matrix Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reproducibility">Reproducibility</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="verification/method_verification.html">Method Verification</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>
@@ -91,7 +95,8 @@
           <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
       <li class="breadcrumb-item active">Method Comparisons</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintheory/comparison.rst" class="fa fa-github"> Edit on GitHub</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/Sats2/NoisyCircuits" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -273,6 +278,15 @@ A BD value of <span class="math notranslate nohighlight">\(0\)</span> indicates 
 </div>
 </div>
 </section>
+<section id="reproducibility">
+<h2>Reproducibility<a class="headerlink" href="#reproducibility" title="Link to this heading"></a></h2>
+<p>The above comparisons can be reproduced using the latest calibration data or using the sample noise models provided in the repository. The scripts for reproducing the comparisons can be found in the <cite>verification</cite> folder of the repository, linked below:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="verification/method_verification.html"><span class="doc">Verification Script</span></a></p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
 <section id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h2>
 <p>From the comparisons conducted, it is evident that both noise filtering and the MCWF simulation method offer significant advantages in terms of computational efficiency without compromising accuracy. Noise filtering effectively reduces the complexity of the noise model, leading to faster simulations. The MCWF method provides a scalable alternative to Density Matrix simulations, particularly for larger circuits, while still maintaining high accuracy with an appropriate choice of trajectories. These methods are valuable tools for simulating noisy quantum circuits and can be tailored to specific requirements based on the desired balance between accuracy and computational resources.</p>
@@ -284,13 +298,13 @@ A BD value of <span class="math notranslate nohighlight">\(0\)</span> indicates 
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="quantum_simulator.html" class="btn btn-neutral float-left" title="Quantum Circuit Simulators" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="hardware.html" class="btn btn-neutral float-right" title="Hardware Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="verification/method_verification.html" class="btn btn-neutral float-right" title="Method Verification" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+    <p>&#169; Copyright 2026, Sathyamurthy Hegde.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

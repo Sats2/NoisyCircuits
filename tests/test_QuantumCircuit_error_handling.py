@@ -135,6 +135,9 @@ def test_num_cores_value():
     with pytest.raises(ValueError):
         QuantumCircuit(num_qubits=2, noise_model=noise_model, backend_qpu_type="heron",
                        num_trajectories=10, threshold=1e-4, num_cores=0)
+    with pytest.raises(ValueError):
+        QuantumCircuit(num_qubits=2, noise_model=noise_model, backend_qpu_type="heron",
+                       num_trajectories=10, threshold=1e-4, num_cores=1000)
 
 def test_sim_backend_type():
     """
