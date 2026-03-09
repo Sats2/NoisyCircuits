@@ -19,6 +19,28 @@ from qulacs import gate
 import numpy as np
 from qulacs.state import partial_trace
 
+
+def convert_matrix_to_little_endian(matrix_list:list[np.ndarray[np.complex128]])->list[np.ndarray[np.complex128]]:
+    """
+    Converts the two-qubit matrices from big endian to little endian format.
+
+    Args:
+        matrix_list (list[np.ndarray[np.complex128]]): The list of input matrices in big endian format.
+
+    Returns:
+        list[np.ndarray[np.complex128]]: The list of output matrices in little endian format.
+    """
+    perm = np.array([0, 2, 1, 3])
+    n = matrix_list[0].shape[0]
+    result_list = []
+    for matrix in matrix_list:
+        result = np.empty((n, n), dtype=np.complex128)
+        for i in range(n):
+            for j in range(n):
+                result[i, j] = matrix[perm[i], perm[j]]
+        result_list.append(result)
+    return result_list
+
 class DensityMatrixSolver:
     """
     Class to solve quantum circuits using density matrices. Assumes that the circuit is defined with the qubit map already implemented.
@@ -83,6 +105,10 @@ class DensityMatrixSolver:
             "rzz": lambda q, p: gate.DenseMatrix(q, np.array([[exp(-p/2), 0, 0, 0], [0, exp(p/2), 0, 0], [0, 0, exp(p/2), 0], [0, 0, 0, exp(-p/2)]])),
             "unitary": lambda q, p: gate.DenseMatrix(q, p) if len(q) > 1 else gate.DenseMatrix(q[0], p)
         }
+        for two_gate in self.two_qubit_noise:
+            for qubit_pair in self.two_qubit_noise[two_gate]:
+                error_operator_list = convert_matrix_to_little_endian(self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"])
+                self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"] = error_operator_list
         noise_handlers = {
             "x": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
                                                        self.single_qubit_noise[q[0]]["x"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["x"]["qubit_channel"]))]),
