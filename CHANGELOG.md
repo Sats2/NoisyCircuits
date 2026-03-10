@@ -2,6 +2,24 @@
 
 All notable changes to this project is documentated here based on the format by [Keep a Changelog](http://keepachangelog.com/). This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v1.3.0] - 2026-03-10
+
+### Added Functionlity
+
+* Added functionality to get the raw noise model from the calibration data that can be provided as CSV files to allow for users to use their own backends (see documentation how to use custom backends).
+
+### Updates
+
+* Modified functionality to get the raw noise model from the calibration data of IBM backends via API to replace the existing module.
+* Modified the density matrix and execute methods with qiskit and qulacs solvers for operator casting to little endian representation.
+* Modified the readout error information retreival where the average error is now discarded and the specific errors are used.
+
+### Bug Fixes
+
+* Fixed bugs related to noise model decomposition.
+* Fixed bug in the density matrix solver of Qulacs.
+* Fixed bug related to endian representation in the noise model generation.
+
 
 ## [v1.2.0] - 2026-02-17
 
