@@ -1,7 +1,7 @@
 Quantum Noise
 ================
 
-In the NISQ (Noisy Intermediate Scale Quantum) era, quantum computers are prone to various types of noise that can significantly affect their performance. Understanding and mitigating quantum noise is crucial for the development of reliable quantum algorithms and applications. This noise cannot be modelled as unitary operations, as they introduce errors that cannot be reversed simply by applying another unitary transformation but non-unitary operations cannot be used to describe closed quantum systems (i.e., evolve a pure state vector). Thus, there is a requirement for a different representation of qubits that allows for non-unitary operations. This representation is called the density matrix formalism. :cite:p:`NC10`
+In the Noisy Intermediate Scale Quantum (NISQ) era, quantum computers are prone to various types of noise that can significantly affect their performance. Understanding and mitigating quantum noise is crucial for the development of reliable quantum algorithms and applications. This noise cannot be modelled as unitary operations, as they introduce errors that cannot be reversed simply by applying another unitary transformation but non-unitary operations cannot be used to describe closed quantum systems (i.e., evolve a pure state vector). Thus, there is a requirement for a different representation of qubits that allows for non-unitary operations. This representation is called the density matrix formalism. :cite:p:`NC10`
 
 Density Matrix
 ----------------

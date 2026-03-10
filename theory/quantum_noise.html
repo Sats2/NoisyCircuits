@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quantum Noise &mdash; NoisyCircuits 1.0.0 documentation</title>
+  <title>Quantum Noise &mdash; NoisyCircuits 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/documentation_options.js?v=1f29e9d3"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -88,7 +88,8 @@
           <li class="breadcrumb-item"><a href="../theory.html">Theory</a></li>
       <li class="breadcrumb-item active">Quantum Noise</li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintheory/quantum_noise.rst" class="fa fa-github"> Edit on GitHub</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/Sats2/NoisyCircuits" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -98,7 +99,7 @@
              
   <section id="quantum-noise">
 <h1>Quantum Noise<a class="headerlink" href="#quantum-noise" title="Link to this heading"></a></h1>
-<p>In the NISQ (Noisy Intermediate Scale Quantum) era, quantum computers are prone to various types of noise that can significantly affect their performance. Understanding and mitigating quantum noise is crucial for the development of reliable quantum algorithms and applications. This noise cannot be modelled as unitary operations, as they introduce errors that cannot be reversed simply by applying another unitary transformation but non-unitary operations cannot be used to describe closed quantum systems (i.e., evolve a pure state vector). Thus, there is a requirement for a different representation of qubits that allows for non-unitary operations. This representation is called the density matrix formalism. <span id="id1">[<a class="reference internal" href="../references.html#id5" title="Michael A. Nielsen and Isaac L. Chuang. Quantum Computation and Quantum Information: 10th Anniversary Edition. Cambridge University Press, 2010.">4</a>]</span></p>
+<p>In the Noisy Intermediate Scale Quantum (NISQ) era, quantum computers are prone to various types of noise that can significantly affect their performance. Understanding and mitigating quantum noise is crucial for the development of reliable quantum algorithms and applications. This noise cannot be modelled as unitary operations, as they introduce errors that cannot be reversed simply by applying another unitary transformation but non-unitary operations cannot be used to describe closed quantum systems (i.e., evolve a pure state vector). Thus, there is a requirement for a different representation of qubits that allows for non-unitary operations. This representation is called the density matrix formalism. <span id="id1">[<a class="reference internal" href="../references.html#id5" title="Michael A. Nielsen and Isaac L. Chuang. Quantum Computation and Quantum Information: 10th Anniversary Edition. Cambridge University Press, 2010.">4</a>]</span></p>
 <section id="density-matrix">
 <h2>Density Matrix<a class="headerlink" href="#density-matrix" title="Link to this heading"></a></h2>
 <p>Density Matrices are quantum mechanical frameworks for representing wavefunctions of a noisy (or open) quantum system that deal with mixed states or partial information. A so called mixed state is a statistical ensemble of several pure states with some uncertainty that is not in superposition. A density matrix is defined as:</p>
@@ -148,7 +149,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Sathyamurthy Hegde.</p>
+    <p>&#169; Copyright 2026, Sathyamurthy Hegde.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

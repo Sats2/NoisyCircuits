@@ -215,6 +215,20 @@ Additionally, we also compare the execution time of both simulation methods as w
       Figure 6: Memory Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.
 
 
+Reproducibility
+-----------------
+The above comparisons can be reproduced using the latest calibration data or using the sample noise models provided in the repository. The scripts for reproducing the comparisons can be found in the `verification` folder of the repository, linked below:
+
+- :doc:`Verification Script <verification/method_verification>`
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Reproducibility
+   :hidden:
+
+   verification/method_verification
+
+
 Conclusion
 ----------
 From the comparisons conducted, it is evident that both noise filtering and the MCWF simulation method offer significant advantages in terms of computational efficiency without compromising accuracy. Noise filtering effectively reduces the complexity of the noise model, leading to faster simulations. The MCWF method provides a scalable alternative to Density Matrix simulations, particularly for larger circuits, while still maintaining high accuracy with an appropriate choice of trajectories. These methods are valuable tools for simulating noisy quantum circuits and can be tailored to specific requirements based on the desired balance between accuracy and computational resources.
