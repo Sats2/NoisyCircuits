@@ -13,3 +13,5 @@ sphinx-rtd-theme
 nbsphinx
 sphinxcontrib-bibtex
 sphinx-copybutton
+qulacs
+pandas
