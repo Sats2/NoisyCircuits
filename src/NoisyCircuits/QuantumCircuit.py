@@ -86,7 +86,7 @@ class QuantumCircuit:
                  backend_qpu_type:str,
                  num_trajectories:int,
                  num_cores:int=2,
-                 sim_backend:str="pennylane",
+                 sim_backend:str="qulacs",
                  jsonize:bool=False,
                  verbose:bool=True,
                  threshold:float=1e-12)->None:
