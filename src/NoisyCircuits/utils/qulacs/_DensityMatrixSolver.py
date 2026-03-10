@@ -80,6 +80,10 @@ class DensityMatrixSolver:
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
         self.instruction_list = instruction_list
+        for two_gate in self.two_qubit_noise:
+            for qubit_pair in self.two_qubit_noise[two_gate]:
+                error_operator_list = convert_matrix_to_little_endian(self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"])
+                self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"] = error_operator_list
 
     def solve(self,
               qubits:list[int])->np.ndarray[np.float64]:
@@ -105,10 +109,6 @@ class DensityMatrixSolver:
             "rzz": lambda q, p: gate.DenseMatrix(q, np.array([[exp(-p/2), 0, 0, 0], [0, exp(p/2), 0, 0], [0, 0, exp(p/2), 0], [0, 0, 0, exp(-p/2)]])),
             "unitary": lambda q, p: gate.DenseMatrix(q, p) if len(q) > 1 else gate.DenseMatrix(q[0], p)
         }
-        for two_gate in self.two_qubit_noise:
-            for qubit_pair in self.two_qubit_noise[two_gate]:
-                error_operator_list = convert_matrix_to_little_endian(self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"])
-                self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"] = error_operator_list
         noise_handlers = {
             "x": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
                                                        self.single_qubit_noise[q[0]]["x"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["x"]["qubit_channel"]))]),
@@ -122,7 +122,8 @@ class DensityMatrixSolver:
                                                         self.two_qubit_noise["ecr"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["ecr"][tuple(q)]["qubit_channel"]))]),
             "cz": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]], 
                                                         self.two_qubit_noise["cz"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["cz"][tuple(q)]["qubit_channel"]))]),
-            "rzz": lambda q: gate.DenseMatrix(list(q), np.eye(2**len(q))),
+            "rzz": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]],
+                                                         self.two_qubit_noise["rzz"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["rzz"][tuple(q)]["qubit_channel"]))]),
             "unitary": lambda q: gate.DenseMatrix(list(q), np.eye(2 ** len(q)))
         }
 
