@@ -168,12 +168,12 @@ def test_sim_backend_value():
 
 def test_sim_backend_default():
     """
-    Test that sim_backend parameter defaults to "pennylane" when not provided.
+    Test that sim_backend parameter defaults to "qulacs" when not provided.
     """
     noise_model = pickle.load(open(file_path, "rb"))
     circuit = QuantumCircuit(num_qubits=1, noise_model=noise_model, backend_qpu_type="heron",
                        num_trajectories=10, threshold=1e-4, num_cores=4)
-    assert circuit.sim_backend == "pennylane"
+    assert circuit.sim_backend == "qulacs"
     circuit.shutdown()
 
 def test_jsonize_type():
