@@ -6,6 +6,7 @@ dependencies:
   - joblib
   - pip
   - pandoc
+  - pandas
   - scipy
   - numba
   - matplotlib
