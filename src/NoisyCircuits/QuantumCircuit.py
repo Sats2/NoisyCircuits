@@ -86,7 +86,7 @@ class QuantumCircuit:
                  backend_qpu_type:str,
                  num_trajectories:int,
                  num_cores:int=2,
-                 sim_backend:str="pennylane",
+                 sim_backend:str="qulacs",
                  jsonize:bool=False,
                  verbose:bool=True,
                  threshold:float=1e-12)->None:
@@ -406,6 +406,7 @@ class QuantumCircuit:
         if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to draw.")
         from qiskit import QuantumCircuit as QiskitQuantumCircuit
+        import matplotlib.pyplot as plt
         circuit = QiskitQuantumCircuit(self.num_qubits)
         instruction_map = {
             "x": lambda q, p: circuit.x(q[0]),
@@ -421,8 +422,9 @@ class QuantumCircuit:
             instruction_map[gate_name](qubit_index, parameters)
         if style.lower() == "mpl":
             circuit.draw(output="mpl")
+            plt.show()
         else:
-            circuit.draw()
+            print(circuit.draw())
         del circuit
         gc.collect()
     

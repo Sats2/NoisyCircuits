@@ -21,6 +21,28 @@ from qiskit_aer.library import SaveDensityMatrix
 from qiskit.quantum_info import partial_trace
 import numpy as np
 
+
+def convert_matrix_to_little_endian(matrix_list:list[np.ndarray[np.complex128]])->list[np.ndarray[np.complex128]]:
+    """
+    Converts the two-qubit matrices from big endian to little endian format.
+
+    Args:
+        matrix_list (list[np.ndarray[np.complex128]]): The list of input matrices in big endian format.
+
+    Returns:
+        list[np.ndarray[np.complex128]]: The list of output matrices in little endian format.
+    """
+    perm = np.array([0, 2, 1, 3])
+    n = matrix_list[0].shape[0]
+    result_list = []
+    for matrix in matrix_list:
+        result = np.empty((n, n), dtype=np.complex128)
+        for i in range(n):
+            for j in range(n):
+                result[i, j] = matrix[perm[i], perm[j]]
+        result_list.append(result)
+    return result_list
+
 class DensityMatrixSolver:
     """
     Class to solve quantum circuits using density matrices. Assumes that the circuit is defined with the qubit map already implemented.
@@ -65,7 +87,7 @@ class DensityMatrixSolver:
                 self.noise.add_quantum_error(error, gate, [qubit])
         for gate in two_qubit_noise:
             for qubit_pair in two_qubit_noise[gate]:
-                error = kraus_error(two_qubit_noise[gate][qubit_pair]["qubit_channel"])
+                error = kraus_error(convert_matrix_to_little_endian(two_qubit_noise[gate][qubit_pair]["qubit_channel"]))
                 self.noise.add_quantum_error(error, gate, list(qubit_pair))
     
     def solve(self,

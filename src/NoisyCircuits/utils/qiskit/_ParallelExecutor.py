@@ -17,6 +17,26 @@ import gc
 
 
 @njit(fastmath=False)
+def reverse_bit_order(x:int,
+                      num_qubits:int)->int:
+    """
+    Reverse the bit order of a 32-bit integer for a qubit index mapping.
+
+    Args:
+        x (int): The integer to reverse the bit order of.
+        num_qubits (int): The number of qubits in the system.
+
+    Returns:
+        int: The integer with the bit order reversed.
+    """
+    x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1)
+    x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2)
+    x = ((x >> 4) & 0x0F0F0F0F) | ((x & 0x0F0F0F0F) << 4)
+    x = ((x >> 8) & 0x00FF00FF) | ((x & 0x00FF00FF) << 8)
+    x = ((x >> 16) & 0x0000FFFF) | ((x & 0x0000FFFF) << 16)
+    return x >> (32 - num_qubits)
+
+@njit(fastmath=False)
 def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex128], int, int]],
                              state:np.ndarray[np.complex128])->np.ndarray[np.float64]:
     """
@@ -33,9 +53,13 @@ def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex
     for k, sparse_matrix in enumerate(sparse_matrix_list):
         data, indices, indptr = sparse_matrix
         res = np.zeros_like(state)
+        num_qubit = int(np.log2(state.shape[0]))
         for i in range(res.shape[0]):
+            row_sum = 0.0 + 0.0j
             for j in range(indptr[i], indptr[i+1]):
-                res[i] += data[j] * state[indices[j]]
+                row_sum += data[j] * state[reverse_bit_order(indices[j], num_qubit)]
+            little_endian_index = reverse_bit_order(i, num_qubit)
+            res[little_endian_index] = row_sum
         probs[k] = np.vdot(res, res).real
     return probs
 
@@ -56,9 +80,13 @@ def update_statevector(sparse_matrix:tuple[np.ndarray, int, int],
     """
     data, indices, indptr = sparse_matrix
     res = np.zeros_like(state)
+    num_qubit = int(np.log2(state.shape[0]))
     for i in range(res.shape[0]):
+        row_sum = 0.0 + 0.0j
         for j in range(indptr[i], indptr[i+1]):
-            res[i] += data[j] * state[indices[j]]
+            row_sum += data[j] * state[reverse_bit_order(indices[j], num_qubit)]
+        little_endian_index = reverse_bit_order(i, num_qubit)
+        res[little_endian_index] = row_sum
     return res / np.sqrt(prob)
 
 
