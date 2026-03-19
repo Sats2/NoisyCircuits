@@ -68,6 +68,4 @@ class PureStateSolver:
             circuit.add_gate(instruction_map[gate_name](qubit_index, parameter))
         circuit.update_quantum_state(state)
         state_array = state.get_vector()
-        del state, circuit, instruction_map, exp
-        gc.collect()
         return np.square(np.abs(state_array))

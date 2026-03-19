@@ -6,8 +6,9 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 import pathlib
+import pybind11
 
 here = pathlib.Path(__file__).parent.resolve()
 
@@ -16,6 +17,18 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
+
+cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops"]
+
+ext_modules = [
+    Extension(
+        "run",
+        ["./examples/simulator.cpp"],
+        include_dirs = [pybind11.get_include()],
+        language="c++",
+        extra_compile_args = cpp_flags
+    ),
+]
 
 setup(
     # This is the name of your project. The first time you publish this
@@ -136,6 +149,7 @@ setup(
         "dev": ["check-manifest"],
         "test": ["coverage"],
     },
+    ext_modules = ext_modules,
     # If there are data files included in your packages that need to be
     # installed, specify them here.
     package_data={  # Optional
