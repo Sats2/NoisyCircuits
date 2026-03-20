@@ -99,10 +99,10 @@ def run_circuit_cpp(num_qubits, angles_list):
 
 def test_runtime(max_qubits, title_inclusion, title_name, depth=2, log=None):
     qubit_list = []
-    mean_pennylane_default = []
-    std_pennylane_default = []
-    mean_bitmanip = []
-    std_bitmanip = []
+    # mean_pennylane_default = []
+    # std_pennylane_default = []
+    # mean_bitmanip = []
+    # std_bitmanip = []
     mean_pennylane_lightning = []
     std_pennylane_lightning = []
     mean_cpp = []
@@ -111,26 +111,26 @@ def test_runtime(max_qubits, title_inclusion, title_name, depth=2, log=None):
     for num_qubits in range(1, max_qubits + 1, 1):
         angles = np.random.uniform(-2*np.pi, 2*np.pi, size=(depth * num_qubits,))
         ns = {**globals(), 'num_qubits': num_qubits, 'angles': angles, "depth":depth}
-        times_pennylane_default = timeit.repeat("run_circuit_pennylane_default(angles, num_qubits)", 
-                                        globals=ns,
-                                        repeat=num, 
-                                        number=num)
+        # times_pennylane_default = timeit.repeat("run_circuit_pennylane_default(angles, num_qubits)", 
+        #                                 globals=ns,
+        #                                 repeat=num, 
+        #                                 number=num)
         times_pennylane_lightning = timeit.repeat("run_circuit_pennylane_lightning(angles, num_qubits)", 
                                         globals=ns,
                                         repeat=num, 
                                         number=num)
-        times_bitmanip = timeit.repeat("run_circuit_bit_manipulation(angles, num_qubits)", 
-                                       globals=ns,
-                                       repeat=num,
-                                       number=num)
+        # times_bitmanip = timeit.repeat("run_circuit_bit_manipulation(angles, num_qubits)", 
+        #                                globals=ns,
+        #                                repeat=num,
+        #                                number=num)
         times_cpp = timeit.repeat("run_circuit_cpp(num_qubits, angles)",
                                         globals=ns,
                                         repeat=num,
                                         number=num)
-        mean_pennylane_default.append(np.mean(times_pennylane_default) / num)
-        std_pennylane_default.append(np.std(times_pennylane_default) / num)
-        mean_bitmanip.append(np.mean(times_bitmanip) / num)
-        std_bitmanip.append(np.std(times_bitmanip) / num)
+        # mean_pennylane_default.append(np.mean(times_pennylane_default) / num)
+        # std_pennylane_default.append(np.std(times_pennylane_default) / num)
+        # mean_bitmanip.append(np.mean(times_bitmanip) / num)
+        # std_bitmanip.append(np.std(times_bitmanip) / num)
         mean_pennylane_lightning.append(np.mean(times_pennylane_lightning) / num)
         std_pennylane_lightning.append(np.std(times_pennylane_lightning) / num)
         mean_cpp.append(np.mean(times_cpp) / num)
@@ -138,19 +138,20 @@ def test_runtime(max_qubits, title_inclusion, title_name, depth=2, log=None):
         qubit_list.append(num_qubits)
         print(f"Completed {num_qubits} qubits.")
         log.write(f"Completed {num_qubits} qubits.\n")
-        print(f"Pennylane (default.qubit): {mean_pennylane_default[-1]} +/- {std_pennylane_default[-1]} seconds")
-        log.write(f"Pennylane (default.qubit): {mean_pennylane_default[-1]} +/- {std_pennylane_default[-1]} seconds\n")
+        # print(f"Pennylane (default.qubit): {mean_pennylane_default[-1]} +/- {std_pennylane_default[-1]} seconds")
+        # log.write(f"Pennylane (default.qubit): {mean_pennylane_default[-1]} +/- {std_pennylane_default[-1]} seconds\n")
         print(f"Pennylane (lightning.qubit): {mean_pennylane_lightning[-1]} +/- {std_pennylane_lightning[-1]} seconds")
         log.write(f"Pennylane (lightning.qubit): {mean_pennylane_lightning[-1]} +/- {std_pennylane_lightning[-1]} seconds\n")
-        print(f"Bit Manipulation: {mean_bitmanip[-1]} +/- {std_bitmanip[-1]} seconds")
-        log.write(f"Bit Manipulation: {mean_bitmanip[-1]} +/- {std_bitmanip[-1]} seconds\n")
+        # print(f"Bit Manipulation: {mean_bitmanip[-1]} +/- {std_bitmanip[-1]} seconds")
+        # log.write(f"Bit Manipulation: {mean_bitmanip[-1]} +/- {std_bitmanip[-1]} seconds\n")
         print(f"C++: {mean_cpp[-1]} +/- {std_cpp[-1]} seconds")
         log.write(f"C++: {mean_cpp[-1]} +/- {std_cpp[-1]} seconds\n")
         print("-" * 40)
         log.write("-" * 40 + "\n")
         log.flush()
     fig = plt.figure(figsize=(10, 6))
-    for mean, std, label in zip([mean_pennylane_default, mean_pennylane_lightning, mean_bitmanip, mean_cpp], [std_pennylane_default, std_pennylane_lightning, std_bitmanip, std_cpp], ["Pennylane", "Pennylane Lightning", "Bit Manipulation", "C++"]):
+    # for mean, std, label in zip([mean_pennylane_default, mean_pennylane_lightning, mean_bitmanip, mean_cpp], [std_pennylane_default, std_pennylane_lightning, std_bitmanip, std_cpp], ["Pennylane", "Pennylane Lightning", "Bit Manipulation", "C++"]):
+    for mean, std, label in zip([mean_pennylane_lightning, mean_cpp], [std_pennylane_lightning, std_cpp], ["Pennylane Lightning", "C++"]):
         plt.plot(qubit_list, mean, label=label)
         plt.fill_between(qubit_list, 
                          np.array(mean) - 2*np.array(std),
@@ -172,32 +173,33 @@ def test_runtime(max_qubits, title_inclusion, title_name, depth=2, log=None):
 
 if __name__ == "__main__":
     max_qubits = 25
-    log = open("Runtime_Analysis_with_Cpp_Module_modified.log", "w")
+    log = open("Benchmark_LightningQubit_Vs_Cpp.log", "w")
     q = np.random.randint(15, 25)
     angles = np.random.uniform(-2*np.pi, 2*np.pi, size=(q*20,))
-    p_pennylane = run_circuit_pennylane_default(angles, q)
+    # p_pennylane = run_circuit_pennylane_default(angles, q)
     p_lightning = run_circuit_pennylane_lightning(angles, q)
-    p_bit = run_circuit_bit_manipulation(angles, q)
+    # p_bit = run_circuit_bit_manipulation(angles, q)
     p_cpp = simulator.run_circuit_new(angles, q)
     p_cpp = np.array(p_cpp)
     p_cpp = p_cpp.reshape([2]*q).transpose(list(range(q))[::-1]).reshape(-1)
-    p_bit = p_bit.reshape([2]*q).transpose(list(range(q))[::-1]).reshape(-1)
-    fid_default = np.vdot(p_pennylane, p_bit).real ** 2
-    fid_lightning = np.vdot(p_lightning, p_bit).real ** 2
-    fig_cpp = np.vdot(p_pennylane, p_cpp).real ** 2
-    del p_pennylane, p_lightning, p_bit, p_cpp
+    # p_bit = p_bit.reshape([2]*q).transpose(list(range(q))[::-1]).reshape(-1)
+    # fid_default = np.vdot(p_pennylane, p_bit).real ** 2
+    # fid_lightning = np.vdot(p_lightning, p_bit).real ** 2
+    fig_cpp = np.vdot(p_lightning, p_cpp).real ** 2
+    # del p_pennylane, p_lightning, p_bit, p_cpp
+    del p_lightning, p_cpp
     del angles
     print(f"Used {q} qubits for fidelity test.")
     log.write(f"Used {q} qubits for fidelity test.\n")
-    print(f"Fidelity with Pennylane default.qubit: {fid_default:.6f}")
-    log.write(f"Fidelity with Pennylane default.qubit: {fid_default:.6f}\n")
-    print(f"Fidelity with Pennylane lightning.qubit: {fid_lightning:.6f}")
-    log.write(f"Fidelity with Pennylane lightning.qubit: {fid_lightning:.6f}\n")
+    # print(f"Fidelity with Pennylane default.qubit: {fid_default:.6f}")
+    # log.write(f"Fidelity with Pennylane default.qubit: {fid_default:.6f}\n")
+    # print(f"Fidelity with Pennylane lightning.qubit: {fid_lightning:.6f}")
+    # log.write(f"Fidelity with Pennylane lightning.qubit: {fid_lightning:.6f}\n")
     print(f"Fidelity of C++ implementation against Pennylane: {fig_cpp:.6f}")
     log.write(f"Fidelity of C++ implementation against Pennylane: {fig_cpp:.6f}\n")
     print("----"*20 + "\n")
     log.write("----"*20 + "\n")
-    assert np.isclose(fid_default, 1.0, atol=1e-6), "Fidelity with Pennylane default.qubit is not close to 1!"
-    assert np.isclose(fid_lightning, 1.0, atol=1e-6), "Fidelity with Pennylane lightning.qubit is not close to 1!"
-    test_runtime(max_qubits, title_inclusion="", title_name="Runtime_comparison_with_CPP_module", depth=20, log=log)
+    # assert np.isclose(fid_default, 1.0, atol=1e-6), "Fidelity with Pennylane default.qubit is not close to 1!"
+    # assert np.isclose(fid_lightning, 1.0, atol=1e-6), "Fidelity with Pennylane lightning.qubit is not close to 1!"
+    test_runtime(max_qubits, title_inclusion="C++ Vs Lightning.qubit", title_name="Lightning_qubit_vs_cpp", depth=20, log=log)
     log.close()

@@ -9,6 +9,8 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages, Extension
 import pathlib
 import pybind11
+import os
+import shlex
 
 here = pathlib.Path(__file__).parent.resolve()
 
@@ -19,6 +21,8 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 # Fields marked as "Optional" may be commented out.
 
 cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops"]
+omp_flags = ["-fopenmp"]
+target_flags = shlex.split(os.environ.get("OMP_TARGET_FLAGS", ""))
 
 ext_modules = [
     Extension(
@@ -28,6 +32,14 @@ ext_modules = [
         language="c++",
         extra_compile_args = cpp_flags
     ),
+    Extension(
+        "run_gpu",
+        ["./examples/simulator_gpu.cpp"],
+        include_dirs = [pybind11.get_include()],
+        language="c++",
+        extra_compile_args = cpp_flags + omp_flags + target_flags,
+        extra_link_args = omp_flags + target_flags,
+    )
 ]
 
 setup(

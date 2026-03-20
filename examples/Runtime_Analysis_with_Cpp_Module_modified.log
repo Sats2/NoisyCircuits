@@ -141,3 +141,15 @@ Pennylane (lightning.qubit): 2.876530064479448 +/- 0.002455738435410161 seconds
 Bit Manipulation: 68.12805216116016 +/- 0.010373875527220421 seconds
 C++: 2.892360759199364 +/- 0.011926028292311246 seconds
 ----------------------------------------
+Completed 24 qubits.
+Pennylane (default.qubit): 139.14963167407782 +/- 0.0818836744109631 seconds
+Pennylane (lightning.qubit): 6.417763833319768 +/- 0.007193693171809392 seconds
+Bit Manipulation: 156.4503798178793 +/- 0.07515001008418729 seconds
+C++: 6.144907899077516 +/- 0.02936995595535305 seconds
+----------------------------------------
+Completed 25 qubits.
+Pennylane (default.qubit): 288.9544121909188 +/- 0.23343676449059783 seconds
+Pennylane (lightning.qubit): 18.59867174115847 +/- 0.17426691589195267 seconds
+Bit Manipulation: 327.80113690095953 +/- 0.8176380714327939 seconds
+C++: 22.7303564077185 +/- 0.0386917831692732 seconds
+----------------------------------------

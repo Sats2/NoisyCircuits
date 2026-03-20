@@ -114,8 +114,8 @@ int main(int argc, char** argv) {
     auto end_time = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
-    double seconds = duration * 1e-9;
-    std::cout << "Time taken: " << seconds << " seconds." << std::endl;
+    // double seconds = duration * 1e-9;
+    std::cout << "Time taken: " << duration << " seconds." << std::endl;
 
     return 0;
 }
