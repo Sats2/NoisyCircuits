@@ -20,9 +20,10 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
-cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops"]
+cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops", "-fcf-protection=none", "-fno-stack-protector"]
 omp_flags = ["-fopenmp"]
-target_flags = shlex.split(os.environ.get("OMP_TARGET_FLAGS", ""))
+# target_flags = shlex.split(os.environ.get("OMP_TARGET_FLAGS", ""))
+target_flags = ['-foffload=nvptx-none']
 
 ext_modules = [
     Extension(

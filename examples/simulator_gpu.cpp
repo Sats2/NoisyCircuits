@@ -20,10 +20,10 @@ static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, s
     const std::size_t step = stride << 1;
     constexpr double inv_sqrt_2 = 0.70710678118655;
 
-    #pragma omp target teams distribute parallel for is_device_ptr(state)
+    #pragma omp target teams distribute parallel for thread_limit(256) 
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
-        const std::size_t g = (pair / stride) * step;
-        const std::size_t i = g + (pair % stride);
+        const std::size_t g = (pair >> q) << (q + 1);
+        const std::size_t i = g + (pair & (stride - 1));
         const std::size_t j = i + stride;
 
         const complex128 s0 = state[i];
@@ -42,10 +42,10 @@ static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, 
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp target teams distribute parallel for is_device_ptr(state)
+    #pragma omp target teams distribute parallel for thread_limit(256) 
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
-        const std::size_t g = (pair / stride) * step;
-        const std::size_t i = g + (pair % stride);
+        const std::size_t g = (pair >> q) << (q + 1);
+        const std::size_t i = g + (pair & (stride - 1));
         const std::size_t j = i + stride;
 
         const complex128 s0 = state[i];
@@ -58,12 +58,18 @@ static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, 
 
 static inline void apply_CZ_gate(complex128* const __restrict__ state, std::size_t q1, std::size_t q2, std::size_t num_qubits){
     const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t q_min = q1 < q2 ? q1 : q2;
+    const std::size_t q_max = q1 > q2 ? q1 : q2;
+    const std::size_t iters = dim >> 2;
+    const std::size_t m1 = (1ULL << q_min) - 1;
+    const std::size_t m2 = (1ULL << (q_max - 1)) - 1;
+    const std::size_t target_mask = (1ULL << q1) | (1ULL << q2);
     
-    #pragma omp target teams distribute parallel for is_device_ptr(state)
-    for (std::size_t i = 0; i < dim; ++i){
-        if (((i >> q1) & 1ull) && ((i >> q2) & 1ull)){
-            state[i] = -state[i];
-        }
+    #pragma omp target teams distribute parallel for thread_limit(256)
+    for (std::size_t i = 0; i < iters; ++i){
+        std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
+        std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
+        state[pos | target_mask] = -state[pos | target_mask];
     }
 }
 
