@@ -8,6 +8,7 @@
 
 namespace py = pybind11;
 using complex128 = std::complex<double>;
+const unsigned int thread_count = 512;
 
 
 int get_gpu_device_count(){
@@ -17,14 +18,13 @@ int get_gpu_device_count(){
 static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
-    const std::size_t step = stride << 1;
+    // const std::size_t step = stride << 1;
     constexpr double inv_sqrt_2 = 0.70710678118655;
 
-    #pragma omp target teams distribute parallel for thread_limit(256) 
+    #pragma omp target teams distribute parallel for thread_limit(thread_count) 
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
-        const std::size_t g = (pair >> q) << (q + 1);
-        const std::size_t i = g + (pair & (stride - 1));
-        const std::size_t j = i + stride;
+        const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const std::size_t j = i | stride;
 
         const complex128 s0 = state[i];
         const complex128 s1 = state[j];
@@ -37,16 +37,15 @@ static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, s
 static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits, double theta){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
-    const std::size_t step = stride << 1;
+    // const std::size_t step = stride << 1;
 
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp target teams distribute parallel for thread_limit(256) 
+    #pragma omp target teams distribute parallel for thread_limit(thread_count) 
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
-        const std::size_t g = (pair >> q) << (q + 1);
-        const std::size_t i = g + (pair & (stride - 1));
-        const std::size_t j = i + stride;
+        const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const std::size_t j = i | stride;
 
         const complex128 s0 = state[i];
         const complex128 s1 = state[j];
@@ -65,7 +64,7 @@ static inline void apply_CZ_gate(complex128* const __restrict__ state, std::size
     const std::size_t m2 = (1ULL << (q_max - 1)) - 1;
     const std::size_t target_mask = (1ULL << q1) | (1ULL << q2);
     
-    #pragma omp target teams distribute parallel for thread_limit(256)
+    #pragma omp target teams distribute parallel for thread_limit(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -78,7 +77,6 @@ void run_circuit_kernel(complex128* __restrict__ host_state, const double* __res
 
     #pragma omp target data map(to: host_angles[0:num_angles]) map(tofrom: host_state[0:dim])
     {
-        // #pragma GCC ivdep
         for (std::size_t q = 0; q < num_qubits; q++){
             apply_H_gate(host_state, q, num_qubits);
         }
@@ -98,12 +96,6 @@ void run_circuit_gpu(py::array_t<double> input_angles, py::size_t num_qubits, py
     double* angles_ptr = static_cast<double*>(angles_buf.ptr);
     const std::size_t num_angles = angles_buf.size;
     const unsigned int depth = num_angles / num_qubits;
-    const std::size_t dim = size_t{1} << num_qubits;
-
-    // int device_count = get_gpu_device_count();
-    // if (device_count <= 0){
-    //     throw std::runtime_error("No GPU devices found. Please ensure that your system has a compatible GPU and that OpenMP offloading is properly configured.");
-    // }
 
     py::buffer_info state_buf = output_state.request();
     auto* state = static_cast<complex128*>(state_buf.ptr);
