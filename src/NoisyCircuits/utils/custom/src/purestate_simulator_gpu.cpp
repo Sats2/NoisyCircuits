@@ -6,13 +6,13 @@
 
 namespace py = pybind11;
 using complex128 = std::complex<double>;
-const unsigned int thread_count = 256;
+using uint8 = const unsigned short;
 
 int get_gpu_device_count(void){
     return omp_get_num_devices();
 }
 
-static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits){
+static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
 
@@ -29,7 +29,7 @@ static inline void apply_X_gate(complex128* __restrict__ state, const std::size_
     }
 }
 
-static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits, const double theta){
+static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     
@@ -49,7 +49,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits, const double theta){
+void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
 
@@ -69,7 +69,7 @@ void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const st
     }
 }
 
-void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits){
+void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     constexpr complex128 post_i = complex128(0.5, 0.5);
@@ -88,7 +88,7 @@ void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const st
     }
 }
 
-void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits){
+void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t m1 = (1ULL << (q1 < q2 ? q1 : q2)) - 1;
@@ -103,7 +103,7 @@ void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const s
     }
 }
 
-void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta){
+void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -138,7 +138,7 @@ void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const 
     }
 }
 
-void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits){
+void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;

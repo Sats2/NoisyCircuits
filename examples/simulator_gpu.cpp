@@ -8,14 +8,13 @@
 
 namespace py = pybind11;
 using complex128 = std::complex<double>;
-const unsigned int thread_count = 512;
 
 
 int get_gpu_device_count(){
     return omp_get_num_devices();
 }
 
-static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits){
+static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits, const unsigned short thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     // const std::size_t step = stride << 1;
@@ -34,7 +33,7 @@ static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, s
     }
 }
 
-static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits, double theta){
+static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits, double theta, const unsigned short thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     // const std::size_t step = stride << 1;
@@ -55,7 +54,7 @@ static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, 
     }
 }
 
-static inline void apply_CZ_gate(complex128* const __restrict__ state, std::size_t q1, std::size_t q2, std::size_t num_qubits){
+static inline void apply_CZ_gate(complex128* const __restrict__ state, std::size_t q1, std::size_t q2, std::size_t num_qubits, const unsigned short thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
     const std::size_t q_max = q1 > q2 ? q1 : q2;
@@ -72,26 +71,26 @@ static inline void apply_CZ_gate(complex128* const __restrict__ state, std::size
     }
 }
 
-void run_circuit_kernel(complex128* __restrict__ host_state, const double* __restrict__ host_angles, std::size_t num_angles, std::size_t num_qubits, unsigned int depth){
+void run_circuit_kernel(complex128* __restrict__ host_state, const double* __restrict__ host_angles, std::size_t num_angles, std::size_t num_qubits, unsigned int depth, const unsigned short thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
 
     #pragma omp target data map(to: host_angles[0:num_angles]) map(tofrom: host_state[0:dim])
     {
         for (std::size_t q = 0; q < num_qubits; q++){
-            apply_H_gate(host_state, q, num_qubits);
+            apply_H_gate(host_state, q, num_qubits, thread_count);
         }
         for (unsigned int d = 0; d < depth; d++){   
             for (std::size_t q = 0; q < num_qubits; q++){
-                apply_RX_gate(host_state, q, num_qubits, host_angles[d * num_qubits + q]);
+                apply_RX_gate(host_state, q, num_qubits, host_angles[d * num_qubits + q], thread_count);
             }
             for (std::size_t q = 0; q < num_qubits - 1; q++){
-                apply_CZ_gate(host_state, q, q + 1, num_qubits);
+                apply_CZ_gate(host_state, q, q + 1, num_qubits, thread_count);
             }
         }
     }
 }
 
-void run_circuit_gpu(py::array_t<double> input_angles, py::size_t num_qubits, py::array_t<complex128> output_state){
+void run_circuit_gpu(py::array_t<double> input_angles, py::size_t num_qubits, py::array_t<complex128> output_state, const unsigned short thread_count){
     py::buffer_info angles_buf = input_angles.request();
     double* angles_ptr = static_cast<double*>(angles_buf.ptr);
     const std::size_t num_angles = angles_buf.size;
@@ -101,7 +100,7 @@ void run_circuit_gpu(py::array_t<double> input_angles, py::size_t num_qubits, py
     auto* state = static_cast<complex128*>(state_buf.ptr);
     state[0] = complex128(1.0, 0.0);
 
-    run_circuit_kernel(state, angles_ptr, num_angles, num_qubits, depth);
+    run_circuit_kernel(state, angles_ptr, num_angles, num_qubits, depth, thread_count);
 }
 
 PYBIND11_MODULE(run_gpu, m){

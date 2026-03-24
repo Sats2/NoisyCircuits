@@ -32,7 +32,8 @@ ext_modules = [
         ["./examples/simulator.cpp"],
         include_dirs = [pybind11.get_include()],
         language="c++",
-        extra_compile_args = cpp_flags
+        extra_compile_args = cpp_flags + omp_flags,
+        extra_link_args = omp_flags
     ),
     Extension(
         "run_gpu",

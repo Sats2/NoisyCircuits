@@ -2,14 +2,18 @@
 #include <pybind11/numpy.h>
 #include <vector>
 #include <complex>
+#include <omp.h>
 
 namespace py = pybind11;
 using complex128 = std::complex<double>;
+using uint8 = const unsigned short;
+
 
 static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t num_qubits){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
 
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -29,6 +33,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -48,6 +53,7 @@ void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const st
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -66,6 +72,7 @@ void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const st
     constexpr complex128 post_i = complex128(0.5, 0.5);
     constexpr complex128 negt_i = complex128(0.5, -0.5);
 
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -85,6 +92,7 @@ void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const s
     const std::size_t m2 = (1ULL << ((q1 > q2 ? q1 : q2) - 1)) - 1;
     const std::size_t target_mask = (1ULL << q1) | (1ULL << q2);
 
+    #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -106,6 +114,7 @@ void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const 
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
+    #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -139,6 +148,7 @@ void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const 
     constexpr double inv_sqrt_2 = 0.7071067811865476;
     constexpr complex128 inv_sqrt_2i = complex128(0.0, 7071067811865476);
 
+    #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i & ~m2) << 1);

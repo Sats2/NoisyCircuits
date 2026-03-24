@@ -1,5 +1,6 @@
 #include <complex>
 #include <vector>
+#include <omp.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -7,23 +8,29 @@
 namespace py = pybind11;
 using complex128 = std::complex<double>;
 using complexVector = std::vector<complex128>;
+using uint8 = const unsigned short;
 
+
+void set_thread_count(uint8 thread_count){
+    omp_set_num_threads(thread_count);
+}
 
 void apply_H_gate(complex128* __restrict__ state,
                   const size_t q,
                   const size_t num_qubits){
     const size_t dim = size_t{1} << num_qubits;
     const size_t stride = size_t{1} << q;
-    const size_t step = stride << 1;
+    // const size_t step = stride << 1;
     constexpr double inv_sqrt_2 = 0.70710678118655;
 
-    for (size_t g = 0; g < dim; g+= step){
-        for (size_t i = g; i < g + stride; i++){
-            const complex128 s0 = state[i];
-            const complex128 s1 = state[i + stride];
-            state[i] = inv_sqrt_2 * (s0 + s1);
-            state[i + stride] = inv_sqrt_2 * (s0 - s1);
-        }
+    #pragma omp parallel for
+    for (size_t pair = 0; pair < (dim >> 1); ++pair){
+        const size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const size_t j = i | stride;
+        const complex128 s0 = state[i];
+        const complex128 s1 = state[j];
+        state[i] = inv_sqrt_2 * (s0 + s1);
+        state[i + stride] = inv_sqrt_2 * (s0 - s1);
     }
 }
 
@@ -33,21 +40,20 @@ void apply_RX_gate(complex128* __restrict__ state,
                    double theta){
     const size_t dim = size_t{1} << num_qubits;
     const size_t stride = size_t{1} << q;
-    const size_t step = stride << 1;
+    // const size_t step = stride << 1;
 
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    for (size_t g = 0; g < dim; g+= step){
-        #pragma GCC unroll 4
-        #pragma GCC ivdep
-        for (size_t i = g; i < g + stride; i++){
-            const complex128 s0 = state[i];
-            const complex128 s1 = state[i + stride];
+    #pragma omp parallel for
+    for (size_t pair = 0; pair < (dim >> 1); ++pair){
+        const size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const size_t j = i | stride;
+        const complex128 s0 = state[i];
+        const complex128 s1 = state[j];
 
-            state[i] = complex128(cosine * s0.real() + sine * s1.imag(), cosine * s0.imag() - sine * s1.real());
-            state[i + stride] = complex128(sine * s0.imag() + cosine * s1.real(), -sine * s0.real() + cosine * s1.imag());
-        }
+        state[i] = complex128(cosine * s0.real() + sine * s1.imag(), cosine * s0.imag() - sine * s1.real());
+        state[i + stride] = complex128(sine * s0.imag() + cosine * s1.real(), -sine * s0.real() + cosine * s1.imag());
     }
 }
 
@@ -56,20 +62,18 @@ void apply_CZ_gate(complex128* const __restrict__ state,
                     const size_t q2,
                     const size_t num_qubits){
     const size_t dim = size_t{1} << num_qubits;
-    const size_t stride_1 = size_t{1} << q1;
-    const size_t stride_2 = size_t{1} << q2;
-    const size_t step_1 = stride_1 << 1;
-    const size_t step_2 = stride_2 << 1;
+    size_t iters = dim >> 2;
+    const size_t q_min = q1 < q2 ? q1 : q2;
+    const size_t q_max = q1 > q2 ? q1 : q2;
+    const size_t m1 = (1ULL << q_min) - 1;
+    const size_t m2 = (1ULL << (q_max - 1)) - 1;
+    const size_t target_mask = (1ULL << q1) | (1ULL << q2);
 
-    for (size_t g2 = 0; g2 < dim; g2 += step_2){
-        for (size_t g1 = g2; g1 < g2 + stride_2; g1 += step_1){
-            const size_t start = g1 + stride_1 + stride_2;
-            #pragma GCC unroll 4
-            #pragma GCC ivdep
-            for (size_t i= start; i < start + stride_1; i++){
-                state[i] = - state[i];
-            }
-        }
+    #pragma omp parallel for
+    for (size_t i = 0; i < iters; ++i){
+        size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
+        size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
+        state[pos | target_mask] = -state[pos | target_mask];
     }
 }
 
@@ -94,7 +98,9 @@ void run_circuit_kernel(complex128* __restrict__ state,
 
 
 complexVector run_circuit(py::array_t<double>input_angles,
-                            py::size_t num_qubits){
+                            py::size_t num_qubits,
+                        uint8 thread_count){
+    set_thread_count(thread_count);
     py::buffer_info angles_buf = input_angles.request();
     double* angles_ptr = static_cast<double*>(angles_buf.ptr);
     size_t num_angles = angles_buf.size;
@@ -108,7 +114,8 @@ complexVector run_circuit(py::array_t<double>input_angles,
     return state;
 }
 
-py::array_t<complex128> run_circuit_new(py::array_t<double>input_angles, py::size_t num_qubits){
+py::array_t<complex128> run_circuit_new(py::array_t<double>input_angles, py::size_t num_qubits, uint8 thread_count){
+    set_thread_count(thread_count);
     py::buffer_info angles_buf = input_angles.request();
     double* angles_ptr = static_cast<double*>(angles_buf.ptr);
     size_t num_angles = angles_buf.size;
@@ -126,7 +133,8 @@ py::array_t<complex128> run_circuit_new(py::array_t<double>input_angles, py::siz
 
 void run_circuit_inplace(py::array_t<double> input_angles,
                          py::size_t num_qubits,
-                         py::array_t<complex128> out_state){
+                         py::array_t<complex128> out_state, uint8 thread_count){
+    set_thread_count(thread_count);
     py::buffer_info angles_buf = input_angles.request();
     double* angles_ptr = static_cast<double*>(angles_buf.ptr);
     const size_t num_angles = angles_buf.size;
