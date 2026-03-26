@@ -46,6 +46,14 @@ ext_modules = [
             "-Wl,-rpath,/lib/x86_64-linux-gnu",
             "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
         ],
+    ),
+    Extension(
+        "test_dictionary_processing",
+        ["./examples/dict_input_test.cpp"],
+        include_dirs = [pybind11.get_include()],
+        language="c++",
+        extra_compile_args = cpp_flags + omp_flags,
+        extra_link_args = omp_flags
     )
 ]
 
