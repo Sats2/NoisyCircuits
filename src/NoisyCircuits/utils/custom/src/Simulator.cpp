@@ -35,14 +35,8 @@ using matrix = std::vector<std::vector<complex128>>;
 using noise_map = std::unordered_map<std::string, std::vector<matrix>>;
 using noise_map2q = std::unordered_map<std::string, std::unordered_map<std::pair<int, int>, std::vector<matrix>, pair_hash>>;
 
-std::mt19937 global_engine;
-
 void set_thread_count(uint8 thread_count){
     omp_set_num_threads(thread_count);
-}
-
-void set_seed(int seed){
-    global_engine.seed(seed);
 }
 
 static matrix to_matrix(const py::array& array_object){
@@ -132,11 +126,10 @@ static inline void apply_inplace_operator_1q(complex128* __restrict__ state, con
     }
 }
 
-static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators){
+static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine){
     const int num_operators = noise_operators.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
-    std::size_t i,j;
     int counter = 0;
     std::vector<double> probability_list(num_operators, 0.0);
     for (const matrix& oper : noise_operators){
@@ -150,7 +143,7 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
         counter++;
     }
     std::discrete_distribution<> d(probability_list.begin(), probability_list.end());
-    int c = d(global_engine);
+    int c = d(traj_engine);
     auto it = std::next(noise_operators.begin(), c);
     const auto& oper = *it;
     complex128 u00 = oper[0][0];
@@ -208,7 +201,7 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
     }
 }
 
-static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators){
+static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine){
     const int num_operators = noise_operators.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -244,7 +237,7 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
         counter++;
     }
     std::discrete_distribution<> d(probability_list.begin(), probability_list.end());
-    int c = d(global_engine);
+    int c = d(traj_engine);
     auto it = std::next(noise_operators.begin(), c);
     const auto& oper = *it;
     complex128 u00 = oper[0][0];
@@ -585,6 +578,7 @@ static inline void apply_ECR_gate_omp(complex128* __restrict__ state, const std:
 
 void pure_state(const std::list<ItemEntry> instruction_list, const std::size_t num_qubits, complex128* __restrict__ state){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)> gate_map;
+    state[0] = complex128(1.0, 0.0);
     gate_map["x"] = apply_X_gate_omp;
     gate_map["rz"] = apply_RZ_gate_omp;
     gate_map["rx"] = apply_RX_gate_omp;
@@ -613,14 +607,15 @@ std::vector<matrix> get_matrix_list_for_instruction(const std::string& gate_name
     }
 }
 
-static void run_single_trajectory(const std::list<ItemEntry> instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, complex128* __restrict__ state, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&)>& apply_noise_map){
+static void run_single_trajectory(const std::list<ItemEntry> instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, complex128* __restrict__ state, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&)>& apply_noise_map, int seed){
+    std::mt19937_64 traj_engine(seed);
     for (const ItemEntry& instruction : instruction_list){
         const std::string& gate_name = instruction.gate_name;
         const std::vector<std::size_t>& qubits = instruction.qubits;
         const double params = instruction.params;
         gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
         const std::vector<matrix> noise_matrix_list = get_matrix_list_for_instruction(gate_name, single_qubit_instructions, two_qubit_instructions, qubits[0], qubits[1]);
-        apply_noise_map[gate_name](state, qubits[0], qubits[1], num_qubits, noise_matrix_list);
+        apply_noise_map[gate_name](state, qubits[0], qubits[1], num_qubits, noise_matrix_list, traj_engine);
     }
 }
 
@@ -633,7 +628,7 @@ void mcwf_state(const std::list<ItemEntry> instruction_list, const std::vector<n
     gate_map["cz"] = apply_CZ_gate;
     gate_map["rzz"] = apply_RZZ_gate;
     gate_map["ecr"] = apply_ECR_gate;
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&)> apply_noise_map;
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&)> apply_noise_map;
     apply_noise_map["x"] = apply_single_qubit_noise;
     apply_noise_map["rz"] = apply_single_qubit_noise;
     apply_noise_map["rx"] = apply_single_qubit_noise;
@@ -644,13 +639,13 @@ void mcwf_state(const std::list<ItemEntry> instruction_list, const std::vector<n
 
     #pragma omp parallel for shared(instruction_list, num_qubits, single_qubit_instructions, two_qubit_instructions, gate_map, apply_noise_map) schedule(dynamic, 1)
     for (int iteration = 0; iteration < num_trajectories; iteration++){
-        std::vector<complex128> trajectory_state(std::size_t{1}<<num_qubits, complex128(1.0, 0.0));
+        std::vector<complex128> trajectory_state(std::size_t{1}<<num_qubits, complex128(0.0, 0.0));
         trajectory_state[0] = complex128(1.0, 0.0);
-        run_single_trajectory(instruction_list, single_qubit_instructions, two_qubit_instructions, num_qubits, trajectory_state.data(), gate_map, apply_noise_map);
+        run_single_trajectory(instruction_list, single_qubit_instructions, two_qubit_instructions, num_qubits, trajectory_state.data(), gate_map, apply_noise_map, 42 + iteration);
         #pragma omp critical
         {
             for (std::size_t i = 0; i < trajectory_state.size(); i++){
-                state[i] += trajectory_state[i];
+                state[i] += (trajectory_state[i].real() * trajectory_state[i].real() + trajectory_state[i].imag() * trajectory_state[i].imag());
             }
         }
     }
@@ -668,7 +663,6 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
     }
     py::buffer_info state_info = statevector.request();
     auto* state = static_cast<complex128*>(state_info.ptr);
-    state[0] = complex128(1.0, 0.0);
     if (noisy){
         set_thread_count(thread_count);
         std::vector<noise_map> single_qubit_instructions = parse_single_qubit_noise(single_qubit_noise_instructions);
@@ -684,5 +678,5 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
 
 PYBIND11_MODULE(simulator, m){
     m.doc() = "Module for simulating quantum circuits with noise";
-    m.def("simulate_circuit", &simulate_circuit, "Simulates a quantum circuit with and without noise", py::arg("instructions"), py::arg("statevector"), py::arg("noise_instructions"), py::arg("num_qubits"), py::arg("noisy"), py::arg("thread_count"));
+    m.def("simulate_circuit", &simulate_circuit, "Simulates a quantum circuit with and without noise", py::arg("instructions"), py::arg("statevector"), py::arg("single_qubit_noise_instructions"), py::arg("two_qubit_noise_instructions"), py::arg("num_qubits"), py::arg("noisy"), py::arg("num_trajectories"), py::arg("thread_count"));
 }

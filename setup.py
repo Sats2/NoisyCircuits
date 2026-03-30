@@ -28,32 +28,24 @@ target_flags = ['-foffload=nvptx-none']
 
 ext_modules = [
     Extension(
-        "run",
-        ["./examples/simulator.cpp"],
+        "simulator",
+        ["./src/NoisyCircuits/utils/custom/src/Simulator.cpp"],
         include_dirs = [pybind11.get_include()],
         language="c++",
         extra_compile_args = cpp_flags + omp_flags,
         extra_link_args = omp_flags
     ),
     Extension(
-        "run_gpu",
-        ["./examples/simulator_gpu.cpp"],
+        "simulator_gpu",
+        ["./src/NoisyCircuits/utils/custom/src/SimulatorGPU.cpp"],
         include_dirs = [pybind11.get_include()],
         language="c++",
         extra_compile_args = cpp_flags + omp_flags + target_flags,
         extra_link_args = omp_flags + target_flags + [
             system_gomp,
-            "-Wl,-rpath,/lib/x86_64-linux-gnu",
+            "-Wl,-rpath,/lib/x86_64-linux-gnu", 
             "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
         ],
-    ),
-    Extension(
-        "test_dictionary_processing",
-        ["./examples/dict_input_test.cpp"],
-        include_dirs = [pybind11.get_include()],
-        language="c++",
-        extra_compile_args = cpp_flags + omp_flags,
-        extra_link_args = omp_flags
     )
 ]
 
