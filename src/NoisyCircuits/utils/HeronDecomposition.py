@@ -32,24 +32,24 @@ class HeronDecomposition(Decomposition):
     def X(self,
           qubit:int):
         if super().X(qubit=qubit):
-            self.instruction_list.append(["x", [qubit], None])
+            self.instruction_list.append(["x", [qubit, qubit], 0])
 
     def SX(self,
            qubit:int):
         if super().SX(qubit=qubit):
-            self.instruction_list.append(["sx", [qubit], None])
+            self.instruction_list.append(["sx", [qubit, qubit], 0])
     
     def RZ(self,
            theta:int|float,
            qubit:int):
         if super().RZ(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rz", [qubit], theta])
+            self.instruction_list.append(["rz", [qubit, qubit], theta])
     
     def RX(self,
            theta:int|float,
            qubit:int):
         if super().RX(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rx", [qubit], theta])
+            self.instruction_list.append(["rx", [qubit, qubit], theta])
     
     def RY(self,
            theta:int|float,
@@ -106,9 +106,9 @@ class HeronDecomposition(Decomposition):
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
             match_qubits = next((t for t in self.qubit_map if phys_control in t and phys_target in t), None)
             if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
-                self.instruction_list.append(["cz", [phys_control, phys_target], None])
+                self.instruction_list.append(["cz", [phys_control, phys_target], 0])
             else:
-                self.instruction_list.append(["cz", [phys_target, phys_control], None])
+                self.instruction_list.append(["cz", [phys_target, phys_control], 0])
             for swap in reverse_swaps:
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     

@@ -91,6 +91,9 @@ void run_circuit_kernel(complex128* __restrict__ host_state, const double* __res
 }
 
 void run_circuit_gpu(py::array_t<double> input_angles, py::size_t num_qubits, py::array_t<complex128> output_state, const unsigned short thread_count){
+    if (get_gpu_device_count() == 0){
+        throw std::runtime_error("No GPU devices available for simulation.");
+    }
     py::buffer_info angles_buf = input_angles.request();
     double* angles_ptr = static_cast<double*>(angles_buf.ptr);
     const std::size_t num_angles = angles_buf.size;

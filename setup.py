@@ -23,8 +23,9 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 system_gomp = "/lib/x86_64-linux-gnu/libgomp.so.1"
 cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops", "-fcf-protection=none", "-fno-stack-protector"]
 omp_flags = ["-fopenmp"]
-# target_flags = shlex.split(os.environ.get("OMP_TARGET_FLAGS", ""))
-target_flags = ['-foffload=nvptx-none']
+target_flags = shlex.split(os.environ.get("OMP_TARGET_FLAGS", "-foffload=nvptx-none"))
+# GCC OpenMP offload currently crashes with some LTO configurations; disable LTO by default.
+lto_flags = shlex.split(os.environ.get("NOISYCIRCUITS_LTO_FLAGS", "-fno-lto"))
 
 ext_modules = [
     Extension(
@@ -32,16 +33,16 @@ ext_modules = [
         ["./src/NoisyCircuits/utils/custom/src/Simulator.cpp"],
         include_dirs = [pybind11.get_include()],
         language="c++",
-        extra_compile_args = cpp_flags + omp_flags,
-        extra_link_args = omp_flags
+        extra_compile_args = cpp_flags + omp_flags + lto_flags,
+        extra_link_args = omp_flags + lto_flags
     ),
     Extension(
         "simulator_gpu",
         ["./src/NoisyCircuits/utils/custom/src/SimulatorGPU.cpp"],
         include_dirs = [pybind11.get_include()],
         language="c++",
-        extra_compile_args = cpp_flags + omp_flags + target_flags,
-        extra_link_args = omp_flags + target_flags + [
+        extra_compile_args = cpp_flags + omp_flags + target_flags + lto_flags,
+        extra_link_args = omp_flags + target_flags + lto_flags + [
             system_gomp,
             "-Wl,-rpath,/lib/x86_64-linux-gnu", 
             "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",

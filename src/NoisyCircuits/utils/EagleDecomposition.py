@@ -33,17 +33,17 @@ class EagleDecomposition(Decomposition):
            theta:int|float,
            qubit:int)->None:
         if super().RZ(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rz", [qubit], theta])
+            self.instruction_list.append(["rz", [qubit, qubit], theta])
 
     def SX(self,
            qubit:int)->None:
         if super().SX(qubit=qubit):
-            self.instruction_list.append(["sx", [qubit], None])
+            self.instruction_list.append(["sx", [qubit, qubit], 0])
 
     def X(self,
           qubit:int)->None:
         if super().X(qubit=qubit):
-            self.instruction_list.append(["x", [qubit], None])
+            self.instruction_list.append(["x", [qubit, qubit], 0])
 
     def RY(self,
            theta:int|float,
@@ -95,7 +95,7 @@ class EagleDecomposition(Decomposition):
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
             match_qubits = next((t for t in self.qubit_map if phys_control in t and phys_target in t), None)
             if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
-                self.instruction_list.append(["ecr", [phys_control, phys_target], None])
+                self.instruction_list.append(["ecr", [phys_control, phys_target], 0])
             else:
                 self.RZ(theta=np.pi/2, qubit=phys_control)
                 self.RZ(theta=-np.pi/2, qubit=phys_target)
@@ -103,7 +103,7 @@ class EagleDecomposition(Decomposition):
                 self.SX(qubit=phys_target)
                 self.RZ(theta=-np.pi/2, qubit=phys_control)
                 self.RZ(theta=np.pi/2, qubit=phys_target)
-                self.instruction_list.append(["ecr", [phys_target, phys_control], None])
+                self.instruction_list.append(["ecr", [phys_target, phys_control], 0])
                 self.RZ(theta=np.pi/2, qubit=phys_control)
                 self.RZ(theta=np.pi/2, qubit=phys_target)
                 self.SX(qubit=phys_control)

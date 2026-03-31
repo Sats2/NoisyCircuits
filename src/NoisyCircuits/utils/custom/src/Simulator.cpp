@@ -520,11 +520,11 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     const std::size_t ull_q2 = 1ULL << q2;
     const std::size_t target_mask = ull_q1 | ull_q2;
     constexpr double inv_sqrt_2 = 0.7071067811865476;
-    constexpr complex128 inv_sqrt_2i = complex128(0.0, 7071067811865476);
+    constexpr complex128 inv_sqrt_2i = complex128(0.0, 0.7071067811865476);
 
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
-        const std::size_t pos = (i_s1 & m2) | ((i & ~m2) << 1);
+        const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
         const std::size_t idx00 = pos;
         const std::size_t idx01 = pos | ull_q2;
         const std::size_t idx10 = pos | ull_q1;
@@ -553,12 +553,12 @@ static inline void apply_ECR_gate_omp(complex128* __restrict__ state, const std:
     const std::size_t ull_q2 = 1ULL << q2;
     const std::size_t target_mask = ull_q1 | ull_q2;
     constexpr double inv_sqrt_2 = 0.7071067811865476;
-    constexpr complex128 inv_sqrt_2i = complex128(0.0, 7071067811865476);
+    constexpr complex128 inv_sqrt_2i = complex128(0.0, 0.7071067811865476);
 
     #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
-        const std::size_t pos = (i_s1 & m2) | ((i & ~m2) << 1);
+        const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
         const std::size_t idx00 = pos;
         const std::size_t idx01 = pos | ull_q2;
         const std::size_t idx10 = pos | ull_q1;
