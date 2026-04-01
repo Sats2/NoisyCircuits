@@ -282,7 +282,7 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
 static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: stride) map(tofrom: state[0:dim])
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -299,7 +299,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
     
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: cosine, sine, stride) map(tofrom: state[0:dim])
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -316,7 +316,7 @@ static inline void apply_RX_gate(complex128* __restrict__ state, const std::size
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: stride, cosine, sine) map(tofrom: state[0:dim])
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -333,7 +333,7 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
     constexpr complex128 post_i = complex128(0.5, 0.5);
     constexpr complex128 negt_i = complex128(0.5, -0.5);
 
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: stride, post_i, negt_i) map(tofrom: state[0:dim])
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -353,7 +353,7 @@ static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size
     const std::size_t m2 = (1ULL << ((q1 > q2 ? q1 : q2) - 1)) - 1;
     const std::size_t target_mask = (1ULL << q1) | (1ULL << q2);
 
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: m1, m2, target_mask) map(tofrom: state[0:dim])
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -375,7 +375,7 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: m1, m2, target_mask, ull_q1, ull_q2, cosine, sine) map(tofrom: state[0:dim])
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -409,7 +409,7 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     constexpr double inv_sqrt_2 = 0.7071067811865476;
     constexpr complex128 inv_sqrt_2i = complex128(0.0, 0.7071067811865476);
 
-    #pragma omp parallel for
+    #pragma omp target teams distribute parallel for map(to: m1, m2, target_mask, ull_q1, ull_q2, inv_sqrt_2, inv_sqrt_2i) map(tofrom: state[0:dim])
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -431,7 +431,7 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
 }
 
 void pure_state(const std::list<ItemEntry> instruction_list, const std::size_t num_qubits, complex128* __restrict__ state){
-    set_num_threads(256);
+    // set_num_threads(256);
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)> gate_map;
     gate_map["x"] = apply_X_gate;
     gate_map["rz"] = apply_RZ_gate;
@@ -441,15 +441,12 @@ void pure_state(const std::list<ItemEntry> instruction_list, const std::size_t n
     gate_map["rzz"] = apply_RZZ_gate;
     gate_map["ecr"] = apply_ECR_gate;
     const std::size_t dim = std::size_t{1} << num_qubits;
-
-    #pragma omp target data map(tofrom: state[0:dim])
-    {
-        for (const ItemEntry& instruction : instruction_list){
-            const std::string& gate_name = instruction.gate_name;
-            const std::vector<std::size_t>& qubits = instruction.qubits;
-            const double params = instruction.params;
-            gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
-        }
+    // #pragma omp target data map(tofrom: state[0:dim])
+    for (const ItemEntry& instruction : instruction_list){
+        const std::string& gate_name = instruction.gate_name;
+        const std::vector<std::size_t>& qubits = instruction.qubits;
+        const double params = instruction.params;
+        gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
     }
 }
 
@@ -537,6 +534,14 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
 }
 
 PYBIND11_MODULE(simulator_gpu, m){
+    m.def("test_openmp", []() {
+        int sum = 0;
+        #pragma omp target map(tofrom: sum)
+        {
+            sum = 1;
+        }
+        return sum == 1;
+    });
     m.doc() = "Module for simulating quantum circuits with noise on GPUs";
     m.def("simulate_circuit", &simulate_circuit, "Simulate a quantum circuit with noise on GPU");
     m.def("get_gpu_count", &get_gpu_device_count, "Get the number of available GPUs");

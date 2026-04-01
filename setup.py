@@ -46,6 +46,7 @@ ext_modules = [
             system_gomp,
             "-Wl,-rpath,/lib/x86_64-linux-gnu", 
             "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
+            # "-Wl,-z,defs",
         ],
     )
 ]
@@ -156,7 +157,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    install_requires=["peppercorn", "qulacs", "qiskit", "qiskit-aer", "qiskit-ibm-runtime", "ray", "scipy", "numba"],  # Optional
+    install_requires=["peppercorn", "qulacs", "qiskit", "qiskit-aer", "qiskit-ibm-runtime", "ray", "scipy", "numba", "pybind11"],  # Optional
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:
