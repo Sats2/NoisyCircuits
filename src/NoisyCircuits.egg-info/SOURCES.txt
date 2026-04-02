@@ -21,6 +21,8 @@ src/NoisyCircuits/utils/HeronDecomposition.py
 src/NoisyCircuits/utils/SwapSequence.py
 src/NoisyCircuits/utils/__init__.py
 src/NoisyCircuits/utils/marginal_probs.py
+src/NoisyCircuits/utils/custom/src/Simulator.cpp
+src/NoisyCircuits/utils/custom/src/SimulatorGPU.cpp
 src/NoisyCircuits/utils/pennylane/_DensityMatrixSolver.py
 src/NoisyCircuits/utils/pennylane/_ParallelExecutor.py
 src/NoisyCircuits/utils/pennylane/_PureStateSolver.py

@@ -593,6 +593,12 @@ void pure_state(const std::list<ItemEntry> instruction_list, const std::size_t n
         const double params = instruction.params;
         gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
     }
+
+    #pragma omp parallel for
+    for (std::size_t i = 0; i < (std::size_t{1} << num_qubits); i++){
+        const complex128 s = state[i];
+        state[i] = complex128(s.real() * s.real() + s.imag() * s.imag(), 0.0);
+    }
 }
 
 std::vector<matrix> get_matrix_list_for_instruction(const std::string& gate_name, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t q1, const std::size_t q2){
