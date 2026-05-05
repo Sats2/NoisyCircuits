@@ -282,7 +282,7 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
 static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
-    #pragma omp target teams distribute parallel for map(to: stride) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -299,7 +299,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
     
-    #pragma omp target teams distribute parallel for map(to: cosine, sine, stride) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -316,7 +316,7 @@ static inline void apply_RX_gate(complex128* __restrict__ state, const std::size
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp target teams distribute parallel for map(to: stride, cosine, sine) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -333,7 +333,7 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
     constexpr complex128 post_i = complex128(0.5, 0.5);
     constexpr complex128 negt_i = complex128(0.5, -0.5);
 
-    #pragma omp target teams distribute parallel for map(to: stride, post_i, negt_i) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -353,7 +353,7 @@ static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size
     const std::size_t m2 = (1ULL << ((q1 > q2 ? q1 : q2) - 1)) - 1;
     const std::size_t target_mask = (1ULL << q1) | (1ULL << q2);
 
-    #pragma omp target teams distribute parallel for map(to: m1, m2, target_mask) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -375,7 +375,7 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp target teams distribute parallel for map(to: m1, m2, target_mask, ull_q1, ull_q2, cosine, sine) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -409,7 +409,7 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     constexpr double inv_sqrt_2 = 0.7071067811865476;
     constexpr complex128 inv_sqrt_2i = complex128(0.0, 0.7071067811865476);
 
-    #pragma omp target teams distribute parallel for map(to: m1, m2, target_mask, ull_q1, ull_q2, inv_sqrt_2, inv_sqrt_2i) map(tofrom: state[0:dim])
+    #pragma omp parallel for
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
@@ -440,13 +440,15 @@ void pure_state(const std::list<ItemEntry> instruction_list, const std::size_t n
     gate_map["cz"] = apply_CZ_gate;
     gate_map["rzz"] = apply_RZZ_gate;
     gate_map["ecr"] = apply_ECR_gate;
-    const std::size_t dim = std::size_t{1} << num_qubits;
-    // #pragma omp target data map(tofrom: state[0:dim])
-    for (const ItemEntry& instruction : instruction_list){
-        const std::string& gate_name = instruction.gate_name;
-        const std::vector<std::size_t>& qubits = instruction.qubits;
-        const double params = instruction.params;
-        gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
+    std::size_t dim = std::size_t{1} << num_qubits;
+    #pragma omp target data map(tofrom: state[0:dim])
+    {
+        for (const ItemEntry& instruction : instruction_list){
+            const std::string& gate_name = instruction.gate_name;
+            const std::vector<std::size_t>& qubits = instruction.qubits;
+            const double params = instruction.params;
+            gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
+        }
     }
 }
 
@@ -462,18 +464,18 @@ std::vector<matrix> get_matrix_list_for_instruction(const std::string& gate_name
     }
 }
 
-static void run_single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, complex128* __restrict__ state, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&)>& apply_noise_map){
-    for (const ItemEntry& instruction : instruction_list){
-        const std::string gate_name = instruction.gate_name;
-        const std::vector<std::size_t> qubits = instruction.qubits;
-        const double params = instruction.params;
-        gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
-        std::vector<matrix> noise_matrix_list = get_matrix_list_for_instruction(gate_name, single_qubit_instructions, two_qubit_instructions, qubits[0], qubits[1]);
-        apply_noise_map[gate_name](state, qubits[0], qubits[1], num_qubits, noise_matrix_list);
-    }
-}
+// static void run_single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, complex128* __restrict__ state, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&)>& apply_noise_map){
+//     for (const ItemEntry& instruction : instruction_list){
+//         const std::string gate_name = instruction.gate_name;
+//         const std::vector<std::size_t> qubits = instruction.qubits;
+//         const double params = instruction.params;
+//         gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params);
+//         std::vector<matrix> noise_matrix_list = get_matrix_list_for_instruction(gate_name, single_qubit_instructions, two_qubit_instructions, qubits[0], qubits[1]);
+//         apply_noise_map[gate_name](state, qubits[0], qubits[1], num_qubits, noise_matrix_list);
+//     }
+// }
 
-void mcwf_state(const std::list<ItemEntry> instruction_list, const std::size_t num_qubits, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const int num_trajectories){
+void mcwf_state(const std::list<ItemEntry> instruction_list, const std::size_t num_qubits, double* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const int num_trajectories){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double)> gate_map;
     set_num_threads(256);
     gate_map["x"] = apply_X_gate;
@@ -492,20 +494,28 @@ void mcwf_state(const std::list<ItemEntry> instruction_list, const std::size_t n
     apply_noise_map["rzz"] = apply_two_qubit_noise;
     apply_noise_map["ecr"] = apply_two_qubit_noise;
     std::size_t dim = std::size_t{1} << num_qubits;
+    std::vector<std::vector<complex128>> trajectories_data(num_trajectories, std::vector<complex128>(dim, complex128(0.0, 0.0)));
+    for (int i = 0; i < num_trajectories; i++){
+        trajectories_data[i][0] = complex128(1.0, 0.0);
+    }
 
-    #pragma omp target data map(to: instruction_list, gate_map, apply_noise_map, single_qubit_instructions, two_qubit_instructions, dim) map(tofrom: state[0:dim])
-    {
-        #pragma omp target teams distribute num_teams(num_trajectories)
-        for (int i = 0; i < num_trajectories; i++){
-            std::vector<complex128> trajectory_state(dim, complex128(0.0, 0.0));
-            trajectory_state[0] = complex128(1.0, 0.0);
-            run_single_trajectory(instruction_list, single_qubit_instructions, two_qubit_instructions, num_qubits, trajectory_state.data(), gate_map, apply_noise_map);
-            #pragma omp critical
-            {
-                for (std::size_t j = 0; j < dim; j++){
-                    state[j] += trajectory_state[j];
-                }
-            }
+    #pragma omp target teams num_teams(16) thread_limit(64) map(tofrom: state) map(to: trajectories_data)
+    for (int n = 0; n < num_trajectories; n++){
+        int team_id = omp_get_team_num();
+        complex128* trajectory_state = trajectories_data[team_id].data();
+        trajectory_state[0] = complex128(1.0, 0.0);
+        for (const ItemEntry& instruction : instruction_list){
+            const std::string gate_name = instruction.gate_name;
+            const std::vector<std::size_t> qubits = instruction.qubits;
+            const double params = instruction.params;
+            gate_map[gate_name](trajectory_state, qubits[0], qubits[1], num_qubits, params);
+            std::vector<matrix> noise_matrix_list = get_matrix_list_for_instruction(gate_name, single_qubit_instructions, two_qubit_instructions, qubits[0], qubits[1]);
+            apply_noise_map[gate_name](trajectory_state, qubits[0], qubits[1], num_qubits, noise_matrix_list);
+        }
+        #pragma omp parallel for reduction(+:state[0:dim])
+        for (std::size_t i = 0; i < dim; i++){
+                double value = (trajectory_state[i].real() * trajectory_state[i].real()) + (trajectory_state[i].imag() * trajectory_state[i].imag());
+                state[i] += value;
         }
     }
 }
@@ -521,14 +531,15 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
         instruction_list.push_back(std::move(entry));
     }
     py::buffer_info state_info = statevector.request();
-    auto* state = static_cast<complex128*>(state_info.ptr);
-    state[0] = complex128(1.0, 0.0);
     if (noisy){
+        auto* state = static_cast<double*>(state_info.ptr);
         std::vector<noise_map> single_qubit_instructions = parse_single_qubit_noise(single_qubit_noise_instructions);
         noise_map2q two_qubit_instructions = parse_two_qubit_noise(two_qubit_noise_instructions);
         mcwf_state(instruction_list, num_qubits, state, single_qubit_instructions, two_qubit_instructions, num_trajectories);
     }
     else {
+        auto* state = static_cast<complex128*>(state_info.ptr);
+        state[0] = complex128(1.0, 0.0);
         pure_state(instruction_list, num_qubits, state);
     }
 }

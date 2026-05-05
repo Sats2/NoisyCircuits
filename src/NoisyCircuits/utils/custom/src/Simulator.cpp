@@ -136,7 +136,7 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
         complex128 u00 = oper[0][0];
         complex128 u01 = oper[0][1];
         complex128 u10 = oper[1][0];
-        complex128 u11 = oper[1][1];
+        complex128 u11 = oper[1][1];    const int num_operators = noise_operators.size();
         std::vector<complex128> new_state = apply_single_qubit_noise_operator(state, u00, u01, u10, u11, dim, stride);
         double prob = compute_probability(new_state.data(), dim);
         probability_list[counter] = prob;

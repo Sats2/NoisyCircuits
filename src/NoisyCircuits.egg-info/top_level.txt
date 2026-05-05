@@ -1,3 +1,0 @@
-NoisyCircuits
-simulator
-simulator_gpu

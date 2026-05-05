@@ -14,13 +14,18 @@ int get_gpu_device_count(){
     return omp_get_num_devices();
 }
 
+unsigned short set_num_threads(unsigned short num_threads){
+    omp_set_num_threads(num_threads);
+    return num_threads;
+}
+
 static inline void apply_H_gate(complex128* __restrict__ state, std::size_t q, std::size_t num_qubits, const unsigned short thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     // const std::size_t step = stride << 1;
     constexpr double inv_sqrt_2 = 0.70710678118655;
 
-    #pragma omp target teams distribute parallel for thread_limit(thread_count) 
+    #pragma omp target teams distribute parallel for  
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -41,7 +46,7 @@ static inline void apply_RX_gate(complex128* __restrict__ state, std::size_t q, 
     const double cosine = std::cos(0.5 * theta);
     const double sine = std::sin(0.5 * theta);
 
-    #pragma omp target teams distribute parallel for thread_limit(thread_count) 
+    #pragma omp target teams distribute parallel for
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
@@ -63,7 +68,7 @@ static inline void apply_CZ_gate(complex128* const __restrict__ state, std::size
     const std::size_t m2 = (1ULL << (q_max - 1)) - 1;
     const std::size_t target_mask = (1ULL << q1) | (1ULL << q2);
     
-    #pragma omp target teams distribute parallel for thread_limit(thread_count)
+    #pragma omp target teams distribute parallel for
     for (std::size_t i = 0; i < iters; ++i){
         std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
