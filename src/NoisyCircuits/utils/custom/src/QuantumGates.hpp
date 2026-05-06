@@ -1,31 +1,6 @@
-#include <vector>
-#include <complex>
-#include <omp.h>
-#include <random>
-#include <list>
-#include <unordered_map>
+#include "TypeDefs.hpp"
 
-struct pair_hash {
-    std::size_t operator()(const std::pair<int, int>& p) const noexcept {
-        std::size_t h1 = std::hash<int>{}(p.first);
-        std::size_t h2 = std::hash<int>{}(p.second);
-        return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
-    }
-};
-
-struct ItemEntry {
-    std::string gate_name;
-    std::vector<std::size_t> qubits;
-    double params;
-};
-
-using complex128 = std::complex<double>;
-using uint8 = const unsigned short;
-using matrix = std::vector<std::vector<complex128>>;
-using noise_map = std::unordered_map<std::string, std::vector<matrix>>;
-using noise_map2q = std::unordered_map<std::string, std::unordered_map<std::pair<int, int>, std::vector<matrix>, pair_hash>>;
-
-static inline double compute_probability(const complex128* __restrict__ state, const std::size_t dim, uint thread_count){
+static inline double compute_probability(const complex128* __restrict__ state, const std::size_t dim, uint8 thread_count){
     double probability = 0.0;
     #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
     for (std::size_t i = 0; i < dim; i++){
@@ -34,7 +9,7 @@ static inline double compute_probability(const complex128* __restrict__ state, c
     return probability;
 }
 
-static inline std::vector<complex128> apply_single_qubit_noise_operator(const complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint thread_count){
+static inline std::vector<complex128> apply_single_qubit_noise_operator(const complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
     std::vector<complex128> new_state = std::vector<complex128>(dim, complex128(0.0, 0.0));
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
@@ -48,7 +23,7 @@ static inline std::vector<complex128> apply_single_qubit_noise_operator(const co
     return new_state;
 }
 
-static inline void apply_inplace_operator_1q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint thread_count){
+static inline void apply_inplace_operator_1q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
@@ -60,7 +35,7 @@ static inline void apply_inplace_operator_1q(complex128* __restrict__ state, con
     }
 }
 
-static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint thread_count){
+static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
     int counter = 0;
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -91,7 +66,7 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
     }
 }
 
-static inline std::vector<complex128> apply_two_qubit_noise_operator(const complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint thread_count){
+static inline std::vector<complex128> apply_two_qubit_noise_operator(const complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
     std::vector<complex128> new_state = std::vector<complex128>(dim, complex128(0.0,0.0));
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
@@ -115,7 +90,7 @@ static inline std::vector<complex128> apply_two_qubit_noise_operator(const compl
     return new_state;
 }
 
-static inline void apply_inplace_operator_2q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint thread_count){
+static inline void apply_inplace_operator_2q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
@@ -137,7 +112,7 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
     }
 }
 
-static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint thread_count){
+static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
     const int num_operators = noise_operators.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -200,7 +175,7 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
     }
 }
 
-static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     #pragma omp parallel for num_threads(thread_count)
@@ -214,7 +189,7 @@ static inline void apply_X_gate(complex128* __restrict__ state, const std::size_
     }
 }
 
-static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -230,7 +205,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -246,7 +221,7 @@ static inline void apply_RX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     constexpr complex128 post_i = complex128(0.5, 0.5);
@@ -262,7 +237,7 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t m1 = (1ULL << (q1 < q2 ? q1 : q2)) - 1;
@@ -276,7 +251,7 @@ static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -307,7 +282,7 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
-static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const uint thread_count){
+static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -338,48 +313,4 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
-std::vector<matrix> get_matrix_list_for_instruction(const std::string& gate_name, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t q1, const std::size_t q2){
-    if (q1 == q2) {
-        std::vector<matrix> noise_matrix_list = single_qubit_instructions[q1].at(gate_name);
-        return noise_matrix_list;
-    }
-    else {
-        std::pair<int, int> key = {q1, q2};
-        std::vector<matrix> noise_matrix_list = two_qubit_instructions.at(gate_name).at(key);
-        return noise_matrix_list;
-    }
-}
-
-std::vector<complex128> run_single_trajectory(const std::list<ItemEntry> instruction_list, const std::vector<noise_map> single_qubit_instructions, const noise_map2q two_qubit_instructions, const std::size_t num_qubits, const int seed, const uint thread_count){
-    std::mt19937_64 traj_engine(seed);
-    std::vector<complex128> state = std::vector<complex128>(std::size_t{1} << num_qubits, complex128(0.0, 0.0));
-    state[0] = complex128(1.0, 0.0);
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const uint)> gate_map;
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, const uint)> apply_noise_map;
-    gate_map["x"] = apply_X_gate;
-    gate_map["rz"] = apply_RZ_gate;
-    gate_map["rx"] = apply_RX_gate;
-    gate_map["sx"] = apply_SX_gate;
-    gate_map["cz"] = apply_CZ_gate;
-    gate_map["rzz"] = apply_RZZ_gate;
-    gate_map["ecr"] = apply_ECR_gate;
-    apply_noise_map["x"] = apply_single_qubit_noise;
-    apply_noise_map["rz"] = apply_single_qubit_noise;
-    apply_noise_map["rx"] = apply_single_qubit_noise;
-    apply_noise_map["sx"] = apply_single_qubit_noise;
-    apply_noise_map["cz"] = apply_two_qubit_noise;
-    apply_noise_map["rzz"] = apply_two_qubit_noise;
-    apply_noise_map["ecr"] = apply_two_qubit_noise;
-    apply_noise_map["cz"] = apply_two_qubit_noise;
-    const std::vector<noise_map>& single_qubit_instructions_ref = single_qubit_instructions;
-    const noise_map2q& two_qubit_instructions_ref = two_qubit_instructions;
-    for (const ItemEntry& instruction : instruction_list){
-        const std::string& gate_name = instruction.gate_name;
-        const std::vector<std::size_t>& qubits = instruction.qubits;
-        const double params = instruction.params;
-        gate_map[gate_name](state.data(), qubits[0], qubits[1], num_qubits, params, thread_count);
-        const std::vector<matrix> noise_matrix_list = get_matrix_list_for_instruction(gate_name, single_qubit_instructions_ref, two_qubit_instructions_ref, qubits[0], qubits[1]);
-        apply_noise_map[gate_name](state.data(), qubits[0], qubits[1], num_qubits, noise_matrix_list, traj_engine, thread_count);
-    }
-    return state;
-}
+// TODO: Add unitary operator application as a function to adhere to gate_map functionality.
