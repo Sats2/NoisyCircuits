@@ -62,7 +62,25 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
         ItemEntry entry;
         entry.gate_name = item_tuple[0].cast<std::string>();
         entry.qubits = item_tuple[1].cast<std::vector<std::size_t>>();
-        entry.params = item_tuple[2].cast<double>();
+        if (entry.gate_name == "unitary"){
+            py::array unitary_matrix_array = py::cast<py::array>(item_tuple[3]);
+            auto arr = py::array_t<complex128, py::array::c_style | py::array::forcecast>(unitary_matrix_array);
+            int dim = arr.ndim();
+            auto a = arr.unchecked<-1>();
+            matrix U(a.shape(0), std::vector<complex128>(a.shape(1)));
+            for (std::size_t i = 0; i < dim; i++){
+                #pragma GCC unroll 2
+                for (std::size_t j = 0; j < dim; j++){
+                    U[i][j] = a(i, j);
+                }
+            }
+            entry.unitary_matrix = U;
+            entry.params = -1.0;
+        }
+        else {
+            entry.unitary_matrix = {};
+            entry.params = item_tuple[2].cast<double>();
+        }
         instruction_list.push_back(entry);
     }
     py::buffer_info state_info = statevector.request();

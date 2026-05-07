@@ -1,3 +1,4 @@
+#pragma once
 #include "TypeDefs.hpp"
 
 static inline matrix to_matrix(const py::array& array_object){

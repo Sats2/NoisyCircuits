@@ -1,3 +1,4 @@
+#pragma once
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -19,14 +20,15 @@ struct pair_hash{
     }
 };
 
-struct ItemEntry{
-    std::string gate_name;
-    std::vector<std::size_t> qubits;
-    double params;
-};
-
 using complex128 = std::complex<double>;
 using uint8 = const unsigned short;
 using matrix = std::vector<std::vector<complex128>>;
 using noise_map = std::unordered_map<std::string, std::vector<matrix>>;
 using noise_map2q = std::unordered_map<std::string, std::unordered_map<std::pair<int, int>, std::vector<matrix>, pair_hash>>;
+
+struct ItemEntry{
+    std::string gate_name;
+    std::vector<std::size_t> qubits;
+    double params;
+    matrix unitary_matrix;
+};

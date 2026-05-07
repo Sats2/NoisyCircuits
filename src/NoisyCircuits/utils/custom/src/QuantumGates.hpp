@@ -1,3 +1,4 @@
+#pragma once
 #include "TypeDefs.hpp"
 
 static inline double compute_probability(const complex128* __restrict__ state, const std::size_t dim, uint8 thread_count){
@@ -313,4 +314,54 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
-// TODO: Add unitary operator application as a function to adhere to gate_map functionality.
+// TODO: Add unitary operator application as a function to adhere to gate_map functionality --> Needs testing.
+static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+    const std::size_t num_targets = target_qubits.size();
+    const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t inner_dim = std::size_t{1} << num_targets;
+    const std::size_t outer_dim = dim >> num_targets;
+    std::vector<unsigned char> is_target(num_qubits, 0);
+    for (std::size_t t = 0; t < num_targets; ++t){
+        is_target[target_qubits[t]] = 1;
+    }
+    std::vector<std::size_t> target_offsets(inner_dim, 0);
+    for (std::size_t inner = 0; inner < inner_dim; ++inner){
+        std::size_t idx = 0;
+        for (std::size_t b = 0; b < num_targets; ++b){
+            if (inner & (std::size_t{1} << b)) {
+                idx |= (std::size_t{1} << target_qubits[b]);
+            }
+        }
+        target_offsets[inner] = idx;
+    }
+    std::vector<complex128> new_state(dim, complex128(0.0, 0.0));
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t outer = 0; outer < outer_dim; ++outer){
+        std::size_t base_idx = 0;
+        std::size_t src_idx = outer;
+        for (std::size_t bit = 0; bit < num_qubits; ++bit){
+            if (is_target[bit]){
+                continue;
+            }
+            if  (src_idx & 1ULL){
+                base_idx |= (std::size_t{1} << bit);
+            }
+            src_idx >>= 1;
+        }
+        std::vector<complex128> temp(inner_dim);
+        for (std::size_t i = 0; i < inner_dim; ++i){
+            temp[i] = state[base_idx | target_offsets[i]];
+        }
+        for (std::size_t r = 0; r < inner_dim; ++r){
+            complex128 sum(0.0, 0.0);
+            for (std::size_t c = 0; c < inner_dim; ++c){
+                sum += U[r][c] * temp[c];
+            }
+            new_state[base_idx | target_offsets[r]] = sum;
+        }
+    }
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t i = 0; i < dim; ++i){
+        state[i] = new_state[i];
+    }
+}
