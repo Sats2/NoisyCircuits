@@ -113,6 +113,10 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
     }
 }
 
+static inline void apply_noise_for_unitary_matrix(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
+
+}
+
 static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
     const int num_operators = noise_operators.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
@@ -176,7 +180,7 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
     }
 }
 
-static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     #pragma omp parallel for num_threads(thread_count)
@@ -190,7 +194,7 @@ static inline void apply_X_gate(complex128* __restrict__ state, const std::size_
     }
 }
 
-static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -206,7 +210,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -222,7 +226,7 @@ static inline void apply_RX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     constexpr complex128 post_i = complex128(0.5, 0.5);
@@ -238,7 +242,7 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t m1 = (1ULL << (q1 < q2 ? q1 : q2)) - 1;
@@ -252,7 +256,7 @@ static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
-static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -283,7 +287,7 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
-static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, uint8 thread_count){
+static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -315,7 +319,7 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
 }
 
 // TODO: Add unitary operator application as a function to adhere to gate_map functionality --> Needs testing.
-static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t num_targets = target_qubits.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t inner_dim = std::size_t{1} << num_targets;

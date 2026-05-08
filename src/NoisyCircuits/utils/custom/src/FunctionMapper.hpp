@@ -3,8 +3,8 @@
 #include "QuantumGates.hpp"
 
 
-static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, uint8)> gate_function_mapper(){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, uint8)> gate_map;
+static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_function_mapper(){
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map;
     gate_map["x"] = apply_X_gate;
     gate_map["sx"] = apply_SX_gate;
     gate_map["rz"] = apply_RZ_gate;
@@ -12,6 +12,7 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
     gate_map["cz"] = apply_CZ_gate;
     gate_map["ecr"] = apply_ECR_gate;
     gate_map["rzz"] = apply_RZZ_gate;
+    gate_map["unitary"] = apply_unitary_gate;
     return gate_map;
 }
 
@@ -34,5 +35,6 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
     for (const std::string& gate_name : two_qubit_gate_names){
         apply_noise_map[gate_name] = apply_two_qubit_noise;
     }
+    apply_noise_map["unitary"] = apply_noise_for_unitary_matrix;
     return apply_noise_map;
 }

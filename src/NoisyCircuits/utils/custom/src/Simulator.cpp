@@ -4,22 +4,25 @@
 #include "FunctionMapper.hpp"
 
 
-void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t num_qubits, complex128* __restrict__ state, uint8 thread_count){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, uint8)> gate_map = gate_function_mapper();
+void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t num_qubits, complex128* __restrict__ state, bool return_state, uint8 thread_count){
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
     for (const ItemEntry& instruction : instruction_list){
         const std::string& gate_name = instruction.gate_name;
         const std::vector<std::size_t>& qubits = instruction.qubits;
         const double params = instruction.params;
-        gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params, thread_count);
+        const matrix& unitary_matrix = instruction.unitary_matrix;
+        gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params, unitary_matrix, qubits, thread_count);
     }
-    #pragma omp parallel for num_threads(thread_count)
-    for (std::size_t i = 0; i < (std::size_t{1} << num_qubits); i++){
-        const complex128 amplitude = state[i];
-        state[i] = complex128(amplitude.real() * amplitude.real() + amplitude.imag() * amplitude.imag(), 0.0);
+    if !(return_state) {
+        #pragma omp parallel for num_threads(thread_count)
+        for (std::size_t i = 0; i < (std::size_t{1} << num_qubits); i++){
+            const complex128 amplitude = state[i];
+            state[i] = complex128(amplitude.real() * amplitude.real() + amplitude.imag() * amplitude.imag(), 0.0);
+        }
     }
 }
 
-std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, uint8)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)>& noise_function_map, uint8 seed){
+std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)>& noise_function_map, uint8 seed){
     std::mt19937_64 trajectory_engine(seed);
     std::vector<complex128> trajectory_state(std::size_t{1} << num_qubits, 0.0);
     trajectory_state[0] = 1.0;
@@ -27,7 +30,8 @@ std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instructio
         const std::string& gate_name = instruction.gate_name;
         const std::vector<std::size_t>& qubits = instruction.qubits;
         const double params = instruction.params;
-        gate_map[gate_name](trajectory_state.data(), qubits[0], qubits[1], num_qubits, params, 1);
+        const matrix& unitary_matrix = instruction.unitary_matrix;
+        gate_map[gate_name](trajectory_state.data(), qubits[0], qubits[1], num_qubits, params, unitary_matrix, qubits, 1);
         std::vector<matrix> noise_matrix_list = get_matrix_list_for_instruction(gate_name, single_qubit_instructions, two_qubit_instructions, qubits[0], qubits[1]);
         noise_function_map[gate_name](trajectory_state.data(), qubits[0], qubits[1], num_qubits, noise_matrix_list, trajectory_engine, 1);
     }
@@ -39,7 +43,7 @@ std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instructio
 }
 
 void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instuctions, const std::size_t num_qubits, const int num_trajectories, uint8 thread_count){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, uint8)> gate_map = gate_function_mapper();
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> noise_function_map = noise_function_mapper();
     double averaging_factor = 1 / static_cast<double>(num_trajectories);
     #pragma omp parallel for shared(instruction_list, num_qubits. single_qubit_instructions, two_qubit_instructions, gate_map, noise_function_map) schedule(dynamic) num_threads(thread_count)
@@ -55,7 +59,7 @@ void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list
     }
 }
 
-void simulate_circuit(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, bool noisy, uint8 num_trajectories, uint8 thread_count){
+void simulate_circuit(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, bool noisy, uint8 num_trajectories, bool return_state, uint8 thread_count){
     std::list<ItemEntry> instruction_list;
     for (auto item : instructions){
         auto item_tuple = item.cast<py::tuple>();
@@ -93,7 +97,7 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
     else {
         unsigned short max_usable_threads = std::min<unsigned short>(thread_count, num_qubits);
         max_usable_threads = std::min<unsigned short>(max_usable_threads, omp_get_max_threads());
-        pure_state_solver(instruction_list, num_qubits, state, max_usable_threads);
+        pure_state_solver(instruction_list, num_qubits, state, return_state, max_usable_threads);
     }
 }
 
