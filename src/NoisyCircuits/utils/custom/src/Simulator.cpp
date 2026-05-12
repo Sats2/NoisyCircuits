@@ -13,7 +13,7 @@ void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t 
         const matrix& unitary_matrix = instruction.unitary_matrix;
         gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params, unitary_matrix, qubits, thread_count);
     }
-    if !(return_state) {
+    if (return_state) {
         #pragma omp parallel for num_threads(thread_count)
         for (std::size_t i = 0; i < (std::size_t{1} << num_qubits); i++){
             const complex128 amplitude = state[i];
@@ -67,7 +67,7 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
         entry.gate_name = item_tuple[0].cast<std::string>();
         entry.qubits = item_tuple[1].cast<std::vector<std::size_t>>();
         if (entry.gate_name == "unitary"){
-            py::array unitary_matrix_array = py::cast<py::array>(item_tuple[3]);
+            py::array unitary_matrix_array = py::cast<py::array>(item_tuple[2]);
             auto arr = py::array_t<complex128, py::array::c_style | py::array::forcecast>(unitary_matrix_array);
             int dim = arr.ndim();
             auto a = arr.unchecked<-1>();
