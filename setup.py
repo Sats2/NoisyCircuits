@@ -32,37 +32,27 @@ ext_modules = [
         "simulator",
         ["./src/NoisyCircuits/utils/custom/src/Simulator.cpp"],
         include_dirs = [pybind11.get_include()],
-        language="c++",
-        extra_compile_args = cpp_flags + omp_flags, #+ lto_flags,
+        language = "c++",
+        extra_compile_args = cpp_flags + omp_flags,
+        extra_link_args = omp_flags
+        ),
+    Extension(
+        "simulator_mpi",
+        ["./src/NoisyCircuits/utils/custom/src/SimulatorMPI.cpp"],
+        include_dirs = [pybind11.get_include()],
+        extra_compile_args = cpp_flags + omp_flags,
         extra_link_args = omp_flags
     ),
-    Extension(
-        "simulator_gpu",
-        ["./src/NoisyCircuits/utils/custom/src/SimulatorGPU.cpp"],
-        include_dirs = [pybind11.get_include()],
-        language="c++",
-        extra_compile_args = cpp_flags + omp_flags + target_flags + lto_flags,
-        extra_link_args = omp_flags + target_flags + lto_flags #+ [
-        #     system_gomp,
-        #     "-Wl,-rpath,/lib/x86_64-linux-gnu", 
-        #     "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
-        #     # "-Wl,-z,defs",
-        # ],
-    ),
-    Extension(
-        "run_gpu",
-        ["./examples/simulator_gpu.cpp"],
-        include_dirs = [pybind11.get_include()],
-        language="c++",
-        extra_compile_args = cpp_flags + omp_flags + target_flags,
-        extra_link_args = omp_flags + target_flags #+ [
-        #     system_gomp,
-        #     "-Wl,-rpath,/lib/x86_64-linux-gnu", 
-        #     "-Wl,-rpath,/usr/lib/x86_64-linux-gnu",
-        #     # "-Wl,-z,defs",
-        # ],
-    ),
+    # # GPU extension; currently disabled.
+    # Extension(
+    #     "simulator_gpu",
+    #     ["./src/NoisyCircuits/utils/custom/src/SimulatorGPU.cpp"],
+    #     include_dirs = [pybind11.get_include()],
+    #     extra_compile_args = cpp_flags + target_flags + lto_flags,
+    #     extra_link_args = target_flags + lto_flags
+    # ),
 ]
+
 
 setup(
     # This is the name of your project. The first time you publish this

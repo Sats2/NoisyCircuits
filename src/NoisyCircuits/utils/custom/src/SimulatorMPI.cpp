@@ -30,13 +30,13 @@ void run_trajectory(py::list instructions, py::array_t<complex128> statevector, 
         auto item_tuple = item.cast<py::tuple>();
         ItemEntry entry;
         entry.gate_name = item_tuple[0].cast<std::string>();
-        entry.qubits = item_tuple[1].cast<std::vector<std::size_t>>();
+        std::vector<std::size_t> apply_to_qubits = item_tuple[1].cast<std::vector<std::size_t>>();
         if (entry.gate_name == "unitary"){
             py::array unitary_matrix_array = py::cast<py::array>(item_tuple[2]);
             auto arr = py::array_t<complex128, py::array::c_style | py::array::forcecast>(unitary_matrix_array);
-            int dim = arr.ndim();
             auto a = arr.unchecked<-1>();
             matrix U(a.shape(0), std::vector<complex128>(a.shape(1)));
+            std::size_t dim = a.shape(0);
             for (std::size_t i = 0; i < dim; i++){
                 #pragma GCC unroll 2
                 for (std::size_t j = 0; j < dim; j++){
@@ -44,10 +44,13 @@ void run_trajectory(py::list instructions, py::array_t<complex128> statevector, 
                 }
             }
             entry.unitary_matrix = U;
+            std::reverse(apply_to_qubits.begin(), apply_to_qubits.end());
+            entry.qubits = apply_to_qubits;
             entry.params = -1.0;
         }
         else {
             entry.unitary_matrix = {};
+            entry.qubits = apply_to_qubits;
             entry.params = item_tuple[2].cast<double>();
         }
         instruction_list.push_back(entry);

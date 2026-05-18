@@ -6,6 +6,7 @@
 
 void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t num_qubits, complex128* __restrict__ state, bool return_state, uint8 thread_count){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
+    state[0] = complex128(1.0, 0.0);
     for (const ItemEntry& instruction : instruction_list){
         const std::string& gate_name = instruction.gate_name;
         const std::vector<std::size_t>& qubits = instruction.qubits;
@@ -13,7 +14,7 @@ void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t 
         const matrix& unitary_matrix = instruction.unitary_matrix;
         gate_map[gate_name](state, qubits[0], qubits[1], num_qubits, params, unitary_matrix, qubits, thread_count);
     }
-    if (return_state) {
+    if (!return_state) {
         #pragma omp parallel for num_threads(thread_count)
         for (std::size_t i = 0; i < (std::size_t{1} << num_qubits); i++){
             const complex128 amplitude = state[i];
@@ -42,14 +43,14 @@ std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instructio
     return trajectory_state;
 }
 
-void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instuctions, const std::size_t num_qubits, const int num_trajectories, uint8 thread_count){
+void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, const int num_trajectories, uint8 thread_count){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> noise_function_map = noise_function_mapper();
     double averaging_factor = 1 / static_cast<double>(num_trajectories);
-    #pragma omp parallel for shared(instruction_list, num_qubits. single_qubit_instructions, two_qubit_instructions, gate_map, noise_function_map) schedule(dynamic) num_threads(thread_count)
+    #pragma omp parallel for shared(instruction_list, num_qubits, single_qubit_instructions, two_qubit_instructions, gate_map, noise_function_map) schedule(dynamic) num_threads(thread_count)
     for (unsigned short t = 0; t < num_trajectories; t++){
         uint8 seed = static_cast<uint8>(42 + t);
-        std::vector<complex128> trajectory_state = single_trajectory(instruction_list, single_qubit_instructions, two_qubit_instuctions, num_qubits, gate_map, noise_function_map, seed);
+        std::vector<complex128> trajectory_state = single_trajectory(instruction_list, single_qubit_instructions, two_qubit_instructions, num_qubits, gate_map, noise_function_map, seed);
         #pragma omp critical
         {
             for (std::size_t i = 0; i < (std::size_t{1} << num_qubits); i++){
@@ -65,13 +66,13 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
         auto item_tuple = item.cast<py::tuple>();
         ItemEntry entry;
         entry.gate_name = item_tuple[0].cast<std::string>();
-        entry.qubits = item_tuple[1].cast<std::vector<std::size_t>>();
+        std::vector<std::size_t> apply_to_qubits = item_tuple[1].cast<std::vector<std::size_t>>();
         if (entry.gate_name == "unitary"){
             py::array unitary_matrix_array = py::cast<py::array>(item_tuple[2]);
             auto arr = py::array_t<complex128, py::array::c_style | py::array::forcecast>(unitary_matrix_array);
-            int dim = arr.ndim();
             auto a = arr.unchecked<-1>();
             matrix U(a.shape(0), std::vector<complex128>(a.shape(1)));
+            std::size_t dim = a.shape(0);
             for (std::size_t i = 0; i < dim; i++){
                 #pragma GCC unroll 2
                 for (std::size_t j = 0; j < dim; j++){
@@ -80,9 +81,12 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
             }
             entry.unitary_matrix = U;
             entry.params = -1.0;
+            std::reverse(apply_to_qubits.begin(), apply_to_qubits.end());
+            entry.qubits = apply_to_qubits;
         }
         else {
             entry.unitary_matrix = {};
+            entry.qubits = apply_to_qubits;
             entry.params = item_tuple[2].cast<double>();
         }
         instruction_list.push_back(entry);
@@ -103,5 +107,5 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
 
 PYBIND11_MODULE(simulator, m){
     m.doc() = "Module for simulating quantum circuits with noise using the Monte Carlo Wavefunction method.";
-    m.def("simulate_circuit", &simulate_circuit, "Simulates a quantum circuit with and without noise.", py::arg("instructions"), py::arg("statevector"), py::arg("single_qubit_noise_instructions"), py::arg("two_qubit_noise_instructions"), py::arg("num_qubits"), py::arg("noisy"), py::arg("num_trajectories"), py::arg("thread_count"));
+    m.def("simulate_circuit", &simulate_circuit, "Simulates a quantum circuit with and without noise.", py::arg("instructions"), py::arg("statevector"), py::arg("single_qubit_noise_instructions"), py::arg("two_qubit_noise_instructions"), py::arg("num_qubits"), py::arg("noisy"), py::arg("num_trajectories"), py::arg("return_state"), py::arg("thread_count"));
 }
