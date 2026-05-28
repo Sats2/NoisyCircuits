@@ -205,7 +205,7 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
         const std::size_t j = i | stride;
         const complex128 s0 = state[i];
         const complex128 s1 = state[j];
-        state[i] = complex128(cosine * s0.real() + sine * s0.imag(), cosine * s0.imag() - sine * s0.imag());
+        state[i] = complex128(cosine * s0.real() + sine * s0.imag(), cosine * s0.imag() - sine * s0.real());
         state[j] = complex128(cosine * s1.real() - sine * s1.imag(), cosine * s1.imag() + sine * s1.real());
     }
 }

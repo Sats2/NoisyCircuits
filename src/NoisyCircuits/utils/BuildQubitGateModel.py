@@ -15,7 +15,6 @@ Additionally, it needs to be noted that the QuantumCircuit module automatically 
 
 import numpy as np
 from collections import defaultdict
-from scipy.sparse import coo_matrix, csr_matrix, kron, identity
 import logging
 from joblib import Parallel, delayed
 from os import cpu_count
@@ -114,48 +113,6 @@ def _convert_op_to_ctpt(ops:list[np.ndarray],
     out = [scale * op for op in ops]
     return out
 
-def _build_full_matrix(P:np.ndarray,
-                        n:int, 
-                        system:int)->csr_matrix:
-    """
-    Extends a single-qubit operator P to a full system operator by applying P to the nth qubit and identity to all others.
-
-    Args:
-        P (np.ndarray): The single-qubit operator to extend.
-        n (int): The index of the qubit to which P is applied.
-        system (int): The total number of qubits in the system.
-
-    Returns:
-        csr_matrix: The full system operator as a sparse CSR matrix.
-    """
-    left_order = n
-    right_order = system - n - 1
-    left_identity = identity(2**left_order, dtype=np.complex128, format='csr')
-    right_identity = identity(2**right_order, dtype=np.complex128, format='csr')
-    full_matrix = kron(kron(left_identity, csr_matrix(P)), right_identity).tocsr()
-    full_matrix.eliminate_zeros()
-    return full_matrix
-    
-def _extend_kraus_to_system(kraus_ops:list,
-                            num_qubits:int, 
-                            qubit_idx:int)->list:
-        """Extends Kraus operators to the full system.
-
-        Args:
-            kraus_ops (list): List of Kraus operators for the subsystem.
-            qubit_idx (int): Index of the qubit to which the operators are applied.
-
-        Returns:
-            list: List of extended Kraus operators for the full system.
-        """
-        system_qubits = num_qubits
-        extended_kraus = []
-        for op in kraus_ops:
-            extended_op = _build_full_matrix(op, qubit_idx, system_qubits)
-            extended_op_csr = (extended_op.data, extended_op.indices, extended_op.indptr)
-            extended_kraus.append(extended_op_csr)
-        return extended_kraus
-
 def _apply_operation(op:list[np.ndarray],
                     operation_list:list[np.ndarray])->list[np.ndarray]:
         """
@@ -235,76 +192,10 @@ def _post_process_single_qubit_errors_single_qubit(qubit_errors:dict,
             operators.extend(_convert_op_to_ctpt(op, np.sqrt(prob)))
         if not _ensure_ctpt(operators):
             print(f"Warning: Extended Kraus operators for qubit do not form a CPTP map.")
-        kraus_operators = _extend_kraus_to_system(operators, num_qubits, qubit_index)
         qubit_errors_processed[gate] = {
-            "kraus_operators": kraus_operators,
             "qubit_channel": operators
         }
     return qubit_errors_processed
-
-def _build_full_matrix_2qubit(P:np.ndarray, 
-                              qubit_pair:tuple, 
-                              system:int)->csr_matrix:
-        """
-        Extends a 2 qubit operator P to a full system operator by applying P to the specified qubit pair and identity to all others.
-        Using Big Endian ordering (Q0 is MSB). Optimized for runtime.
-
-        Args:
-            P (np.ndarray): The two-qubit operator to extend (4x4 matrix).
-            qubit_pair (tuple): Tuple of qubit indices to which P is applied (q_control, q_target).
-            system (int): Total number of qubits in the system.
-
-        Returns:
-            csr_matrix: The full system operator as a CSR Matrix. 
-        """
-        q0, q1 = qubit_pair
-        P_coo = coo_matrix(P)
-        dim = 2**system
-        shift0 = system - 1 - q0
-        shift1 = system - 1 - q1
-        
-        other_qubits = [k for k in range(system) if k not in qubit_pair]
-        other_masks = np.array([0], dtype=np.int64)
-        for q in other_qubits:
-             s = system - 1 - q
-             bit = 1 << s
-             other_masks = np.concatenate([other_masks, other_masks | bit])
-        p_row = P_coo.row
-        p_col = P_coo.col
-        p_data = P_coo.data
-        val_q0_r = (p_row >> 1) & 1
-        val_q1_r = (p_row & 1)
-        val_q0_c = (p_col >> 1) & 1
-        val_q1_c = (p_col & 1)
-        base_r = (val_q0_r << shift0) | (val_q1_r << shift1)
-        base_c = (val_q0_c << shift0) | (val_q1_c << shift1)
-        full_rows = (base_r[:, None] | other_masks[None, :]).flatten()
-        full_cols = (base_c[:, None] | other_masks[None, :]).flatten()
-        full_data = np.tile(p_data[:, None], (1, len(other_masks))).flatten()
-        data_matrix = csr_matrix((full_data, (full_rows, full_cols)), shape=(dim, dim), dtype=np.complex128)
-        data_matrix.eliminate_zeros()
-        return data_matrix
-
-def _extend_kraus_to_system_multiqubit(num_qubits:int, 
-                                       kraus_ops:list, 
-                                       qubit_pair:tuple)->list:
-    """
-    Extends Kraus operators for a two-qubit gate to the full system.
-
-    Args:
-        kraus_ops (list): List of Kraus operators for the two-qubit gate.
-        qubit_pair (tuple): Tuple of qubit indices for which the Kraus operators are defined.
-
-    Returns:
-        list: List of extended Kraus operators for the full system.
-    """
-    system_qubits = num_qubits
-    extended_kraus = []
-    for op in kraus_ops:
-        extended_op = _build_full_matrix_2qubit(op, qubit_pair, system_qubits)
-        extended_op_csr = (extended_op.data, extended_op.indices, extended_op.indptr)
-        extended_kraus.append(extended_op_csr)
-    return extended_kraus
 
 def _get_two_qubit_gate_noise_operators_single_pair(num_qubits:int, 
                                                     qpair:tuple, 
@@ -409,9 +300,7 @@ def _get_two_qubit_gate_noise_operators_single_pair(num_qubits:int,
                         error_operators.append(np.sqrt(prob) * k_op)
     if not _ensure_ctpt(error_operators):
         print(f"Warning: Kraus operators for qubit pair {qpair} do not form a CPTP map.")
-    error_operators_full_system = _extend_kraus_to_system_multiqubit(num_qubits, error_operators, qpair)
     two_qubit_gate_error_operators = {
-        "operators": error_operators_full_system,
         "qubit_channel" : error_operators
     }
     return two_qubit_gate_error_operators
@@ -612,8 +501,6 @@ class BuildModel:
             dict: Dictionary of post-processed single-qubit errors.
         """
         no_noise_qubit_channel = [np.eye(2, dtype=np.complex128), np.zeros((2,2), dtype=np.complex128)]
-        sparse_identity = identity(2**self.num_qubits, dtype=np.complex128).tocsr()
-        no_noise_kraus_operators = [(sparse_identity.data, sparse_identity.indices, sparse_identity.indptr)]
         single_qubit_errors_processed = {}
         qubits_error_dicts = Parallel(n_jobs=self.num_cores)(
                                         delayed(_post_process_single_qubit_errors_single_qubit)(single_qubit_errors[q], q, self.num_qubits, self.threshold, self.instruction_map) for q in single_qubit_errors.keys()
@@ -622,7 +509,6 @@ class BuildModel:
             for gates in basis_gates:
                 if gates not in qubit_error_dict:
                     qubit_error_dict[gates] = {
-                        "kraus_operators": no_noise_kraus_operators,
                         "qubit_channel": no_noise_qubit_channel
                     }
             single_qubit_errors_processed[q] = qubit_error_dict

@@ -36,58 +36,207 @@ def reverse_bit_order(x:int,
     x = ((x >> 16) & 0x0000FFFF) | ((x & 0x0000FFFF) << 16)
     return x >> (32 - num_qubits)
 
-@njit(fastmath=False)
-def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex128], int, int]],
-                             state:np.ndarray[np.complex128])->np.ndarray[np.float64]:
+def get_updated_state_single(gate_op:np.ndarray[np.complex128], 
+                             state:np.ndarray[np.complex128], 
+                             q:int)->np.ndarray[np.complex128]:
     """
-    Computes the probabilities of the given statevector evolving under noise operators.
+    Function to get the updated state of the qubit system after applying a single qubit noise operator.
 
-    Args:
-        sparse_matrix_list (list[tuple[np.ndarray[np.complex128], int, int]]): List of sparse matrices representing the noise operators in CSR format.
-        state (np.ndarray[np.complex128]): Statevector of the quantum system.
+    Parameters
+    ----------
+    gate_op : np.ndarray[np.complex128]
+        The noise operator to be applied to the qubit system.
+    state : np.ndarray[np.complex128]
+        The current state of the qubit system.
+    q : int
+        The qubit to which the noise operator is applied.
 
-    Returns:
-        np.ndarray[np.float64]: Probabilities of the statevector picking a given noise operator.
+    Returns
+    -------
+    np.ndarray[np.complex128]
+        The updated state of the qubit system after applying the noise operator.
     """
-    probs = np.zeros(len(sparse_matrix_list), dtype=np.float64)
-    for k, sparse_matrix in enumerate(sparse_matrix_list):
-        data, indices, indptr = sparse_matrix
-        res = np.zeros_like(state)
-        num_qubit = int(np.log2(state.shape[0]))
-        for i in range(res.shape[0]):
-            row_sum = 0.0 + 0.0j
-            for j in range(indptr[i], indptr[i+1]):
-                row_sum += data[j] * state[reverse_bit_order(indices[j], num_qubit)]
-            little_endian_index = reverse_bit_order(i, num_qubit)
-            res[little_endian_index] = row_sum
-        probs[k] = np.vdot(res, res).real
+    dim = 1 << int(np.log2(state.size))
+    stride = 1 << q
+    psi_dash = np.zeros_like(state)
+    for p in range(0, dim >> 1, 1):
+        i = (p & (stride - 1)) | ((p & ~(stride - 1)) << 1)
+        j = i | stride
+        psi_dash[i] += gate_op[0,0] * state[i] + gate_op[0,1] * state[j]
+        psi_dash[j] += gate_op[1,0] * state[i] + gate_op[1,1] * state[j]
+    return psi_dash
+
+def compute_trajectory_probs_single(ops:list[np.ndarray[np.complex128]], 
+                                    state:np.ndarray[np.complex128], 
+                                    qubit:int)->np.ndarray[np.float64]:
+    """
+    Function to compute the probabilities of the noise operators for a single qubit gate.
+
+    Parameters
+    ----------
+    ops : list[np.ndarray[np.complex128]]
+        List of noise operators for the single qubit gate.
+    state : np.ndarray[np.complex128]
+        The current state of the qubit system after applying the gate.
+    qubit : int
+        The qubit to which the noise operators are applied.
+    
+    Returns
+    -------
+    np.ndarray[np.float64]
+        The probabilities of the noise operators for the single qubit gate.
+    """
+    probs = np.zeros(len(ops), dtype=np.float64)
+    for i in range(len(ops)):
+        psi = get_updated_state_single(ops[i], state, qubit)
+        probs[i] = np.vdot(psi, psi).real
     return probs
 
-@njit(fastmath=False)
-def update_statevector(sparse_matrix:tuple[np.ndarray, int, int],
-                       state:np.ndarray[np.complex128],
-                       prob:float)->np.ndarray[np.complex128]:
+def get_updated_state_two_q(gate_op:np.ndarray[np.complex128], 
+                            state:np.ndarray[np.complex128], 
+                            q1:int, 
+                            q2:int)->np.ndarray[np.complex128]:
     """
-    Perfroms the matrix-vector product for sparse matrices in CSR format and provides the updated statevector under a given noise trajectory.
+    Function to get the updated state of the qubit system for a two qubit noise operator.
 
-    Args:
-        sparse_matrix (tuple[np.ndarray]): Sparse matrix in CSR format representing the noise operator.
-        state (np.ndarray[np.complex128]): Current statevector of the quantum system.
-        prob (float): Probability of the state evolving under the given noise operator.
+    Parameters
+    ----------
+    gate_op : np.ndarray[np.complex128]
+        The noise operator to be applied to the qubit system.
+    state : np.ndarray[np.complex128]
+        The current state of the qubit system.
+    q1 : int
+        The first qubit to which the noise operator is applied.
+    q2 : int
+        The second qubit to which the noise operator is applied.
     
-    Returns:
-        np.ndarray[np.complex128]: Updated statevector after applying the noise operator (after normalization).
+    Returns
+    -------
+    np.ndarray[np.complex128]
+        The updated state of the qubit system after applying the two qubit noise operator.
     """
-    data, indices, indptr = sparse_matrix
-    res = np.zeros_like(state)
-    num_qubit = int(np.log2(state.shape[0]))
-    for i in range(res.shape[0]):
-        row_sum = 0.0 + 0.0j
-        for j in range(indptr[i], indptr[i+1]):
-            row_sum += data[j] * state[reverse_bit_order(indices[j], num_qubit)]
-        little_endian_index = reverse_bit_order(i, num_qubit)
-        res[little_endian_index] = row_sum
-    return res / np.sqrt(prob)
+    psi_dash = np.zeros_like(state)
+    dim = 1 << int(np.log2(state.size))
+    iters = dim >> 2
+    q_min = min(q1, q2)
+    q_max = max(q1, q2)
+    m1 = (1 << q_min) - 1
+    m2 = (1 << (q_max - 1)) - 1
+    ull_q1 = 1 << q1
+    ull_q2 = 1 << q2
+    target_mask = ull_q1 | ull_q2
+    for i in range(iters):
+        i_s1 = (i & m1) | ((i & ~m1) << 1)
+        pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1)
+        idx00 = pos
+        idx01 = pos | ull_q2
+        idx10 = pos | ull_q1
+        idx11 = pos | target_mask
+        psi_dash[idx00] += gate_op[0,0] * state[idx00] + gate_op[0,1] * state[idx01] + gate_op[0,2] * state[idx10] + gate_op[0,3] * state[idx11]
+        psi_dash[idx01] += gate_op[1,0] * state[idx00] + gate_op[1,1] * state[idx01] + gate_op[1,2] * state[idx10] + gate_op[1,3] * state[idx11]
+        psi_dash[idx10] += gate_op[2,0] * state[idx00] + gate_op[2,1] * state[idx01] + gate_op[2,2] * state[idx10] + gate_op[2,3] * state[idx11]
+        psi_dash[idx11] += gate_op[3,0] * state[idx00] + gate_op[3,1] * state[idx01] + gate_op[3,2] * state[idx10] + gate_op[3,3] * state[idx11]
+    return psi_dash
+
+def compute_trajectory_probs_two_q(ops:list[np.ndarray[np.complex128]], state:np.ndarray[np.complex128], qubits:list[int])->np.ndarray[np.float64]:
+    """
+    Function to compute the probabilities of the noise operators for a two qubit gate.
+
+    Parameters
+    ----------
+    ops : list[np.ndarray[np.complex128]]
+        List of noise operators for the two qubit gate.
+    state : np.ndarray[np.complex128]
+        The current state of the qubit system after applying the gate.
+    qubits : list[int]
+        The two qubits to which the noise operators are applied.
+    
+    Returns
+    -------
+    np.ndarray[np.float64]
+        The probabilities of the noise operators for the two qubit gate.
+    """
+    probs = np.zeros(len(ops), dtype=np.float64)
+    for i in range(len(ops)):
+        psi = get_updated_state_two_q(ops[i], state, qubits[0], qubits[1])
+        probs[i] = np.vdot(psi, psi).real
+    return probs
+
+def update_state_inplace_1q(op:np.ndarray[np.complex128], 
+                            state:np.ndarray[np.complex128], 
+                            q:int)->None:
+    """
+    Function that applies the single qubit noise operator the statevector inplace.
+
+    Parameters
+    ----------
+    op : np.ndarray[np.complex128]
+        The noise operator to be applied.
+    state : np.ndarray[np.complex128]
+        The current state of the qubit system.
+    q : int
+        The qubit to which the noise operator is applied to.
+    
+    Returns
+    -------
+    None
+    """
+    dim = 1 << int(np.log2(state.size))
+    stride = 1 << q
+    for p in range(0, dim >> 1, 1):
+        i = (p & (stride - 1)) | ((p & ~(stride - 1)) << 1)
+        j = i | stride
+        s0 = state[i]
+        s1 = state[j]
+        state[i] = op[0,0]*s0 + op[0,1]*s1
+        state[j] = op[1,0]*s0 + op[1,1]*s1
+
+def update_state_inplace_2q(op:np.ndarray[np.complex128],
+                            state:np.ndarray[np.complex128],
+                            q1:int,
+                            q2:int)->None:
+    """
+    Function that applies the two qubit noise operator to the statevector inplace.
+
+    Parameters
+    ----------
+    op : np.ndarray[np.complex128]
+        The noise operator to be applied.
+    state : np.ndarray[np.complex128]
+        The current state of the qubit system.
+    q1 : int
+        The first qubit to which the noise operator is applied to.
+    q2 : int
+        The second qubit to which the noise operator is applied to.
+    
+    Returns
+    -------
+    None
+    """
+    dim = 1 << int(np.log2(state.size))
+    iters = dim >> 2
+    q_min = min(q1, q2)
+    q_max = max(q1, q2)
+    m1 = (1 << q_min) - 1
+    m2 = (1 << (q_max - 1)) - 1
+    ull_q1 = 1 << q1
+    ull_q2 = 1 << q2
+    target_mask = ull_q1 | ull_q2
+    for i in range(iters):
+        i_s1 = (i & m1) | ((i & ~m1) << 1)
+        pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1)
+        idx00 = pos
+        idx01 = pos | ull_q2
+        idx10 = pos | ull_q1
+        idx11 = pos | target_mask
+        s00 = state[idx00]
+        s01 = state[idx01]
+        s10 = state[idx10]
+        s11 = state[idx11]
+        state[idx00] = op[0,0]*s00 + op[0,1]*s01 + op[0,2]*s10 + op[0,3]*s11
+        state[idx01] = op[1,0]*s00 + op[1,1]*s01 + op[1,2]*s10 + op[1,3]*s11
+        state[idx10] = op[2,0]*s00 + op[2,1]*s01 + op[2,2]*s10 + op[2,3]*s11
+        state[idx11] = op[3,0]*s00 + op[3,1]*s01 + op[3,2]*s10 + op[3,3]*s11
 
 
 @ray.remote
@@ -163,11 +312,11 @@ class RemoteExecutor:
         Returns:
             np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
         """
-        ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]["kraus_operators"]
-        kraus_probs = compute_trajectory_probs(ops, state.copy())
+        ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]["qubit_channel"]
+        kraus_probs = compute_trajectory_probs_single(ops, state, qubit_index[0])
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
-        new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
-        return new_state / np.linalg.norm(new_state)
+        update_state_inplace_1q(ops[chosen_index], state, qubit_index[0])
+        return state / np.sqrt(kraus_probs[chosen_index])
     
     def _apply_two_qubit_noise(self,
                                state:np.ndarray[np.complex128],
@@ -185,11 +334,11 @@ class RemoteExecutor:
             np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
         """
         qubit_pair = tuple(qubit_index)
-        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]["operators"]
-        kraus_probs = compute_trajectory_probs(ops, state.copy())
+        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]["qubit_channel"]
+        kraus_probs = compute_trajectory_probs_two_q(ops, state, qubit_index)
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
-        new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
-        return new_state / np.linalg.norm(new_state)
+        update_state_inplace_2q(ops[chosen_index], state, qubit_index[0], qubit_index[1])
+        return state / np.sqrt(kraus_probs[chosen_index])
     
     def run(self,
             traj_id:int,
