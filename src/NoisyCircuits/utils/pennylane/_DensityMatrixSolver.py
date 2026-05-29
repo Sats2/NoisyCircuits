@@ -75,10 +75,10 @@ class DensityMatrixSolver:
         def run_circuit():
             # Define gate execution functions
             gate_executors = {
-                "x": lambda params, qubits: qml.X(qubits),
-                "sx": lambda params, qubits: qml.SX(qubits),
-                "rz": lambda params, qubits: qml.RZ(params, qubits),
-                "rx": lambda params, qubits: qml.RX(params, qubits),
+                "x": lambda params, qubits: qml.X(qubits[0]),
+                "sx": lambda params, qubits: qml.SX(qubits[0]),
+                "rz": lambda params, qubits: qml.RZ(params, qubits[0]),
+                "rx": lambda params, qubits: qml.RX(params, qubits[0]),
                 "ecr": lambda params, qubits: qml.ECR(qubits),
                 "cz": lambda params, qubits: qml.CZ(qubits),
                 "rzz": lambda params, qubits: qml.IsingZZ(params, qubits),

@@ -50,10 +50,10 @@ class PureStateSolver:
         @qml.qnode(dev)
         def run_circuit(qubits):
             instruction_map = {
-                "x": lambda q: qml.X(q),
-                "sx": lambda q: qml.SX(q),
-                "rz": lambda t, q: qml.RZ(t, q),
-                "rx": lambda t,q: qml.RX(t, q),
+                "x": lambda q: qml.X(q[0]),
+                "sx": lambda q: qml.SX(q[0]),
+                "rz": lambda t, q: qml.RZ(t, q[0]),
+                "rx": lambda t,q: qml.RX(t, q[0]),
                 "ecr": lambda q: qml.ECR(q),
                 "cz": lambda q: qml.CZ(q),
                 "rzz": lambda t,q: qml.IsingZZ(t, q),

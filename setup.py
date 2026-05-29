@@ -43,6 +43,14 @@ ext_modules = [
         extra_compile_args = cpp_flags + omp_flags,
         extra_link_args = omp_flags
     ),
+    Extension(
+        "measurement_error_applicator",
+        ["./src/NoisyCircuits/utils/custom/src/MeasurementErrorApplicator.cpp"],
+        include_dirs = [pybind11.get_include()],
+        language = "c++",
+        extra_compile_args = cpp_flags + omp_flags,
+        extra_link_args = omp_flags
+    ),
     # # GPU extension; currently disabled.
     # Extension(
     #     "simulator_gpu",
