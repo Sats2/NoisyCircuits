@@ -17,10 +17,14 @@ class EagleDecomposition(Decomposition):
         """
         Constructor for the EagleDecomposition class that applies the quantum gates for the IBM Eagle QPU Architectures.
 
-        Args:
-            num_qubits (int): The number of qubits in the quantum circuit.
-            connectivity (dict): A dictionary representing the connectivity of the qubits.
-            qubit_map (list[tuple]): A list of tuples representing the mapping of logical qubits to physical qubits.
+        Parameters
+        ----------
+        num_qubits : int
+            The number of qubits in the quantum circuit.
+        connectivity : dict
+            A dictionary representing the connectivity of the qubits.
+        qubit_map : list[tuple]
+            A list of tuples representing the mapping of logical qubits to physical qubits.
         """
         super().__init__(num_qubits=num_qubits)
         self.instruction_list = []

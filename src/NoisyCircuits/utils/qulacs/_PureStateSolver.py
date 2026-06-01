@@ -7,7 +7,7 @@ Example:
     >>> instruction_list = []
     >>> instruction_list.append(["rx", [0], np.pi])
     >>> instruction_list.append(["ecr", [0, 1], None])
-    >>> solver = PureStateSolver(num_qubits=2, instruction_list=instruction_list)
+    >>> solver = PureStateSolver(num_qubits=2, instruction_list=instruction_list, num_cores=1, return_statevector=False)
     >>> solver.solve(qubits=[0,1])
     [0.5, 0.5, 0.0, 0.0]
 
@@ -16,6 +16,8 @@ This module contains only one class `PureStateSolver` which has only one callabl
 import numpy as np
 from qulacs import QuantumCircuit, QuantumState
 import qulacs.gate as gate
+import os
+from NoisyCircuits.utils import compute_marginal_probs
 import gc
 
 
@@ -25,27 +27,44 @@ class PureStateSolver:
     """
     def __init__(self,
                  num_qubits:int,
-                 instruction_list:list)->None:
+                 instruction_list:list,
+                 num_cores:int,
+                 return_statevector:bool 
+                )->None:
         """
         Initializes the PureStateSolver.
 
-        Args:
-            num_qubits (int): The number of qubits in the circuit.
-            instruction_list (list): The list of instructions to be applied.
+        Parameters
+        ----------
+        num_qubits : int
+            The number of qubits in the circuit.
+        instruction_list : list
+            The list of instructions to be applied.
+        num_cores : int
+            The number of CPU cores to use for the simulation.
+        return_statevector : bool
+            Whether to return the statevector instead of probabilities.
         """
         self.num_qubits = num_qubits
         self.instruction_list = instruction_list
+        self.return_statevector = return_statevector
+        os.environ["QULACS_NUM_THREADS"] = str(num_cores)
         
     def solve(self,
-              qubits:list[int])->np.ndarray:
+              qubits:list[int]
+              )->np.ndarray[np.float64] | np.ndarray[np.complex128]:
         """
         Performs the quantum circuit simulation using pure statevector methods.
 
-        Args:
-            qubits (list[int]): The list of qubits for which to compute the probabilities.
+        Parameters
+        ----------
+        qubits : list[int]
+            The list of qubits for which to compute the probabilities.
 
-        Returns:
-            np.ndarray: The probabilities of measuring each qubit in the computational basis.
+        Returns
+        -------
+        np.ndarray[np.float64] | np.ndarray[np.complex128]
+            The probabilities of measuring each qubit in the computational basis or the statevector if return_statevector is True.
         """
         circuit = QuantumCircuit(self.num_qubits)
         state = QuantumState(self.num_qubits)
@@ -68,4 +87,13 @@ class PureStateSolver:
             circuit.add_gate(instruction_map[gate_name](qubit_index, parameter))
         circuit.update_quantum_state(state)
         state_array = state.get_vector()
-        return np.square(np.abs(state_array))
+        if self.return_statevector:
+            return state_array
+        probs = np.abs(state_array)**2
+        if len(qubits) < self.num_qubits:
+            probs = compute_marginal_probs(probs, qubits, self.num_qubits)
+        del circuit
+        del state
+        gc.collect()
+        return probs
+

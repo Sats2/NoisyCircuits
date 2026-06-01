@@ -11,32 +11,13 @@ import qulacs.gate as gate
 import numpy as np
 import ray
 from numba import njit
+from NoisyCircuits.utils import convert_matrix_to_little_endian
 import gc
-
-
-@njit(fastmath=False)
-def reverse_bit_order(x:int,
-                      num_qubits:int)->int:
-    """
-    Reverse the bit order of a 32-bit integer for a qubit index mapping.
-
-    Args:
-        x (int): The integer to reverse the bit order of.
-        num_qubits (int): The number of qubits in the system.
-
-    Returns:
-        int: The integer with the bit order reversed.
-    """
-    x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1)
-    x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2)
-    x = ((x >> 4) & 0x0F0F0F0F) | ((x & 0x0F0F0F0F) << 4)
-    x = ((x >> 8) & 0x00FF00FF) | ((x & 0x00FF00FF) << 8)
-    x = ((x >> 16) & 0x0000FFFF) | ((x & 0x0000FFFF) << 16)
-    return x >> (32 - num_qubits)
 
 def get_updated_state_single(gate_op:np.ndarray[np.complex128], 
                              state:np.ndarray[np.complex128], 
-                             q:int)->np.ndarray[np.complex128]:
+                             q:int
+                            )->np.ndarray[np.complex128]:
     """
     Function to get the updated state of the qubit system after applying a single qubit noise operator.
 
@@ -66,7 +47,8 @@ def get_updated_state_single(gate_op:np.ndarray[np.complex128],
 
 def compute_trajectory_probs_single(ops:list[np.ndarray[np.complex128]], 
                                     state:np.ndarray[np.complex128], 
-                                    qubit:int)->np.ndarray[np.float64]:
+                                    qubit:int
+                                )->np.ndarray[np.float64]:
     """
     Function to compute the probabilities of the noise operators for a single qubit gate.
 
@@ -93,7 +75,8 @@ def compute_trajectory_probs_single(ops:list[np.ndarray[np.complex128]],
 def get_updated_state_two_q(gate_op:np.ndarray[np.complex128], 
                             state:np.ndarray[np.complex128], 
                             q1:int, 
-                            q2:int)->np.ndarray[np.complex128]:
+                            q2:int
+                        )->np.ndarray[np.complex128]:
     """
     Function to get the updated state of the qubit system for a two qubit noise operator.
 
@@ -136,7 +119,10 @@ def get_updated_state_two_q(gate_op:np.ndarray[np.complex128],
         psi_dash[idx11] += gate_op[3,0] * state[idx00] + gate_op[3,1] * state[idx01] + gate_op[3,2] * state[idx10] + gate_op[3,3] * state[idx11]
     return psi_dash
 
-def compute_trajectory_probs_two_q(ops:list[np.ndarray[np.complex128]], state:np.ndarray[np.complex128], qubits:list[int])->np.ndarray[np.float64]:
+def compute_trajectory_probs_two_q(ops:list[np.ndarray[np.complex128]],
+                                   state:np.ndarray[np.complex128], 
+                                   qubits:list[int]
+                                   )->np.ndarray[np.float64]:
     """
     Function to compute the probabilities of the noise operators for a two qubit gate.
 
@@ -162,7 +148,8 @@ def compute_trajectory_probs_two_q(ops:list[np.ndarray[np.complex128]], state:np
 
 def update_state_inplace_1q(op:np.ndarray[np.complex128], 
                             state:np.ndarray[np.complex128], 
-                            q:int)->None:
+                            q:int
+                            )->None:
     """
     Function that applies the single qubit noise operator the statevector inplace.
 
@@ -192,7 +179,8 @@ def update_state_inplace_1q(op:np.ndarray[np.complex128],
 def update_state_inplace_2q(op:np.ndarray[np.complex128],
                             state:np.ndarray[np.complex128],
                             q1:int,
-                            q2:int)->None:
+                            q2:int
+                            )->None:
     """
     Function that applies the two qubit noise operator to the statevector inplace.
 
@@ -250,13 +238,16 @@ class RemoteExecutor:
         """
         Constructor for the RemoteExecutor class.
 
-        Args:
-            num_qubits (int): Number of qubits in the quantum circuit.
-            single_qubit_noise (dict): Dictionary containing the noise operators for single qubit gates.
-            two_qubit_noise (dict): Dictionary containing the noise operators for two qubit gates.
-            two_qubit_noise_index (dict): Dictionary mapping qubit pairs to their indices in the two qubit noise dictionary.
-            instruction_list (list): List of instructions to build the quantum circuit.
-            measured_qubits (list[int]): List of qubits to measure.
+        Parameters
+        ----------
+        num_qubits : int
+            Number of qubits in the quantum circuit.
+        single_qubit_noise : dict
+            Dictionary containing the noise operators for single qubit gates.
+        two_qubit_noise : dict)
+            Dictionary containing the noise operators for two qubit gates.
+        two_qubit_noise_index : dict
+            Dictionary mapping qubit pairs to their indices in the two qubit noise dictionary.
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
@@ -277,11 +268,11 @@ class RemoteExecutor:
         self.noise_function_map = {
             "x": self._apply_single_qubit_noise,
             "sx": self._apply_single_qubit_noise,
-            "rz": self._no_noise,
-            "rx": self._no_noise,
+            "rz": self._apply_single_qubit_noise,
+            "rx": self._apply_single_qubit_noise,
             "cz": self._apply_two_qubit_noise,
             "ecr": self._apply_two_qubit_noise,
-            "rzz": self._no_noise,
+            "rzz": self._apply_single_qubit_noise,
             "unitary": self._no_noise
         }
     
@@ -293,15 +284,21 @@ class RemoteExecutor:
         """
         Private method that applies applies the noise operator for single qubit gates.
 
-        Args:
-            state (np.ndarray[np.complex128]): Current statevector of the quantum system.
-            gate_name (str): Name of the gate previously applied.
-            qubit_index (list[int]): List of qubits that the noise must be applied to.
+        Parameters
+        ----------
+        state : np.ndarray[np.complex128]
+            Current statevector of the quantum system.
+        gate_name : str
+            Name of the gate previously applied.
+        qubit_index : list[int]
+            List of qubits that the noise must be applied to.
         
-        Returns:
-            np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
+        Returns
+        -------
+        np.ndarray[np.complex128]
+            Updated statevector after applying the noise operator.
         """
-        ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]["qubit_channel"]
+        ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]
         kraus_probs = compute_trajectory_probs_single(ops, state, qubit_index[0])
         chosen_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
         update_state_inplace_1q(ops[chosen_idx], state, qubit_index[0])
@@ -315,16 +312,22 @@ class RemoteExecutor:
         """
         Private method that applies the noise operator for two qubit gates.
 
-        Args:
-            state (np.ndarray[np.complex128]): Current statevector of the quantum system.
-            gate_name (str): Name of the gate previously applied.
-            qubit_index (list[int]): List of qubits that the noise must be applied to.
+        Parameters
+        ----------
+        state : np.ndarray[np.complex128])
+            Current statevector of the quantum system.
+        gate_name : str
+            Name of the gate previously applied.
+        qubit_index : list[int]
+            List of qubits that the noise must be applied to.
         
-        Returns:
-            np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
+        Returns
+        -------
+        np.ndarray[np.complex128]
+            Updated statevector after applying the noise operator.
         """
         qubit_pair = tuple(qubit_index)
-        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]["qubit_channel"]
+        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]
         kraus_probs = compute_trajectory_probs_two_q(ops, state, qubit_index)
         chosen_idx = np.random.choice(len(kraus_probs), p=kraus_probs)
         update_state_inplace_2q(ops[chosen_idx], state, qubit_index[0], qubit_index[1])
@@ -333,9 +336,24 @@ class RemoteExecutor:
     def _no_noise(self,
                   state:np.ndarray[np.complex128],
                   gate_name:str,
-                  qubit_index:list[int])->np.ndarray[np.complex128]:
+                  qubit_index:list[int]
+                )->np.ndarray[np.complex128]:
         """
         Private method that returns the statevector unchanged when no noise is to be applied.
+
+        Parameters
+        ----------
+        state : np.ndarray[np.complex128]
+            Current statevector of the quantum system.
+        gate_name : str
+            Name of the gate previously applied.
+        qubit_index : list[int]
+            List of qubits that the noise would be applied to if there was noise.
+
+        Returns
+        -------
+        np.ndarray[np.complex128]
+            Unchanged statevector since no noise is applied.
         """
         return state
 
@@ -346,21 +364,34 @@ class RemoteExecutor:
         """
         Main method of the module to execute the MCWF trajectories.
 
-        Args:
-            traj_id (int): Trajectory ID for the simulation.
-            instruction_list (list[list[str, list[int], float|None]]): List of instructions to build the quantum circuit.
+        Parameters
+        ----------
+        traj_id : int
+            Trajectory ID for the simulation.
+        instruction_list : list[list[str, list[int], float|None]]
+            List of instructions to build the quantum circuit.
+
+        Returns
+        -------
+        None
         """
         self.instruction_list = instruction_list
 
-        def compute_trajectory(traj_id:int)->np.ndarray[np.float64]:
+        def compute_trajectory(
+                traj_id:int
+                )->np.ndarray[np.float64]:
             """
             Method to compute a single MCWF trajectory.
 
-            Args:
-                traj_id (int): Trajectory ID for the simulation.
+            Parameters
+            ----------
+            traj_id : int
+                Trajectory ID for the simulation.
 
-            Returns:
-                np.ndarray[np.float64]: Probabilities after executing the trajectory.
+            Returns
+            -------
+            np.ndarray[np.float64]
+                Probabilities after executing the trajectory.
             """
             np.random.seed(42 + traj_id)
             init_state = np.zeros(2**self.num_qubits, dtype=np.complex128)
@@ -379,26 +410,20 @@ class RemoteExecutor:
         final_state = compute_trajectory(traj_id)
         self.probs_sum += np.abs(final_state)**2
 
-    def get(self,
-            measured_qubits:list[int])->np.ndarray[np.float64]:
+    def get(self)->np.ndarray[np.float64]:
         """
         Method to get the accumulated probabilities after all trajectories have been run.
 
-        Args:
-            measured_qubits (list[int]): List of qubits that were measured.
-
-        Returns:
-            np.ndarray[np.float64]: Accumulated probabilities after all trajectories.
+        Returns
+        -------
+        np.ndarray[np.float64]
+            Accumulated probabilities after all trajectories.
         """
         return self.probs_sum
     
-    def reset(self, 
-              measured_qubits:list[int])->None:
+    def reset(self)->None:
         """
         Method to reset the accumulated probabilities and the measured qubits.
-
-        Args:
-            measured_qubits (list[int]): List of qubits that will be measured.
         """
         self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)
         

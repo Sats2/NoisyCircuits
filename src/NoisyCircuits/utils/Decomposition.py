@@ -30,8 +30,10 @@ class Decomposition(ABC):
     """
     Abstract base class for quantum circuit decomposition which defines the interface for various quantum gate operations for different QPUs with varying basis gates.
 
-    Args:
-        num_qubits (int): The number of qubits in the quantum circuit.
+    Parameters
+    ----------
+    num_qubits : int
+        The number of qubits in the quantum circuit.
     """
     def __init__(self,
                  num_qubits:int)->None:
@@ -54,14 +56,20 @@ class Decomposition(ABC):
             0 & e^{i\theta/2}
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The rotation angle.
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        theta : int | float
+            The rotation angle.
+        qubit : int
+            The target qubit.
         
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If qubit is not an integer.
-            ValueError: If qubit is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If qubit is not an integer.
+        ValueError
+            If qubit is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -84,12 +92,17 @@ class Decomposition(ABC):
             1-i & 1+i
             \end{pmatrix}
 
-        Args:
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        qubit : int
+            The target qubit.
 
-        Raises:
-            TypeError: If qubit is not an integer.
-            ValueError: If qubit is out of range.
+        Raises
+        ------
+        TypeError
+            If qubit is not an integer.
+        ValueError
+            If qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
@@ -110,12 +123,17 @@ class Decomposition(ABC):
             1 & 0
             \end{pmatrix}
 
-        Args:
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        qubit : int
+            The target qubit.
         
-        Raises:
-            TypeError: If qubit is not an integer.
-            ValueError: If qubit is out of range.
+        Raises
+        ------
+        TypeError
+            If qubit is not an integer.
+        ValueError
+            If qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
@@ -137,13 +155,19 @@ class Decomposition(ABC):
             -i & 1 & 0 & 0
             \end{pmatrix}
 
-        Args:
-            control (int): The control qubit.
-            target (int): The target qubit.
+        Parameters
+        ----------
+        control : int
+            The control qubit.
+        target : int
+            The target qubit.
 
-        Raises:
-            TypeError: If control/target is not an integer.
-            ValueError: If control/target is out of range.
+        Raises
+        ------
+        TypeError
+            If control/target is not an integer.
+        ValueError
+            If control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
@@ -167,14 +191,20 @@ class Decomposition(ABC):
             \sin(\theta/2) & \cos(\theta/2)
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The rotation angle.
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        theta : int | float
+            The rotation angle.
+        qubit : int
+            The target qubit.
 
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If qubit is not an integer.
-            ValueError: If the qubit is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If qubit is not an integer.
+        ValueError
+            If the qubit is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -198,14 +228,20 @@ class Decomposition(ABC):
             -i\sin(\theta/2) & \cos(\theta/2)
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The rotation angle.
-            qubit (int): The target qubit.
+        Paramters
+        ----------
+        theta : int | float
+            The rotation angle.
+        qubit : int
+            The target qubit.
 
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If qubit is not an integer.
-            ValueError: If the qubit is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If qubit is not an integer.
+        ValueError
+            If the qubit is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -228,12 +264,17 @@ class Decomposition(ABC):
             i & 0
             \end{pmatrix}
 
-        Args:
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        qubit : int
+            The target qubit.
 
-        Raises:
-            TypeError: If qubit is not an integer.
-            ValueError: If the qubit is out of range.
+        Raises
+        ------
+        TypeError
+            If qubit is not an integer.
+        ValueError
+            If the qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
@@ -254,12 +295,17 @@ class Decomposition(ABC):
             0 & -1
             \end{pmatrix}
 
-        Args:
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        qubit : int
+            The target qubit.
 
-        Raises:
-            TypeError: If qubit is not an integer.
-            ValueError: If the qubit is out of range.
+        Raises
+        ------
+        TypeError
+            If qubit is not an integer.
+        ValueError
+            If the qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
@@ -280,12 +326,17 @@ class Decomposition(ABC):
             1 & -1
             \end{pmatrix}
 
-        Args:
-            qubit (int): The target qubit.
+        Parameters
+        ----------
+        qubit : int
+            The target qubit.
 
-        Raises:
-            TypeError: If qubit is not an integer.
-            ValueError: If the qubit is out of range.
+        Raises
+        ------
+        TypeError
+            If qubit is not an integer.
+        ValueError
+            If the qubit is out of range.
         """
         if not isinstance(qubit, int):
             raise TypeError("The target qubit must be an integer.")
@@ -309,13 +360,19 @@ class Decomposition(ABC):
             0 & 0 & 1 & 0
             \end{pmatrix}
 
-        Args:
-            control (int): The control qubit.
-            target (int): The target qubit.
+        Parameters
+        ----------
+        control : int
+            The control qubit.
+        target : int
+            The target qubit.
 
-        Raises:
-            TypeError: If control/target is not an integer.
-            ValueError: If the control/target is out of range.
+        Raises
+        ------
+        TypeError
+            If control/target is not an integer.
+        ValueError
+            If the control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
@@ -341,13 +398,19 @@ class Decomposition(ABC):
             0 & 0 & i & 0
             \end{pmatrix}
 
-        Args:
-            control (int): The control qubit.
-            target (int): The target qubit.
+        Parameters
+        ----------
+        control : int
+            The control qubit.
+        target : int
+            The target qubit.
 
-        Raises:
-            TypeError: If control/target is not an integer.
-            ValueError: If the control/target is out of range.
+        Raises
+        ------
+        TypeError
+            If control/target is not an integer.
+        ValueError
+            If the control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
@@ -373,13 +436,19 @@ class Decomposition(ABC):
             0 & 0 & 0 & -1
             \end{pmatrix}
 
-        Args:
-            control (int): The control qubit.
-            target (int): The target qubit.
+        Parameters
+        ----------
+        control : int
+            The control qubit.
+        target : int
+            The target qubit.
 
-        Raises:
-            TypeError: If control/target is not an integer.
-            ValueError: If the control/target is out of range.
+        Raises
+        ------
+        TypeError
+            If control/target is not an integer.
+        ValueError
+            If the control/target is out of range.
         """
         if not isinstance(control, int):
             raise TypeError("The control qubit must be an integer.")
@@ -405,13 +474,19 @@ class Decomposition(ABC):
             0 & 0 & 0 & 1
             \end{pmatrix}
 
-        Args:
-            qubit1 (int): The first qubit.
-            qubit2 (int): The second qubit.
+        Parameters
+        ----------
+        qubit1 : int
+            The first qubit.
+        qubit2 : int
+            The second qubit.
 
-        Raises:
-            TypeError: If qubit1/qubit2 is not an integer.
-            ValueError: If qubit1/qubit2 is out of range.
+        Raises
+        ------            
+        TypeError
+            If qubit1/qubit2 is not an integer.
+        ValueError
+            If qubit1/qubit2 is out of range.
         """
         if not isinstance(qubit1, int):
             raise TypeError("The first qubit must be an integer.")
@@ -438,15 +513,22 @@ class Decomposition(ABC):
             0 & 0 & -i\sin(\theta/2) & \cos(\theta/2)
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The rotation angle.
-            control (int): The control qubit.
-            target (int): The target qubit.
+        Parameters
+        ----------
+        theta : int | float
+            The rotation angle.
+        control : int
+            The control qubit.
+        target : int
+            The target qubit.
         
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If control/target is not an integer.
-            ValueError: If the control/target is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If control/target is not an integer.
+        ValueError
+            If the control/target is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -546,15 +628,22 @@ class Decomposition(ABC):
             0 & 0 & 0 & \exp(-i\theta/2)
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The angle of rotation.
-            qubit1 (int): The first qubit.
-            qubit2 (int): The second qubit.
+        Parameters
+        ----------
+        theta : int | float
+            The angle of rotation.
+        qubit1 : int
+            The first qubit.
+        qubit2 : int
+            The second qubit.
         
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If qubit1/qubit2 is not an integer.
-            ValueError: If qubit1/qubit2 is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If qubit1/qubit2 is not an integer.
+        ValueError
+            If qubit1/qubit2 is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -582,15 +671,22 @@ class Decomposition(ABC):
             -i\sin(\theta/2) & 0 & 0 & \cos(\theta/2)
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The angle of rotation.
-            qubit1 (int): The first qubit.
-            qubit2 (int): The second qubit.
+        Parameters
+        ----------
+        theta : int | float
+            The angle of rotation.
+        qubit1 : int
+            The first qubit.
+        qubit2 : int
+            The second qubit.
         
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If qubit1/qubit2 is not an integer.
-            ValueError: If qubit1/qubit2 is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If qubit1/qubit2 is not an integer.
+        ValueError
+            If qubit1/qubit2 is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -618,15 +714,22 @@ class Decomposition(ABC):
             i\sin(\theta/2) & 0 & 0 & \cos(\theta/2)
             \end{pmatrix}
 
-        Args:
-            theta (int | float): The angle of rotation.
-            qubit1 (int): The first qubit.
-            qubit2 (int): The second qubit.
+        Parameters
+        ----------
+        theta : int | float
+            The angle of rotation.
+        qubit1 : int
+            The first qubit.
+        qubit2 : int
+            The second qubit.
         
-        Raises:
-            TypeError: If theta is not an integer or float.
-            TypeError: If qubit1/qubit2 is not an integer.
-            ValueError: If qubit1/qubit2 is out of range.
+        Raises
+        ------
+        TypeError
+            - If theta is not an integer or float.
+            - If qubit1/qubit2 is not an integer.
+        ValueError
+            If qubit1/qubit2 is out of range.
         """
         if not isinstance(theta, (int, float)):
             raise TypeError("The angle theta must be an integer or float.")
@@ -645,13 +748,19 @@ class Decomposition(ABC):
         """
         Applies the SWAP decomposition to the circuit for every SWAP call.
 
-        Args:
-            qubit1 (int): The first qubit.
-            qubit2 (int): The second qubit.
+        Parameters
+        ----------
+        qubit1 : int
+            The first qubit.
+        qubit2 : int
+            The second qubit.
         
-        Raises:
-            TypeError: If qubit1/qubit2 is not an integer.
-            ValueError: If qubit1/qubit2 is out of range.
+        Raises
+        ------
+        TypeError
+            If qubit1/qubit2 is not an integer.
+        ValueError
+            If qubit1/qubit2 is out of range.
         """
         if not isinstance(qubit1, int):
             raise TypeError("The first qubit must be an integer.")
@@ -663,22 +772,31 @@ class Decomposition(ABC):
 
     @abstractmethod
     def apply_unitary(self,
-                      unitary_matrix:np.ndarray,
+                      unitary_matrix:np.ndarray[np.complex128 | np.float64],
                       qubits:list[int]):
         """
         Applies a unitary operation to the specified qubits.
 
-        Args:
-            unitary_matrix (np.ndarray): The unitary matrix to apply.
-            qubits (list[int]): The list of qubits to which the unitary matrix will be applied.
+        Parameters
+        ----------
+        unitary_matrix : np.ndarray[np.complex128 | np.float64]
+            The unitary matrix to apply.
+        qubits : list[int]
+            The list of qubits to which the unitary matrix will be applied.
         
-        Raises:
-            TypeError: If unitary_matrix is not a numpy ndarray.
-            TypeError: If any qubit in the qubits list is not an integer or if qubits is not a list.
-            ValueError: If any qubit in the qubits list is out of range.
-            NonSquareMatrixError: If the unitary matrix is not square.
-            ShapeMismatchError: If the shape of the unitary matrix does not match the state of the qubits for the provided number of qubits.
-            NonUnitaryMatrixError: If the matrix is not unitary. 
+        Raises
+        ------
+        TypeError
+            - If unitary_matrix is not a numpy ndarray.
+            - If any qubit in the qubits list is not an integer or if qubits is not a list.
+        ValueError
+            If any qubit in the qubits list is out of range.
+        NonSquareMatrixError
+            If the unitary matrix is not square.
+        ShapeMismatchError
+            If the shape of the unitary matrix does not match the state of the qubits for the provided number of qubits.
+        NonUnitaryMatrixError
+            If the matrix is not unitary. 
         """
         if not isinstance(unitary_matrix, np.ndarray):
             raise TypeError("The unitary_matrix must be a numpy ndarray.")

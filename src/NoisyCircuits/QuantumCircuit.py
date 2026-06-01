@@ -25,11 +25,12 @@ from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.EagleDecomposition import EagleDecomposition
 from NoisyCircuits.utils.HeronDecomposition import HeronDecomposition
 from NoisyCircuits.utils.solvers import load_solver
-from NoisyCircuits.utils.marginal_probs import compute_marginal_probs
+from NoisyCircuits.utils import compute_marginal_probs
 import measurement_error_applicator
 import ray
 import gc
 import os
+from collections.abc import Callable
 
 
 class QuantumCircuit:
@@ -38,7 +39,7 @@ class QuantumCircuit:
 
     Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates, please refer to the Decomposition :func:`NoisyCircuits.utils.Decomposition` class documentation.
 
-    Parameters:
+    Parameters
     -----------
     num_qubits : int
         The number of qubits in the quantum circuit.
@@ -53,7 +54,7 @@ class QuantumCircuit:
     verbose : bool
         Whether to print verbose output during the noise model construction. (Defaults to True)
 
-    Raises:
+    Raises
     -------
     TypeError : 
         - num_qubits must be an integer.
@@ -149,7 +150,7 @@ class QuantumCircuit:
         """
         Getter for the _sim_backend attribute
 
-        Returns:
+        Returns
         --------
         str
             The name of the current simulation backend.
@@ -162,12 +163,12 @@ class QuantumCircuit:
         """
         Setter for the _sim_backend attribute and updates the solver modules.
 
-        Parameters:
+        Parameters
         -----------
         backend : str
             The name of the simulation backend to use. Supported options are "custom", "pennylane", "qiskit" and "qulacs".
         
-        Raises:
+        Raises
         -------
         TypeError 
             Raised when backend is not a string
@@ -186,9 +187,16 @@ class QuantumCircuit:
         self._sim_backend = backend
         print("Successfully switched backend to {}.".format(backend))
 
-    def __getattr__(self, name: str) -> callable:
+    def __getattr__(self, 
+                    name: str
+                    ) -> Callable:
         """
         Delegate unknown attributes/methods to the selected methods class.
+
+        Returns
+        -------
+        Callable
+            The method corresponding to the gate name if it exists in the gate decomposer, otherwise raises an AttributeError.
         """
         if name is not None:
             return getattr(self._gate_decomposer, name)
@@ -205,7 +213,7 @@ class QuantumCircuit:
         """
         Initializes the Ray parallel execution environment.
 
-        Parameters:
+        Parameters
         -----------
         num_cores : int
             The number of CPU cores to use for parallel execution.
@@ -232,7 +240,7 @@ class QuantumCircuit:
         """
         Executes the quantum circuit simulation using the Monte-Carlo Wavefunction method.
 
-        Parameters:
+        Parameters
         -----------
         qubits : list[int], optional
             List of qubits to be measured. If None, all qubits will be measured.
@@ -241,12 +249,12 @@ class QuantumCircuit:
         num_cores : int, optional
             The number of CPU cores to use for parallel execution. If -1, half of all available cores will be used. Defaults to -1.
         
-        Returns:
+        Returns
         --------
         np.ndarray[np.float64]
             An array containing the probabilities of the output states after executing the quantum circuit.
 
-        Raises:
+        Raises
         -------
         TypeError
             - Raised when qubits is not a list of integers.
@@ -302,103 +310,159 @@ class QuantumCircuit:
                 ray.get(self.workers[i].get.remote(qubits)) for i in range(num_cores)
             ]
             probs = np.sum(prob_chunks, axis=0) / num_trajectories
+            self.shutdown()
         m = len(qubits)
         if self.sim_backend == "pennylane":
-            probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+            probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
         measurement_error_applicator.apply_measurement_error(probs, self.measurement_error, qubits, self.num_qubits, num_cores)
-        if self.sim_backend in ["qiskit", "qulacs", "custom"]:
-            probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+        probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+        if len(qubits) < self.num_qubits:
+            probs = compute_marginal_probs(probs, [q for q in range(self.num_qubits) if q not in qubits])
         return probs
 
     def run_with_density_matrix(self, 
-                                qubits:list[int])->np.ndarray:
+                                qubits:list[int],
+                                num_cores:int=1
+                                )->np.ndarray[np.float64]:
         """
         Runs the quantum circuit with the density matrix solver.
 
-        Args:
-            qubits (list[int]): List of qubits to be simulated.
+        Parameters
+        -----------
+        qubits : list[int]
+            List of qubits to be measured.
+        num_cores : int
+            The number of CPU cores to use for parallel execution. Defaults to 1.
 
-        Raises:
-            TypeError: If qubits is not a list or the items in the list are not integers.
-            ValueError: If qubits contains invalid qubit indices.
-            ValueError: If there are no instructions in the circuit to execute.
+        Returns
+        --------
+        np.ndarray[np.float64]
+            Probabilities of measuring each qubit in the computational basis.
 
-        Returns:
-            np.ndarray: Probabilities of the output states.
+        Raises
+        -------
+        TypeError
+            - Raised when qubits is not a list of integers.
+            - Raised when num_cores is not an integer.
+        ValueError
+            - Raised when qubits contains invalid qubit indices.
+            - Raised when there are no instructions in the circuit to execute.
+            - Raised when num_cores is not a positive integer or exceeds the number of available CPU cores.
         """
         if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
             raise TypeError("Qubits must be a list of integers.")
-        if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
-            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
         if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to execute.")
-        if len(qubits) != self.num_qubits:
-            measurement_error_operator = self._generate_measurement_error_operator(qubit_list=qubits)
-        else:
-            measurement_error_operator = self.measurement_error_operator
+        if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
+            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if not isinstance(num_cores, int):
+            raise TypeError("num_cores must be an integer.")
+        if num_cores < 1 or num_cores > os.cpu_count():
+            raise ValueError("num_cores must be a positive integer between 1 and the number of available CPU cores.")
         density_matrix_solver = self.solver.DensityMatrixSolver(
-                    num_qubits=self.num_qubits,
-                    single_qubit_noise=self.single_qubit_instructions,
-                    two_qubit_noise=self.two_qubit_instructions,
-                    instruction_list=self.instruction_list
-                )
+            num_qubits = self.num_qubits,
+            single_qubit_noise = self.single_qubit_error,
+            two_qubit_noise = self.two_qubit_error,
+            instruction_list = self.instruction_list,
+            num_cores = num_cores
+        )
         probs = density_matrix_solver.solve(qubits=qubits)
-
-        if self._sim_backend not in ["pennylane"]:
+        if self._sim_backend in ["pennylane"]:
             m = len(qubits)
             probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
-        
-        if measurement_error_operator is not None:
-            probs = np.dot(measurement_error_operator, probs)
+        measurement_error_applicator.apply_measurement_error(
+            probs,
+            self.measurement_error,
+            qubits,
+            self.num_qubits,
+            num_cores
+        )
+        probs = probs.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
         return probs
 
     def run_pure_state(self, 
-                       qubits:list[int])->np.ndarray:
+                       qubits:list[int],
+                       num_cores:int=1,
+                       return_statevector:bool=False
+                    )->np.ndarray[np.float64] | np.ndarray[np.complex128]:
         """
         Runs the quantum circuit with the pure state solver.
 
-        Args:
-            qubits (list[int]): List of qubits to be simulated.
-        
-        Raises:
-            TypeError: If qubits is not a list or the items in the list are not integers.
-            ValueError: If qubits contains invalid qubit indices.
-            ValueError: If there are no instructions in the circuit to execute.
+        Parameters
+        -----------
+        qubits : list[int]
+            List of qubits to be measured.
+        num_cores : int
+            The number of CPU cores to use for parallel execution. Defaults to 1.
+        return_statevector : bool
+            Whether to return the final statevector instead of the probabilities. Defaults to False.
 
-        Returns:
-            np.ndarray: Probabilities of the output states.
+        Returns
+        --------
+        np.ndarray[np.float64] | np.ndarray[np.complex128]
+            If return_statevector is False, returns the probabilities of measuring each qubit in the computational basis. If return_statevector is True, returns the final statevector of the quantum circuit.
+
+        Raises
+        -------
+        TypeError
+            - Raised when qubits is not a list of integers.
+            - Raised when num_cores is not an integer.
+            - Raised when return_statevector is not a boolean.
+        ValueError
+            - Raised when qubits contains invalid qubit indices.
+            - Raised when there are no instructions in the circuit to execute.
+            - Raised when num_cores is not a positive integer or exceeds the number of available CPU cores.
+
+        Notes
+        ------
+        If return_statevector is set to True, the function will return the final statevector of the quantum circuit instead of the probabilities. In this case, the qubits argument will be ignored and the statevector for all qubits will be returned.
         """
-        if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
-            raise TypeError("Qubits must be a list of integers.")
+        if not isinstance(return_statevector, bool):
+            raise TypeError("return_statevector must be a boolean.")
+        if not return_statevector:
+            if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
+                raise TypeError("qubits must be a list of integers.")
+            if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
+                raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if not isinstance(num_cores, int):
+            raise TypeError("num_cores must be an integer.")
         if self.instruction_list == []:
             raise ValueError("No instructions in the circuit to execute.")
-        if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
-            raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        if num_cores < 1 or num_cores > os.cpu_count():
+            raise ValueError("num_cores must be a positive integer between 1 and the number of available CPU cores.")
         pure_state_solver = self.solver.PureStateSolver(
-                    num_qubits=self.num_qubits,
-                    instruction_list=self.instruction_list
-                    )
-        probs = pure_state_solver.solve(qubits=qubits)
+            num_qubits = self.num_qubits,
+            instruction_list = self.instruction_list,
+            num_cores = num_cores,
+            return_statevector = return_statevector
+        )
+        if return_statevector:
+            output = pure_state_solver.solve(qubits=None)
+            qubits = list(range(self.num_qubits))
+        else:
+            output = pure_state_solver.solve(qubits=qubits)
         if self._sim_backend not in ["pennylane"]:
-            probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
-        if len(qubits) != self.num_qubits and self._sim_backend not in ["pennylane"]:
-            trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
-            probs_reduced = compute_marginal_probs(probs, trace_qubits)
-            probs = probs_reduced
-        return probs
+            output = output.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
+        return output
+            
     
     def draw_circuit(self,
                      style:str="mpl")->None:
         """
         Draws the quantum circuit.
 
-        Args:
-            style (str, optional): The style of the drawing, either 'mpl' for matplotlib or 'text' for text-based representation. Defaults to 'mpl'.
+        Parameters
+        -----------
+        style : str, optional 
+            The style of the drawing, either 'mpl' for matplotlib or 'text' for text-based representation. Defaults to 'mpl'.
         
-        Raises:
-            TypeError: If style is not a string.
-            ValueError: If style is not one of ['mpl', 'text'].
-            ValueError: If there are no instructions in the circuit to draw.
+        Raises
+        -------
+        TypeError: 
+            - If style is not a string.
+        ValueError: 
+            - If style is not one of ['mpl', 'text'].
+            - If there are no instructions in the circuit to draw.
         """
         if not isinstance(style, str):
             raise TypeError("Style must be a string.")

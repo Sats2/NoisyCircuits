@@ -14,9 +14,12 @@ class QubitCouplingMap:
         """
         Constructor for the module.
 
-        Args:
-            num_qubits (int): Total number of qubits in the system that are utilized.
-            connectivity (dict): Dictionary containing the directionality of the qubits (control-target pairings.)
+        Parameters
+        ----------
+        num_qubits : int
+            Total number of qubits in the system that are utilized.
+        connectivity : dict
+            Dictionary containing the directionality of the qubits (control-target pairings.)
         """
         self.num_qubits = num_qubits
         self.connectivity = connectivity
@@ -29,12 +32,22 @@ class QubitCouplingMap:
         """
         Find the shortest path between two qubits using BFS.
         
-        Args:
-            start (int): Starting qubit
-            end (int): Target qubit
+        Parameters
+        ----------
+        start : int
+            Starting qubit
+        end : int
+            Target qubit
             
-        Returns:
-            list: Path from start to end qubit
+        Returns
+        -------
+        list
+            Path from start to end qubit
+        
+        Raises
+        ------
+        ValueError
+            If no path is found between the qubits
         """
         if start == end:
             return [start]
@@ -64,16 +77,22 @@ class QubitCouplingMap:
 
     def generate_swap_sequence(self, 
                                logical_control:int, 
-                               logical_target:int)->tuple:
+                               logical_target:int
+                            )->tuple:
         """
         Generate SWAP sequence to bring qubits close enough for interaction.
         
-        Args:
-            logical_control (int): Logical control qubit
-            logical_target (int): Logical target qubit
+        Parameters
+        ----------
+        logical_control : int
+            Logical control qubit
+        logical_target :int
+            Logical target qubit
             
-        Returns:
-            tuple: (forward_swaps, reverse_swaps, final_control_pos, final_target_pos)
+        Returns
+        -------
+        tuple 
+            (forward_swaps, reverse_swaps, final_control_pos, final_target_pos)
         """
         # Get current physical positions
         control_pos = self.logical_to_physical[logical_control]
@@ -112,13 +131,16 @@ class QubitCouplingMap:
     
     def update_mapping_after_swap(self, 
                                   qubit1:int, 
-                                  qubit2:int):
+                                  qubit2:int)->None:
         """
         Update logical-physical mapping after a SWAP operation.
         
-        Args:
-            qubit1 (int): First qubit in SWAP
-            qubit2 (int): Second qubit in SWAP
+        Parameters
+        ----------
+        qubit1 : int
+            First qubit in SWAP
+        qubit2 : int
+            Second qubit in SWAP
         """
         # Get logical qubits at these physical positions
         logical1 = self.physical_to_logical[qubit1]
@@ -134,8 +156,10 @@ class QubitCouplingMap:
         """
         Returns the current logical to physical qubit mapping.
         
-        Returns:
-            dict: Mapping from logical to physical qubits.
+        Returns
+        -------
+        dict
+            Mapping from logical to physical qubits.
         """
         return self.logical_to_physical.copy()
 

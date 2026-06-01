@@ -7,7 +7,7 @@ Example:
     >>> instruction_list = []
     >>> instruction_list.append(["rx", [0], np.pi])
     >>> instruction_list.append(["ecr", [0, 1], None])
-    >>> solver = PureStateSolver(num_qubits=2, instruction_list=instruction_list)
+    >>> solver = PureStateSolver(num_qubits=2, instruction_list=instruction_list, num_cores=1)
     >>> solver.solve(qubits=[0,1])
     [0.5, 0.5, 0.0, 0.0]
 
@@ -23,32 +23,67 @@ class PureStateSolver:
     """
     def __init__(self,
                  num_qubits:int,
-                 instruction_list:list)->None:
+                 instruction_list:list,
+                 num_cores:int,
+                 return_statevector:bool
+                )->None:
         """
         Initializes the PureStateSolver.
 
-        Args:
-            num_qubits (int): The number of qubits in the circuit.
-            instruction_list (list): The list of instructions to be applied.
+        Parameters:
+        -----------
+        num_qubits : int
+            The number of qubits in the circuit.
+        instruction_list : list
+            The list of instructions to be applied.
+        num_cores : int, optional
+            The number of CPU cores to use for parallel processing (default is 1).
+        
+        Notes:
+        ------
+        The input argument `num_cores` is unused with pennylane as a solver backend as pennylane does not support parallel statevector simulation.
         """
         self.num_qubits = num_qubits
         self.instruction_list = instruction_list
+        self.return_statevector = return_statevector
         
     def solve(self,
-              qubits:list[int])->np.ndarray[np.float64]:
+              qubits:list[int]
+              )->np.ndarray[np.float64]|np.ndarray[np.complex128]:
         """
         Performs the quantum circuit simulation using pure statevector methods.
 
-        Args:
-            qubits (list[int]): The list of qubits for which to compute the probabilities.
+        Parameters
+        ----------
+        qubits : list[int]
+            The list of qubits for which to compute the probabilities.
 
-        Returns:
-            np.ndarray: The probabilities of measuring the specified qubits in the computational basis.
+        Returns
+        -------
+        np.ndarray
+            The probabilities of measuring the specified qubits in the computational basis.
         """
         dev = qml.device("lightning.qubit", wires=self.num_qubits)
 
         @qml.qnode(dev)
-        def run_circuit(qubits):
+        def run_circuit(qubits:list[int], 
+                        return_statevector:bool=self.return_statevector
+                        )->np.ndarray[np.float64] | np.ndarray[np.complex128]:
+            """
+            Function to run the quantum circuit defined by the instruction list.
+
+            Parameters
+            ----------
+            qubits : list[int]
+                The list of qubits for which to compute the probabilities.
+            return_statevector : bool
+                Whether to return the statevector or the probabilities (default is False).
+
+            Returns
+            -------
+            np.ndarray[np.float64] | np.ndarray[np.complex128]
+                The probabilities of measuring the specified qubits in the computational basis if return_statevector is False, otherwise the statevector of the quantum circuit.
+            """
             instruction_map = {
                 "x": lambda q: qml.X(q[0]),
                 "sx": lambda q: qml.SX(q[0]),
@@ -67,7 +102,10 @@ class PureStateSolver:
                     instruction_map[gate_instruction](params, qubit_added)
                 else:
                     instruction_map[gate_instruction](qubit_added)
-            return qml.probs(wires=qubits)
+            if return_statevector:
+                return qml.state()
+            else:
+                return qml.probs(wires=qubits)
         
-        probs = run_circuit(qubits)
-        return probs
+        output = run_circuit(qubits)
+        return output

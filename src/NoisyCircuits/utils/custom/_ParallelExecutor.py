@@ -6,7 +6,7 @@ The shared memory parallel execution runs a single trajectory per core and does 
 The distributed memory parallel execution runs a single trajectory across multiple cores but inside a single node. The class MPIExecutor is used for this purpose and relies on MPI from python-mpi4py for node level parallelization. Within each node, the simulations are run in parallel.
 """
 import numpy as np
-from NoisyCircuits.utils.marginal_probs import compute_marginal_probs
+from NoisyCircuits.utils import compute_marginal_probs, convert_matrix_to_little_endian
 import simulator
 
 
@@ -30,7 +30,10 @@ class RemoteExecutor:
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
-        self.two_qubit_noise = two_qubit_noise
+        self.two_qubit_noise = {
+            gate: {pair: convert_matrix_to_little_endian(payload) for pair, payload in pairs.items()} 
+            for gate, pairs in two_qubit_noise.items()
+        }
         self.num_cores = num_cores
 
     def run(self,
