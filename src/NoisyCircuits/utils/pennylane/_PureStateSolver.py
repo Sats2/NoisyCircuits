@@ -47,16 +47,9 @@ class PureStateSolver:
         self.instruction_list = instruction_list
         self.return_statevector = return_statevector
         
-    def solve(self,
-              qubits:list[int]
-              )->np.ndarray[np.float64]|np.ndarray[np.complex128]:
+    def solve(self)->np.ndarray[np.float64]|np.ndarray[np.complex128]:
         """
         Performs the quantum circuit simulation using pure statevector methods.
-
-        Parameters
-        ----------
-        qubits : list[int]
-            The list of qubits for which to compute the probabilities.
 
         Returns
         -------
@@ -107,5 +100,5 @@ class PureStateSolver:
             else:
                 return qml.probs(wires=qubits)
         
-        output = run_circuit(qubits)
+        output = run_circuit(self.num_qubits)
         return output

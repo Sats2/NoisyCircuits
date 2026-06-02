@@ -117,4 +117,4 @@ class DensityMatrixSolver:
             trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
             probs = np.diag(partial_trace(state, trace_qubits).get_matrix()).real
         del state, circuit, instruction_map, noise_handlers, exp
-        return probs
+        return np.asarray(probs.real, order="C")

@@ -97,7 +97,7 @@ class DensityMatrixSolver:
         circuit.append(SaveDensityMatrix(self.num_qubits), circuit.qubits)
         res = sim.run(circuit).result()
         if len(trace_qubits) == 0:
-            probs = np.diag(np.asarray(res.data()["density_matrix"]))
-            return probs.real
-        probs = np.diag(np.asarray(partial_trace(res.data()["density_matrix"], trace_qubits)))
-        return probs.real
+            probs = np.diag(np.asarray(res.data()["density_matrix"])).real
+            return np.require(probs, dtype=np.float64, requirements=["C"])
+        probs = np.diag(np.asarray(partial_trace(res.data()["density_matrix"], trace_qubits), order=["C"])).real
+        return np.require(probs, dtype=np.float64, requirements=["C"])

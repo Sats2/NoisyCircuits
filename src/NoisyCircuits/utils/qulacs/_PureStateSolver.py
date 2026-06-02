@@ -17,7 +17,6 @@ import numpy as np
 from qulacs import QuantumCircuit, QuantumState
 import qulacs.gate as gate
 import os
-from NoisyCircuits.utils import compute_marginal_probs
 import gc
 
 
@@ -90,8 +89,6 @@ class PureStateSolver:
         if self.return_statevector:
             return state_array
         probs = np.abs(state_array)**2
-        if len(qubits) < self.num_qubits:
-            probs = compute_marginal_probs(probs, qubits, self.num_qubits)
         del circuit
         del state
         gc.collect()

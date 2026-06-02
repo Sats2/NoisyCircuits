@@ -19,7 +19,7 @@ This module contains only one class `PureStateSolver` which has only one callabl
 """
 import numpy as np
 import simulator
-from NoisyCircuits.utils.marginal_probs import compute_marginal_probs
+from NoisyCircuits.utils import compute_marginal_probs
 
 
 class PureStateSolver:
@@ -45,13 +45,9 @@ class PureStateSolver:
         self.num_cores = num_cores
         self.return_statevector = return_statevector
 
-    def solve(self, 
-                qubits:list[int])->np.ndarray[np.float64|np.complex128]:
+    def solve(self)->np.ndarray[np.float64|np.complex128]:
         """
         Performs the quantum circuit simulation using pure statevector methods.
-
-        Args:
-            qubits (list[int]): The list of qubits for which to compute the probabilities.
         
         Returns:
             np.ndarray: Return an array of either the probabilities of the specified qubits in the computational basis or the full statevector depending on the value of `return_statevector`.
@@ -62,5 +58,4 @@ class PureStateSolver:
             print("Returning full statevector.")
             return output_vector
         else:
-            output_vector = compute_marginal_probs(output_vector.copy(), trace_qubits=[i for i in range(self.num_qubits) if i not in qubits])
-            return output_vector
+            return output_vector.real

@@ -471,13 +471,13 @@ class BuildModel:
       
     def _initialize_noise_maps(self)->None:
         self.instruction_map = {
-            "id" : np.array([[1, 0], [0, 1]]),
-            "x" : np.array([[0, 1], [1, 0]]),
-            "y" : np.array([[0, -1j], [1j, 0]]),
-            "z" : np.array([[1, 0], [0, -1]]),
-            "K0" : np.array([[1, 0], [0, 0]]),
-            "K1" : np.array([[0, 1], [0, 0]]),
-            "i": np.array([[1, 0], [0, 1]]),
+            "id" : np.array([[1, 0], [0, 1]], dtype=np.complex128),
+            "x" : np.array([[0, 1], [1, 0]], dtype=np.complex128),
+            "y" : np.array([[0, -1j], [1j, 0]], dtype=np.complex128),
+            "z" : np.array([[1, 0], [0, -1]], dtype=np.complex128),
+            "K0" : np.array([[1, 0], [0, 0]], dtype=np.complex128),
+            "K1" : np.array([[0, 1], [0, 0]], dtype=np.complex128),
+            "i": np.array([[1, 0], [0, 1]], dtype=np.complex128),
         }
         self.operator_function_map = {
             "id" : lambda x, k_ops: _apply_operation(x, [self.instruction_map["id"]]),

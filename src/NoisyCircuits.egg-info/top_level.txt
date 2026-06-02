@@ -1,3 +1,4 @@
 NoisyCircuits
+measurement_error_applicator
 simulator
 simulator_mpi

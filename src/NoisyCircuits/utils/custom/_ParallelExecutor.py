@@ -53,7 +53,7 @@ class RemoteExecutor:
         """
         output_array = np.zeros(1 << self.num_qubits, dtype=np.complex128)
         simulator.simulate_circuit(instruction_list, output_array, self.single_qubit_noise, self.two_qubit_noise, self.num_qubits, True, num_trajectories, False, self.num_cores)
-        return compute_marginal_probs(output_array.astype(np.float64), [i for i in range(self.num_qubits) if i not in qubits])
+        return output_array.astype(np.float64)
     
 class MPIExecutor:
     """

@@ -25,7 +25,7 @@ from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.EagleDecomposition import EagleDecomposition
 from NoisyCircuits.utils.HeronDecomposition import HeronDecomposition
 from NoisyCircuits.utils.solvers import load_solver
-from NoisyCircuits.utils import compute_marginal_probs
+from NoisyCircuits.utils import compute_marginal_probs, convert_matrix_to_little_endian
 import measurement_error_applicator
 import ray
 import gc
@@ -130,11 +130,16 @@ class QuantumCircuit:
         )
         single_error, multi_error, measurement_error, connectivity = modeller.build_qubit_gate_model()
         self.single_qubit_error = {
-            q : {gate : payload["qubit_channel"] for gate, payload in gates.items()} for q, gates in single_error.items()
-        }
-        self.two_qubit_error = {
-            gate : {pair : payload["qubit_channel"] for pair, payload in pairs.items()} for gate, pairs in multi_error.items()
-        }
+                q : {gate : payload["qubit_channel"] for gate, payload in gates.items()} for q, gates in single_error.items()
+            }
+        if self.sim_backend in ["pennylane"]:
+            self.two_qubit_error = {
+                gate : {pair : convert_matrix_to_little_endian(payload["qubit_channel"]) for pair, payload in pairs.items()} for gate, pairs in multi_error.items()
+            }
+        else:
+            self.two_qubit_error = {
+                gate : {pair : payload["qubit_channel"] for pair, payload in pairs.items()} for gate, pairs in multi_error.items()
+            }
         self.measurement_error = measurement_error
         self.measurement_error_operator = None
         self.connectivity = connectivity
@@ -221,13 +226,11 @@ class QuantumCircuit:
         ray.init(num_cpus=num_cores, ignore_reinit_error=True, log_to_driver=False)
         single_qubit_noise_array_ref = ray.put(np.array(list(self.single_qubit_error.items())))
         two_qubit_noise_array_ref = ray.put(np.array(list(self.two_qubit_error.items())))
-        two_qubit_gate_index = {self.two_qubit_error[i][0] : i for i in range(len(np.array(list(self.two_qubit_error.items()))))}
         self.workers = [
             self.solver.RemoteExecutor.remote(
                 num_qubits = self.num_qubits,
                 single_qubit_noise = single_qubit_noise_array_ref,
-                two_qubit_noise = two_qubit_noise_array_ref,
-                two_qubit_noise_index = two_qubit_gate_index
+                two_qubit_noise = two_qubit_noise_array_ref
             ) for _ in range(num_cores)
         ]
         self._ray_initialized = True
@@ -301,23 +304,22 @@ class QuantumCircuit:
             if not self._ray_initialized:
                 self._initialize_ray(num_cores = num_cores)
             reset_probs = [
-                self.workers[i].reset.remote(measured_qubits = qubits) for i in range(num_cores)
+                self.workers[i].reset.remote() for i in range(num_cores)
             ]
             futures = [
                 self.workers[traj_id % num_cores].run.remote(traj_id, self.instruction_list) for traj_id in range(num_trajectories)
             ]
             prob_chunks = [
-                ray.get(self.workers[i].get.remote(qubits)) for i in range(num_cores)
+                ray.get(self.workers[i].get.remote()) for i in range(num_cores)
             ]
             probs = np.sum(prob_chunks, axis=0) / num_trajectories
             self.shutdown()
-        m = len(qubits)
         if self.sim_backend == "pennylane":
-            probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
-        measurement_error_applicator.apply_measurement_error(probs, self.measurement_error, qubits, self.num_qubits, num_cores)
-        probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+            probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
         if len(qubits) < self.num_qubits:
             probs = compute_marginal_probs(probs, [q for q in range(self.num_qubits) if q not in qubits])
+        measurement_error_applicator.apply_measurement_error(probs, self.measurement_error, qubits, len(qubits), num_cores)
+        probs = probs.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
         return probs
 
     def run_with_density_matrix(self, 
@@ -437,12 +439,17 @@ class QuantumCircuit:
             return_statevector = return_statevector
         )
         if return_statevector:
-            output = pure_state_solver.solve(qubits=None)
+            output = pure_state_solver.solve()
             qubits = list(range(self.num_qubits))
         else:
-            output = pure_state_solver.solve(qubits=qubits)
-        if self._sim_backend not in ["pennylane"]:
-            output = output.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
+            output = pure_state_solver.solve()
+        if len(qubits) < self.num_qubits:
+            if self._sim_backend in ["pennylane"]:
+                output = output.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
+            output = compute_marginal_probs(output, [q for q in range(self.num_qubits) if q not in qubits])
+        if self._sim_backend in ["pennylane"] and len(qubits) == self.num_qubits:
+            return output
+        output = output.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
         return output
             
     
@@ -498,3 +505,4 @@ class QuantumCircuit:
         Shutsdown the Ray parallel execution environment.
         """
         ray.shutdown()
+        self._ray_initialized = False
