@@ -318,7 +318,13 @@ class QuantumCircuit:
             probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
         if len(qubits) < self.num_qubits:
             probs = compute_marginal_probs(probs, [q for q in range(self.num_qubits) if q not in qubits])
-        measurement_error_applicator.apply_measurement_error(probs, self.measurement_error, qubits, len(qubits), num_cores)
+        measurement_error_applicator.apply_measurement_error(
+            probs, 
+            self.measurement_error, 
+            qubits, 
+            len(qubits), 
+            num_cores
+        )
         probs = probs.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
         return probs
 
@@ -369,14 +375,13 @@ class QuantumCircuit:
             num_cores = num_cores
         )
         probs = density_matrix_solver.solve(qubits=qubits)
-        if self._sim_backend in ["pennylane"]:
-            m = len(qubits)
-            probs = probs.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+        if self.sim_backend == "pennylane":
+            probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
         measurement_error_applicator.apply_measurement_error(
-            probs,
-            self.measurement_error,
-            qubits,
-            self.num_qubits,
+            probs, 
+            self.measurement_error, 
+            qubits, 
+            len(qubits), 
             num_cores
         )
         probs = probs.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)

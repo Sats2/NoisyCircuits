@@ -26,6 +26,7 @@ src/NoisyCircuits/utils/custom/_DensityMatrixSolver.py
 src/NoisyCircuits/utils/custom/_ParallelExecutor.py
 src/NoisyCircuits/utils/custom/_PureStateSolver.py
 src/NoisyCircuits/utils/custom/__init__.py
+src/NoisyCircuits/utils/custom/src/MeasurementErrorApplicator.cpp
 src/NoisyCircuits/utils/custom/src/Simulator.cpp
 src/NoisyCircuits/utils/custom/src/SimulatorMPI.cpp
 src/NoisyCircuits/utils/pennylane/_DensityMatrixSolver.py

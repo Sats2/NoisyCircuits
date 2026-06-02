@@ -24,7 +24,8 @@ def compute_marginal_probs(full_system_probs:np.ndarray[np.float64],
     probs_tensor = full_system_probs.reshape([2] * n)
     axes = [n - 1 - q for q in trace_qubits]
     probs_reduced = np.sum(probs_tensor, axis=tuple(axes))
-    return probs_reduced.reshape(-1)
+    probs_reduced = probs_reduced.reshape(-1)
+    return np.require(probs_reduced, dtype=np.float64, requirements=["C"])
 
 
 def convert_matrix_to_little_endian(matrix_list:list[np.ndarray[np.complex128]])->list[np.ndarray[np.complex128]]:
