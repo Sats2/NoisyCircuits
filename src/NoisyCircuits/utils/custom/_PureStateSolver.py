@@ -34,11 +34,16 @@ class PureStateSolver:
         """
         Initializes the PureStateSolver.
 
-        Args:
-            num_qubits (int): The number of qubits in the circuit.
-            instruction_list (list): The list of instructions to be applied.
-            num_cores (int): The number of CPU cores to use for the simulation. Defaults to 1.
-            return_statevector (bool): A flag indicating whether to return the full statevector or just the probabilities. Defaults to False.
+        Parameters
+        ----------
+        num_qubits : int
+            The number of qubits in the circuit.
+        instruction_list : list
+            The list of instructions to be applied.
+        num_cores : int
+            The number of CPU cores to use for the simulation. Defaults to 1.
+        return_statevector : bool
+            A flag indicating whether to return the full statevector or just the probabilities. Defaults to False.
         """
         self.num_qubits = num_qubits
         self.instruction_list = instruction_list
@@ -49,8 +54,10 @@ class PureStateSolver:
         """
         Performs the quantum circuit simulation using pure statevector methods.
         
-        Returns:
-            np.ndarray: Return an array of either the probabilities of the specified qubits in the computational basis or the full statevector depending on the value of `return_statevector`.
+        Returns
+        -------
+        np.ndarray
+            Return an array of either the probabilities of the specified qubits in the computational basis or the full statevector depending on the value of `return_statevector`.
         """
         output_vector = np.zeros((1 << self.num_qubits), dtype=np.complex128)
         simulator.simulate_circuit(self.instruction_list, output_vector, {}, {}, self.num_qubits, False, 1, self.return_statevector, self.num_cores)

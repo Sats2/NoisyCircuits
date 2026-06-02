@@ -22,11 +22,16 @@ class RemoteExecutor:
         """
         Constructor for the RemoteExecutor class.
 
-        Args:
-            num_qubits (int): Number of qubits in the quantum circuit.
-            single_qubit_noise (dict): Dictionary containing the single qubit noise parameters.
-            two_qubit_noise (dict): Dictionary containing the two qubit noise parameters.
-            num_cores (int): Number of cores to use for parallel execution. Defaults to 2.
+        Parameters
+        ----------
+        num_qubits : int
+            Number of qubits in the quantum circuit.
+        single_qubit_noise : dict
+            Dictionary containing the single qubit noise parameters.
+        two_qubit_noise : dict
+            Dictionary containing the two qubit noise parameters.
+        num_cores : int
+            Number of cores to use for parallel execution. Defaults to 2.
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
@@ -38,18 +43,24 @@ class RemoteExecutor:
 
     def run(self,
             num_trajectories:int,
-            instruction_list:list[list[str, list[int], float]],
-            qubits:list[int])->np.ndarray[np.float64]:
+            instruction_list:list[list[str, list[int], float]]
+            )->np.ndarray[np.float64]:
         """
         Method that calls the C++ simulation backend.
 
-        Args:
-            num_trajectories (int): Number of trajectories to run in parallel.
-            instruction_list (list[list[str, list[int], float]]): List of instructions to build the quantum circuit.
-            qubits (list[int]): List of qubits that should be measured.
+        Parameters
+        ----------
+        num_trajectories : int
+            Number of trajectories to run in parallel.
+        instruction_list : list[list[str, list[int], float]])
+            List of instructions to build the quantum circuit.
+        qubits : list[int]
+            List of qubits that should be measured.
 
-        Returns:
-            np.ndarray[np.float64]: Output probabilities of the noisy quantum circuit simulation.
+        Returns
+        -------
+        np.ndarray[np.float64]
+            Output probabilities of the noisy quantum circuit simulation.
         """
         output_array = np.zeros(1 << self.num_qubits, dtype=np.complex128)
         simulator.simulate_circuit(instruction_list, output_array, self.single_qubit_noise, self.two_qubit_noise, self.num_qubits, True, num_trajectories, False, self.num_cores)
@@ -68,12 +79,18 @@ class MPIExecutor:
         """
         Constructor for the MPIExecutor class.
 
-        Args:
-            num_qubits (int): Number of qubits in the quantum circuit.
-            single_qubit_noise (dict): Dictionary containing the single qubit noise parameters.
-            two_qubit_noise (dict): Dictionary containing the two qubit noise parameters.
-            num_nodes (int): Number of nodes to use for distributed execution.
-            num_cores (int): Number of cores per node to use for parallel execution.
+        Parameters
+        ----------
+        num_qubits : int
+            Number of qubits in the quantum circuit.
+        single_qubit_noise : dict
+            Dictionary containing the single qubit noise parameters.
+        two_qubit_noise : dict
+            Dictionary containing the two qubit noise parameters.
+        num_nodes : int
+            Number of nodes to use for distributed execution.
+        num_cores : int
+            Number of cores per node to use for parallel execution.
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
@@ -86,8 +103,10 @@ class MPIExecutor:
         """
         Helper method to import MPI modules for python.
 
-        Raises:
-            ImportError: If mpi4py is not installed.
+        Raises
+        ------
+        ImportError
+            If mpi4py is not installed.
         """
         global MPI
         try:
@@ -100,20 +119,26 @@ class MPIExecutor:
     def run(self,
             num_trajectories:int,
             instruction_list:list[list[str, list[int], float]],
-            qubits:list[int])->np.ndarray[np.float64]:
+        )->np.ndarray[np.float64]:
         """
         Method that call the C++ simulation backend with MPI parallelization.
 
-        Args:
-            num_trajectories (int): Number of trajectories to run in parallel.
-            instruction_list (list[list[str, list[int], float]]): List of instructions to build the quantum circuit.
-            qubits (list[int]): List of qubits that should be measured.
+        Parameters
+        ----------
+        num_trajectories : int
+            Number of trajectories to run in parallel.
+        instruction_list : list[list[str, list[int], float]]
+            List of instructions to build the quantum circuit.
 
-        Returns:
-            np.ndarray[np.float64]: Output probabilities of the noisy quantum circuit simulation.
+        Returns
+        -------
+        np.ndarray[np.float64]
+            Output probabilities of the noisy quantum circuit simulation.
 
-        Raises:
-            ValueError: If the number of MPI processes does not match the number of nodes specified.
+        Raises
+        ------
+        ValueError
+            If the number of MPI processes does not match the number of nodes specified.
         """
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
@@ -160,4 +185,4 @@ class MPIExecutor:
         self.comm.Barrier()
         if self.rank == 0:
             output_array /= num_trajectories
-            return compute_marginal_probs(output_array.astype(np.float64), [i for i in range(self.num_qubits) if i not in qubits])      
+            return output_array.astype(np.float64, order="C") 
