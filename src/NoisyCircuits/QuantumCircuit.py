@@ -297,8 +297,7 @@ class QuantumCircuit:
             )
             probs = solver.run(
                 num_trajectories = num_trajectories,
-                instruction_list = self.instruction_list,
-                qubits = qubits
+                instruction_list = self.instruction_list
             )
         else:
             if not self._ray_initialized:
@@ -313,7 +312,6 @@ class QuantumCircuit:
                 ray.get(self.workers[i].get.remote()) for i in range(num_cores)
             ]
             probs = np.sum(prob_chunks, axis=0) / num_trajectories
-            self.shutdown()
         if self.sim_backend == "pennylane":
             probs = probs.reshape([2]*self.num_qubits).transpose(list(range(self.num_qubits))[::-1]).reshape(-1)
         if len(qubits) < self.num_qubits:
