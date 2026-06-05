@@ -1,4 +1,3 @@
-#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
 import pytest
 import os
 import pickle
@@ -18,11 +17,9 @@ for qpu in qpus:
             num_qubits=1,
             noise_model=noise_model,
             backend_qpu_type=qpu,
-            num_trajectories=1,
-            num_cores=1,
-            jsonize=True,
-            verbose=False,
-            threshold=1e-3
+            sim_backend="custom",
+            threshold=1e-6,
+            verbose=False
         )
     )
     circuit_list_double_qubit.append(
@@ -30,19 +27,17 @@ for qpu in qpus:
             num_qubits=2,
             noise_model=noise_model,
             backend_qpu_type=qpu,
-            num_trajectories=1,
-            num_cores=1,
-            jsonize=True,
-            verbose=False,
-            threshold=1e-3
+            sim_backend="custom",
+            threshold=1e-6,
+            verbose=False
         )
     )
 
 instruction_map = {
-            "x": lambda q: qml.X(q),
-            "sx": lambda q: qml.SX(q),
-            "rz": lambda t, q: qml.RZ(t, q),
-            "rx": lambda t,q: qml.RX(t, q),
+            "x": lambda q: qml.X(q[0]),
+            "sx": lambda q: qml.SX(q[0]),
+            "rz": lambda t, q: qml.RZ(t, q[0]),
+            "rx": lambda t,q: qml.RX(t, q[0]),
             "ecr": lambda q: qml.ECR(q),
             "cz": lambda q: qml.CZ(q),
             "rzz": lambda t,q: qml.IsingZZ(t, q)
@@ -65,11 +60,14 @@ def get_gate_matrix_single(instructions:list)->np.ndarray:
     """
     Helper function to generate the final matrix for decomposed single qubit gates.
 
-    Args:
-        instructions (list): List containing the circuit instructions (gate decomposition)
+    Parameters
+    ----------
+    instructions : list
+        List containing the circuit instructions (gate decomposition)
     
-    Returns:
-        (np.ndarray): Matrix operator for the gate decomposition.
+    Returns
+    np.ndarray
+        Matrix operator for the gate decomposition.
     """
     @qml.qnode(qml.device("default.qubit", wires=1))
     def circuit_builder(instructions):
@@ -89,11 +87,15 @@ def get_gate_matrix_double(instructions:list)->np.ndarray:
     """
     Helper function to generate the final matrix for the decomposed double qubit gates.
 
-    Args:
-        instructions (list): List containing the circuit instructions (gate decomposition)
+    Parameters
+    ----------
+    instructions : list
+        List containing the circuit instructions (gate decomposition)
     
-    Returns:
-        (np.ndarray): Matrix operator for the gate decomposition
+    Returns
+    -------
+    np.ndarray
+        Matrix operator for the gate decomposition
     """
     @qml.qnode(qml.device("default.qubit", wires=2))
     def circuit_builder(instructions):
@@ -109,17 +111,27 @@ def get_gate_matrix_double(instructions:list)->np.ndarray:
     gate_matrix = qml.matrix(circuit_builder)(instructions)
     return gate_matrix
 
-def get_true_matrix_double(gate:str, pair:tuple[int], theta:int|float=None)->np.ndarray:
+def get_true_matrix_double(
+        gate:str, 
+        pair:tuple[int], 
+        theta:int|float=None
+        )->np.ndarray:
     """
     Helper function that generates the matrix for a speicied two qubit gate for a given control-target pair.
 
-    Args:
-        gate (str): Gate being applied.
-        pair (tuple[int]): [control, target] qubit tuple.
-        theta (int|float, optional): Angle of rotation for the Two Qubit Gate (applicable to CRX, CRY, CRZ, RXX, RYY, RZZ gates)
+    Parameters
+    ----------
+    gate : str
+        Gate being applied.
+    pair : tuple[int]
+        [control, target] qubit tuple.
+    theta : int|float, optional
+        Angle of rotation for the Two Qubit Gate (applicable to CRX, CRY, CRZ, RXX, RYY, RZZ gates)
     
-    Returns:   
-        (np.ndarray): Matrix operator for the two qubit gate.
+    Returns
+    -------
+    np.ndarray
+        Matrix operator for the two qubit gate.
     """
     pair = list(pair)
     if theta is None:

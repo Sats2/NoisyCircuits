@@ -190,7 +190,6 @@ class QuantumCircuit:
         new_solver = load_solver(backend)
         self.solver = new_solver
         self._sim_backend = backend
-        print("Successfully switched backend to {}.".format(backend))
 
     def __getattr__(self, 
                     name: str

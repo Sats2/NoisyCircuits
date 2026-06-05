@@ -49,9 +49,7 @@ class PureStateSolver:
         self.return_statevector = return_statevector
         os.environ["QULACS_NUM_THREADS"] = str(num_cores)
         
-    def solve(self,
-              qubits:list[int]
-              )->np.ndarray[np.float64] | np.ndarray[np.complex128]:
+    def solve(self)->np.ndarray[np.float64] | np.ndarray[np.complex128]:
         """
         Performs the quantum circuit simulation using pure statevector methods.
 

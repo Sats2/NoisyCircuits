@@ -76,8 +76,6 @@ class PureStateSolver:
         sim.set_options(max_parallel_threads=self.num_cores)
         res = sim.run(circuit).result()
         state = res.data()["statevector"]
-        if qubits is None:
-            qubits = list(range(self.num_qubits))
         if self.return_statevector:
             return state
         else:

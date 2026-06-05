@@ -396,6 +396,7 @@ class BuildModel:
         - If num_cores is not an integer.
         - If threshold is not a float or int.
         - If basis_gates is not a list of lists of strings.
+        - If verbose is not a boolean.
     ValueError
         - If num_qubits is not a positive integer or threshold is not between 0 and 1.
         - If num_cores is not a positive integer, or greater than the number of available CPU cores.
@@ -429,6 +430,8 @@ class BuildModel:
             raise ValueError("Basis gates must be provided as a list of lists of strings.")
         if basis_gates and not all(isinstance(bg, list) and all(isinstance(g, str) for g in bg) for bg in basis_gates):
             raise TypeError("Basis gates must be a list of lists of strings.")
+        if not isinstance(verbose, bool):
+            raise TypeError("Verbose flag must be a boolean.")
         self.noise_model = noise_model
         self.num_qubits = num_qubits
         self.use_qubits = list(range(num_qubits))

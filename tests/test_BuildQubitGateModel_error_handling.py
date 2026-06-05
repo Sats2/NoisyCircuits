@@ -194,3 +194,23 @@ def test_num_qubits_exceeds_available():
         BuildModel(noise_model=noise_model,
                    num_qubits=250,
                    basis_gates=[["rx", "x"], ["cz"]]).build_qubit_gate_model()
+
+def test_verbose_type():
+    """
+    Test that the verbose parameter raises TypeError for invalid types.
+    """
+    with pytest.raises(TypeError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   verbose="True")
+    with pytest.raises(TypeError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   verbose=1)
+    with pytest.raises(TypeError):
+        BuildModel(noise_model=noise_model,
+                   num_qubits=2,
+                   basis_gates=[["u1", "u2", "u3"], ["cx"]],
+                   verbose=None)

@@ -152,8 +152,8 @@ def get_updated_state_two_q(gate_op:np.ndarray[np.complex128],
         i_s1 = (i & m1) | ((i & ~m1) << 1)
         pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1)
         idx00 = pos
-        idx01 = pos | ull_q2
-        idx10 = pos | ull_q1
+        idx01 = pos | ull_q1
+        idx10 = pos | ull_q2
         idx11 = pos | target_mask
         psi_dash[idx00] += gate_op[0,0] * state[idx00] + gate_op[0,1] * state[idx01] + gate_op[0,2] * state[idx10] + gate_op[0,3] * state[idx11]
         psi_dash[idx01] += gate_op[1,0] * state[idx00] + gate_op[1,1] * state[idx01] + gate_op[1,2] * state[idx10] + gate_op[1,3] * state[idx11]
@@ -257,8 +257,8 @@ def update_state_inplace_2q(op:np.ndarray[np.complex128],
         i_s1 = (i & m1) | ((i & ~m1) << 1)
         pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1)
         idx00 = pos
-        idx01 = pos | ull_q2
-        idx10 = pos | ull_q1
+        idx01 = pos | ull_q1
+        idx10 = pos | ull_q2
         idx11 = pos | target_mask
         s00 = state[idx00]
         s01 = state[idx01]

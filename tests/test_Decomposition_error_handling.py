@@ -13,14 +13,12 @@ for qpu in qpus:
     noise_model = pickle.load(open(file_path, "rb"))
     circuits_list.append(
         QuantumCircuit(
-            num_qubits=2,
+            num_qubits=3,
             noise_model=noise_model,
             backend_qpu_type=qpu,
-            num_trajectories=1,
-            num_cores=1,
-            jsonize=True,
-            verbose=False,
-            threshold=0.1
+            sim_backend="custom",
+            threshold=1e-6,
+            verbose=False
         )
     )
 

@@ -74,8 +74,8 @@ static inline std::vector<complex128> apply_two_qubit_noise_operator(const compl
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
         const std::size_t idx00 = pos;
-        const std::size_t idx01 = pos | ull_q2;
-        const std::size_t idx10 = pos | ull_q1;
+        const std::size_t idx01 = pos | ull_q1;
+        const std::size_t idx10 = pos | ull_q2;
         const std::size_t idx11 = pos | target_mask;
 
         const complex128 s00 = state[idx00];
@@ -97,8 +97,8 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
         const std::size_t idx00 = pos;
-        const std::size_t idx01 = pos | ull_q2;
-        const std::size_t idx10 = pos | ull_q1;
+        const std::size_t idx01 = pos | ull_q1;
+        const std::size_t idx10 = pos | ull_q2;
         const std::size_t idx11 = pos | target_mask;
 
         const complex128 s00 = state[idx00];
@@ -273,8 +273,8 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
         const std::size_t idx00 = pos;
-        const std::size_t idx01 = pos | ull_q2;
-        const std::size_t idx10 = pos | ull_q1;
+        const std::size_t idx01 = pos | ull_q1;
+        const std::size_t idx10 = pos | ull_q2;
         const std::size_t idx11 = pos | target_mask;
         const complex128 s00 = state[idx00];
         const complex128 s01 = state[idx01];
@@ -304,8 +304,8 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
         const std::size_t idx00 = pos;
-        const std::size_t idx01 = pos | ull_q2;
-        const std::size_t idx10 = pos | ull_q1;
+        const std::size_t idx01 = pos | ull_q1;
+        const std::size_t idx10 = pos | ull_q2;
         const std::size_t idx11 = pos | target_mask;
         const complex128 s00 = state[idx00];
         const complex128 s01 = state[idx01];

@@ -121,22 +121,19 @@ class RunOnHardware:
             raise ValueError("The circuit is empty.")
         qc = QuantumCircuit(circuit.num_qubits, len(measure_qubits))
         instruction_map = {
-            "x" : lambda q: qc.x(q[0]),
-            "sx": lambda q: qc.sx(q[0]),
+            "x" : lambda p, q: qc.x(q[0]),
+            "sx": lambda p, q: qc.sx(q[0]),
             "rz": lambda p, q: qc.rz(p, q[0]),
             "rx": lambda p, q: qc.rx(p, q[0]),
-            "ecr": lambda q: qc.append(ecr(), [q[0], q[1]]),
-            "cz": lambda q: qc.cz(q[0], q[1]),
+            "ecr": lambda p, q: qc.append(ecr(), [q[0], q[1]]),
+            "cz": lambda p, q: qc.cz(q[0], q[1]),
             "rzz": lambda p, q: qc.rzz(p, q[0], q[1])
         }
         self.qubit_list_per_circuit.append(list(range(circuit.num_qubits)))
         for inst in instructions:
             gate, qubits, params = inst
             try:
-                if params is not None:
-                    instruction_map[gate](params, qubits)
-                else:
-                    instruction_map[gate](qubits)
+                instruction_map[gate](params, qubits)
             except KeyError:
                 raise ValueError(f"The gate '{gate}' is not supported on the backend '{self.backend}'. Please check the backend's basis gates.")
         qc.measure(measure_qubits, measure_qubits)

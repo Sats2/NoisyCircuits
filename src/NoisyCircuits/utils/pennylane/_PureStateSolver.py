@@ -100,5 +100,5 @@ class PureStateSolver:
             else:
                 return qml.probs(wires=qubits)
         
-        output = run_circuit(self.num_qubits)
+        output = run_circuit(list(range(self.num_qubits)))
         return output

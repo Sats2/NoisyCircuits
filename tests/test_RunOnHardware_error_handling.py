@@ -11,9 +11,9 @@ circuit = QuantumCircuit(
     num_qubits=2,
     noise_model=pickle.load(open(file_path, "rb")),
     backend_qpu_type="heron",
-    num_trajectories=100,
-    jsonize=True,
-    verbose=True
+    sim_backend="custom",
+    threshold=1e-6,
+    verbose=False
 )
 
 def test_token_type():

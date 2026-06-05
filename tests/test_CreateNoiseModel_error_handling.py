@@ -9,6 +9,7 @@ from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel, GetNoiseModel
 """
 Unit Tests for error handling in the CreateNoiseModel class within the module.
 """
+
 def test_invalid_calibration_file_path_type():
     """
     Test whether the CreateNoiseModel class raises a TypeError when the calibration_data_file is not a string.
@@ -84,6 +85,7 @@ def test_missing_column_names():
 """
 Unit Tests for error handling in the GetNoiseModel class within the module.
 """
+
 def test_invalid_backend_type():
     """
     Test whether the GetNoiseModel class raises a TypeError when the backend_name is not a string.

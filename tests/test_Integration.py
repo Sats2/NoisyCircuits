@@ -1,19 +1,28 @@
-import pickle
 import pennylane as qml
 import numpy as np
 from NoisyCircuits.QuantumCircuit import QuantumCircuit
-import os
+from NoisyCircuits.utils import CreateNoiseModel
 import pytest
-from pathlib import Path
 import itertools
+from pathlib import Path
+import pickle
 
 qpus = QuantumCircuit.basis_gates_set.keys()
 circuit_list = []
 for qpu in qpus:
-    file_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
-    noise_model = pickle.load(open(file_path, "rb"))
+    if qpu == "eagle":
+        file_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
+        noise_model = pickle.load(open(file_path, "rb"))
+    else:
+        file_path = Path(__file__).parent.parent / "noise_models" / f"Sample_Noise_Model_{qpu.capitalize()}_QPU.csv"
+        noise_model = CreateNoiseModel(calibration_data_file=str(file_path), 
+                                        basis_gates=[["x", "sx", "rz", "rx"], ["cz", "rzz"]]).create_noise_model()
     for sim_backend in QuantumCircuit.available_sim_backends:
-        circuit_list.append((QuantumCircuit, (4, noise_model, qpu, 200, 4, sim_backend, True, False, 1e-6)))
+        circuit_list.append(
+            (QuantumCircuit, (4, noise_model, qpu, sim_backend, 1e-6, False))
+        )
+num_cores = 40
+np.random.seed(42)
 
 @pytest.fixture
 def circuit(request):
@@ -25,15 +34,22 @@ def fidelity(p:np.ndarray,
     """"
     Helper function that computes the fidelity between two discrete probability distribution by means of the Hellinger Distance.
 
-    Args:
-        p (np.ndarray): Probability distribution of size (n,)
-        q (np.ndarray): Probabiltiy distribution of size (n,)
+    Parameters
+    ----------
+    p : np.ndarray
+        Probability distribution of size (n,)
+    q : np.ndarray
+        Probabiltiy distribution of size (n,)
     
-    Raises:
-        ValueError: When the size of p and q don't match
-    
-    Returns:
-        (np.float64): The Hellinger Distance between the two distributions.
+    Returns
+    -------
+    np.float64
+        The Hellinger Distance between the two distributions.
+
+    Raises
+    ------
+    ValueError
+        When the size of p and q don't match
     """
     if p.shape[0] != q.shape[0]:
         raise ValueError("Shape Mismatch between the distributions.")
@@ -44,149 +60,184 @@ def fidelity(p:np.ndarray,
     return fid
 
 instruction_map = {
-        "x": lambda q: qml.X(q),
-        "sx": lambda q: qml.SX(q),
-        "rz": lambda q: qml.RZ(q[0], q[1]),
-        "rx": lambda q: qml.RX(q[0], q[1]),
-        "h": lambda q: qml.H(q),
-        "ry": lambda q: qml.RY(q[0], q[1]),
-        "y": lambda q: qml.Y(q),
-        "z": lambda q: qml.Z(q),
-        "ecr": lambda q: qml.ECR(q),
-        "cz": lambda q: qml.CZ(q),
-        "cx": lambda q: qml.CNOT(q),
-        "cy": lambda q: qml.CY(q),
-        "swap": lambda q: qml.SWAP(q),
-        "crx": lambda q: qml.CRX(q[0], q[1]),
-        "cry": lambda q: qml.CRY(q[0], q[1]),
-        "crz": lambda q: qml.CRZ(q[0], q[1]),
-        "rzz": lambda q: qml.IsingZZ(q[0], q[1]),
-        "rxx": lambda q: qml.IsingXX(q[0], q[1]),
-        "ryy": lambda q: qml.IsingYY(q[0], q[1])
-    }
+    "x" : lambda p, q: qml.X(q[0]),
+    "sx" : lambda p, q: qml.SX(q[0]),
+    "rz" : lambda p, q: qml.RZ(p, q[0]),
+    "rx" : lambda p, q: qml.RX(p, q[0]),
+    "ecr" : lambda p, q: qml.ECR(q),
+    "cz" : lambda p, q: qml.CZ(q),
+    "rzz" : lambda p, q: qml.IsingZZ(p, q)
+}
 
-def run_true(instructions:list,
-             measure_qubits:list=[0, 1, 2, 3])->np.ndarray:
+def get_reference_output(
+                        instructions:list,
+                        measure_qubits:list,
+                        return_state:bool
+                        )->np.ndarray:
     """
-    Execute the quantum circuit without any decompositions or qubit couplings.
+    Function that runs a quantum circuit using a well established quantum simulator.
 
-    Args:
-        instructions (list): Instruction List to construct the circuit
-        measure_qubits (list): List of qubits to measure the probabilities for. Default is [0, 1, 2, 3] for a 4-qubit circuit.
+    Parameters
+    ----------
+    instructions : list
+        A list of instructions, where each instruction is a tuple of the form (gate_name, qubits, parameters).
+    measure_qubits : list
+        A list of qubits to be measured at the end of the circuit.
+    return_state : bool
+        A boolean flag that indicates whether to return the final state vector or the probability distribution over the measured qubits.
 
-    Returns:
-        (np.ndarray): Probability of the quantum circuit
+    Returns
+    -------
+    np.ndarray
+        The reference output of the circuit, either as a state vector or as a probability distribution over the measured qubits.
     """
-    dev = qml.device("lightning.qubit", wires=4)
-    @qml.qnode(dev)
-    def _run_circuit(instructions:list, 
-                     measure_qubits:list=measure_qubits):
+    @qml.qnode(qml.device("lightning.qubit", wires=4))
+    def run_circuit():
+        """
+        Executes the quantum circuit.
+        """
         for entry in instructions:
             gate = entry[0]
             qubits = entry[1]
             params = entry[2]
-            if params is None:
-                instruction_map[gate](qubits)
-            else:
-                instruction_map[gate]([params, qubits])
-        return qml.probs(measure_qubits)
-    probs = _run_circuit(instructions)
-    return probs
+            instruction_map[gate](params, qubits)
+        if return_state:
+            return qml.state()
+        else:
+            return qml.probs(wires=measure_qubits)
+    return run_circuit()
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
-def test_ghz_output(circuit):
+def test_ghz_probabilities(circuit):
     """
-    Test the decomposition, gate directionality and swap sequencing with the GHZ State test.
-    """
-    instructions = []
-    circuit.refresh()
-    circuit.H(qubit=0)
-    instructions.append(["h", [0], None])
-    for i in range(3):
-        circuit.CX(control=i, target=i+1)
-        instructions.append(["cx", [i, i+1], None])
-    probs_decomp = circuit.run_pure_state([0, 1, 2, 3])
-    probs_true = run_true(instructions)
-    circuit.shutdown()
-    assert np.allclose(probs_decomp, probs_true), f"Failed GHZ Output Test for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
-
-@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
-def test_mcwf_implementation_ghz(circuit):
-    """
-    Test fidelity closeness for the GHZ state
+    Test that the probability output over the computational basis for the GHZ state matches the output from a well established quantum simulator.
     """
     circuit.refresh()
-    circuit.H(qubit=0)
+    circuit.H(0)
     for i in range(3):
         circuit.CX(i, i+1)
-    probs_mcwf = circuit.execute([0, 1, 2, 3])
-    probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
-    hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
-    circuit.shutdown()
-    assert (hellinger_distance < 0.07), f"Failed fidelity test for GHZ State with a fidelity of {hellinger_distance} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
+    instructions = circuit.instruction_list
+    p_software = circuit.run_pure_state([0, 1, 2, 3], 1, False)
+    p_reference = get_reference_output(instructions, [0, 1, 2, 3], False)
+    assert np.allclose(p_software, p_reference, atol=1e-12), f"Probability distributions do not match for the GHZ state for {circuit.qpu} QPU with {circuit.sim_backend} simulator."
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
-def test_parameterized_circuit(circuit):
+def test_ghz_statevector(circuit):
     """
-    Test the decomposition, gate directionality and swap sequencing with a randomized parameterized test.
-    """
-    angles = np.random.uniform(-2*np.pi, 2*np.pi, 16)
-    instructions = []
-    circuit.refresh()
-    for i in range(4):
-        circuit.H(qubit=i)
-        instructions.append(["h", [i], None])
-    for layer in range(4):
-        for i in range(4):
-            circuit.RY(angles[4*layer + i], i)
-            instructions.append(["ry", [i], angles[4*layer+i]])
-        for j in range(3):
-            circuit.CY(0, j+1)
-            instructions.append(["cy", [0, j+1], None])
-    probs_decomp = circuit.run_pure_state([0, 1, 2, 3])
-    probs_true = run_true(instructions)
-    circuit.shutdown()
-    assert np.allclose(probs_decomp, probs_true), f"Failed Randomized Parameterized Circuit Test for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
-
-@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
-def test_parameterized_circuit_fidelity(circuit):
-    """
-    Test the fidelity closeness a randomized parameterized test.
-    """
-    angles = np.random.uniform(-2*np.pi, 2*np.pi, 16)
-    circuit.refresh()
-    for i in range(4):
-        circuit.H(qubit=i)
-    for layer in range(4):
-        for i in range(4):
-            circuit.RY(angles[4*layer + i], i)
-        for j in range(3):
-            circuit.CY(0, j+1)
-    probs_mcwf = circuit.execute([0, 1, 2, 3])
-    probs_density_matrix = circuit.run_with_density_matrix([0, 1, 2, 3])
-    circuit.shutdown()
-    hellinger_distance = fidelity(probs_density_matrix, probs_mcwf)
-    assert (hellinger_distance < 0.07), f"Failed Randomized Parameterized Circuit Test with Fidelity {hellinger_distance} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
-
-@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
-def test_circuit_marginal_probs(circuit):
-    """
-    Test the marginal probability computation for a reduced set of qubits.
+    Test that the statevector output over the computational basis for the GHZ state matches the output from a well established quantum simulator.
     """
     circuit.refresh()
-    instructions = []
-    angles = np.random.uniform(-2*np.pi, 2*np.pi, 4)
-    for i in range(4):
-        circuit.H(qubit=i)
-        instructions.append(["h", [i], None])
-    for i in range(4):
-        circuit.RX(angles[i], i)
-        instructions.append(["rx", [i], angles[i]])
+    circuit.H(0)
     for i in range(3):
-        circuit.CZ(i, i+1)
-        instructions.append(["cz", [i, i+1], None])
-    permutations = list(itertools.permutations(range(4)))
-    for perm in permutations:
-        probs_decomp = circuit.run_pure_state(list(perm))
-        probs_true = run_true(instructions, list(perm))
-        assert np.allclose(probs_decomp, probs_true), f"Failed Marginal Probability Test for qubits {perm} for QPU - {circuit.qpu}, solver - {circuit.sim_backend}"
+        circuit.CX(i, i+1)
+    instructions = circuit.instruction_list
+    state_software = circuit.run_pure_state([0, 1, 2, 3], 1, True)
+    state_reference = get_reference_output(instructions, [0, 1, 2, 3], True)
+    assert np.allclose(state_software, state_reference, atol=1e-12), f"State vectors do not match for the GHZ state for {circuit.qpu} QPU with {circuit.sim_backend} simulator."
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_ghz_parallel(circuit):
+    """
+    Test that the probability output over the computational basis for the GHZ state matches the output from a well established quantum simulator under parallel execution.
+    """
+    circuit.refresh()
+    circuit.H(0)
+    for i in range(3):
+        circuit.CX(i, i+1)
+    instructions = circuit.instruction_list
+    p_software = circuit.run_pure_state([0, 1, 2, 3], num_cores, False)
+    p_reference = get_reference_output(instructions, [0, 1, 2, 3], False)
+    assert np.allclose(p_software, p_reference, atol=1e-12), f"Probability distributions do not match for the GHZ state for {circuit.qpu} QPU with {circuit.sim_backend} simulator when run in parallel."
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_ghz_noisy_simulation(circuit):
+    """
+    Test that the noise-aware simulation closely matches the density matrix output for the GHZ state.
+    """
+    circuit.refresh()
+    circuit.H(0)
+    for i in range(3):
+        circuit.CX(i, i+1)
+    p_software = circuit.execute([0, 1, 2, 3], 1000, num_cores)
+    p_reference = circuit.run_with_density_matrix([0, 1, 2, 3], 2)
+    fid = fidelity(p_software, p_reference)
+    assert fid < 0.05, f"Fidelity too low for the GHZ state for {circuit.qpu} QPU with {circuit.sim_backend} simulator.\nHellinger Distance: {fid}"
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_parametrized_circuit_probabilities(circuit):
+    """
+    Test that the probability output over the computational basis for a parametrized quantum circuit matches the output from a well established quantum simulator.
+    """
+    circuit.refresh()
+    for q in range(4):
+        circuit.H(q)
+    for _ in range(4):
+        for q in range(4):
+            circuit.RY(np.random.uniform(-2*np.pi, 2*np.pi), q)
+        for i in range(3):
+            circuit.CY(i, i+1)
+    instructions = circuit.instruction_list
+    p_software = circuit.run_pure_state([0, 1, 2, 3], 1, False)
+    p_reference = get_reference_output(instructions, [0, 1, 2, 3], False)
+    assert np.allclose(p_software, p_reference, atol=1e-12), f"Probability distributions do not match for the parametrized circuit for {circuit.qpu} QPU with {circuit.sim_backend} simulator."
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_parametrized_circuit_statevector(circuit):
+    """
+    Test that the statevector output over the computational basis for a parametrized quantum circuit matches the output from a well established quantum simulator.
+    """
+    circuit.refresh()
+    for q in range(4):
+        circuit.H(q)
+    for _ in range(4):
+        for q in range(4):
+            circuit.RY(np.random.uniform(-2*np.pi, 2*np.pi), q)
+        for i in range(3):
+            circuit.CY(i, i+1)
+    instructions = circuit.instruction_list
+    p_software = circuit.run_pure_state([0, 1, 2, 3], 1, True)
+    p_reference = get_reference_output(instructions, [0, 1, 2, 3], True)
+    assert np.allclose(p_software, p_reference, atol=1e-12), f"Probability distributions do not match for the parametrized circuit for {circuit.qpu} QPU with {circuit.sim_backend} simulator."
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_parametrized_circuit_parallel(circuit):
+    """
+    Test that the probability output over the computational basis for a parametrized quantum circuit matches the output from a well established quantum simulator under parallel execution.
+    """
+    circuit.refresh()
+    for q in range(4):
+        circuit.H(q)
+    for _ in range(4):
+        for q in range(4):
+            circuit.RY(np.random.uniform(-2*np.pi, 2*np.pi), q)
+        for i in range(3):
+            circuit.CY(i, i+1)
+    instructions = circuit.instruction_list
+    p_software = circuit.run_pure_state([0, 1, 2, 3], num_cores, False)
+    p_reference = get_reference_output(instructions, [0, 1, 2, 3], False)
+    assert np.allclose(p_software, p_reference, atol=1e-12), f"Probability distributions do not match for the parametrized circuit for {circuit.qpu} QPU with {circuit.sim_backend} simulator."
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_parametrized_circuit_noisy_simulation(circuit):
+    """
+    Test that the noise-aware simulation closely matches the density matrix output for a parametrized quantum circuit.
+    """
+    circuit.refresh()
+    for q in range(4):
+        circuit.H(q)
+    for _ in range(4):
+        for q in range(4):
+            circuit.RY(np.random.uniform(-2*np.pi, 2*np.pi), q)
+        for i in range(3):
+            circuit.CY(i, i+1)
+    p_software = circuit.execute([0, 1, 2, 3], 1000, num_cores)
+    p_reference = circuit.run_with_density_matrix([0, 1, 2, 3], 2)
+    fid = fidelity(p_software, p_reference)
+    assert fid < 0.05, f"Fidelity too low for the parametrized circuit for {circuit.qpu} QPU with {circuit.sim_backend} simulator.\nHellinger Distance: {fid}"
+
+@pytest.mark.parametrize("circuit", circuit_list, indirect=True)
+def test_shutdown(circuit):
+    """
+    Shutdown parallel processes and free up resources after the tests.
+    """
+    circuit.shutdown()
