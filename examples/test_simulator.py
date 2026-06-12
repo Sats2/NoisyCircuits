@@ -1,86 +1,63 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-import simulator
-from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
+from NoisyCircuits.utils import CreateNoiseModel
+from NoisyCircuits import QuantumCircuit
 import numpy as np
-import pennylane as qml
-
-
-# In[2]:
-
-
-noise_model = CreateNoiseModel("../noise_models/Sample_Noise_Model_Heron_QPU.csv", [["sx", "x", "rx", "rz"], ["cz", "rzz"]]).create_noise_model()
-
-
-# In[3]:
-
-
-from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
-
-
-# In[4]:
-
-
-modeller = BuildModel(
-    noise_model,
-    10,
-    10,
-    1e-6,
-    [["x", "sx", "rx", "rz"], ["cz", "rzz"]],
-    False
-)
-single, double, measure, connection = modeller.build_qubit_gate_model()
-
-
-# In[5]:
-
-
-def build_random_unitary(n):
-    N = 1 << n
-    random_matrix = np.random.rand(N, N) + 1j * np.random.rand(N, N)
-    Q, R = np.linalg.qr(random_matrix)
-    D = np.diag(R)
-    D = D / np.abs(D)
-    return Q @ np.diag(D)
-
-
-# In[6]:
-
-
 import random
+import sys
 
-def generate_random_qubit_list(n, b, a=0):
-    return random.sample(range(a, b), n)
+file_name = "../noise_models/Sample_Noise_Model_Heron_QPU.csv"
+noise_model = CreateNoiseModel(file_name, [["x", "sx", "rz", "rx"], ["cz", "rzz"]]).create_noise_model()
 
+circuit = QuantumCircuit(
+    num_qubits = 15,
+    noise_model = noise_model,
+    backend_qpu_type = "heron",
+    sim_backend = "custom",
+    threshold = 1e-6,
+    verbose = False
+)
 
-# In[7]:
-
-
-dev = qml.device("lightning.qubit", wires=10)
-
-def test_unitary(U, apply_qubits, dev=dev):
-    @qml.qnode(dev)
-    def apply_unitary():
-        qml.QubitUnitary(U, wires=apply_qubits)
-        return qml.state()
-    return apply_unitary()
-
-
-# In[30]:
+del noise_model
 
 
-q = 4
-unitary = build_random_unitary(q)
-apply_qubits = generate_random_qubit_list(q, 10)
-state_pennylane = test_unitary(unitary, apply_qubits)
-state_custom = np.zeros(1 << 10, dtype=np.complex128)
-instruction_lst = [["unitary", apply_qubits[::-1], unitary]]
-state_custom[0] = 1.0
-simulator.simulate_circuit(instruction_lst, state_custom, single, double, 10, False, 1, True, 10)
-state_custom = state_custom.reshape([2]*10).transpose(list(range(10))[::-1]).reshape(-1)
-print("States Match: ", np.allclose(state_custom, state_pennylane, atol=1e-10))
+def build_random_circuit(circuit, depth):
+    single_gates = {
+        "x": lambda p, q: circuit.X(q),
+        "sx": lambda p, q: circuit.SX(q),
+        "rz": lambda p, q: circuit.RZ(p, q),
+        "rx": lambda p, q: circuit.RX(p, q)
+    }
+    two_gates = {
+        "cz": lambda p, q1, q2: circuit.CZ(q1, q2),
+        "rzz": lambda p, q1, q2: circuit.RZZ(p, q1, q2)
+    }
+    for _ in range(depth):
+        for i in range(circuit.num_qubits):
+            gate_name = random.choice(list(single_gates.keys()))
+            single_gates[gate_name](random.uniform(-2*3.14159, 2*3.14159), i)
+        for q in range(circuit.num_qubits - 1):
+            gate_name = random.choice(list(two_gates.keys()))
+            two_gates[gate_name](random.uniform(-2*3.14159, 2*3.14159), q, q + 1)
 
+
+circuit.refresh()
+build_random_circuit(circuit, depth=100)
+
+def density_matrix_simulation(circuit):
+    p = circuit.run_with_density_matrix(list(range(circuit.num_qubits)), 50)
+    return p
+
+def custom_simulation(circuit):
+    p = circuit.execute(list(range(circuit.num_qubits)), 1000, 50)
+    return p
+
+def do_nothing():
+    pass
+
+arg = sys.argv[1]
+
+if arg == "dm":
+    p = density_matrix_simulation(circuit)
+elif arg == "custom":
+    p = custom_simulation(circuit)
+else:
+    do_nothing()

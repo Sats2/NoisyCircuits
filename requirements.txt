@@ -15,3 +15,5 @@ sphinxcontrib-bibtex
 sphinx-copybutton
 qulacs
 pandas
+openqasm3
+openqasm3[parser]

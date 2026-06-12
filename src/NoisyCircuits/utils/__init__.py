@@ -2,3 +2,4 @@ from .BuildQubitGateModel import BuildModel
 from .solvers import load_solver
 from .HelperFunctions import compute_marginal_probs, convert_matrix_to_little_endian, compute_trajectory_probs_single, compute_trajectory_probs_two_q, update_state_inplace_1q, update_state_inplace_2q
 from .CreateNoiseModel import CreateNoiseModel, GetNoiseModel
+from .OpenQasmParser import Parser

@@ -242,6 +242,53 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+static inline void apply_RY_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+    const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t stride = std::size_t{1} << q;
+    const double cosine = std::cos(0.5 * theta);
+    const double sine = std::sin(0.5 * theta);
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
+        const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const std::size_t j = i | stride;
+        const complex128 s0 = state[i];
+        const complex128 s1 = state[j];
+        state[i] = complex128(cosine * s0.real() - sine * s1.real(), cosine * s0.imag() - sine * s1.imag());
+        state[j] = complex128(sine * s0.real() + cosine * s1.real(), sine * s0.imag() + cosine * s1.imag());
+    }
+}
+
+static inline void apply_H_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+    const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t stride = std::size_t{1} << q;
+    constexpr double inv_sqrt_2 = 0.7071067811865475;
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
+        const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const std::size_t j = i | stride;
+        const complex128 s0 = state[i];
+        const complex128 s1 = state[j];
+        state[i] = inv_sqrt_2 * (s0 + s1);
+        state[j] = inv_sqrt_2 * (s0 - s1);
+    }
+}
+
+static inline void apply_P_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+    const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t stride = std::size_t{1} << q;
+    const double cosine = std::cos(theta);
+    const double sine = std::sin(theta);
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
+        const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
+        const std::size_t j = i | stride;
+        const complex128 s0 = state[i];
+        const complex128 s1 = state[j];
+        state[i] = s0;
+        state[j] = complex128(s1.real() * cosine - s1.imag() * sine, s1.real() * sine + s1.imag() * cosine);
+    }
+}
+
 static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -318,7 +365,53 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
-// TODO: Add unitary operator application as a function to adhere to gate_map functionality --> Needs testing.
+static inline void apply_CX_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+    const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t iters = dim >> 2;
+    const std::size_t q_min = q1 < q2 ? q1 : q2;
+    const std::size_t q_max = q1 > q2 ? q1 : q2;
+    const std::size_t m1 = (1ULL << q_min) - 1;
+    const std::size_t m2 = (1ULL << (q_max - 1)) - 1;
+    const std::size_t ull_q1 = 1ULL << q1;
+    const std::size_t ull_q2 = 1ULL << q2;
+    const std::size_t target_mask = ull_q1 | ull_q2;
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t i = 0; i < iters; ++i){
+        const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
+        const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
+        const std::size_t idx01 = pos | ull_q1;
+        const std::size_t idx11 = pos | target_mask;
+        const complex128 s01 = state[idx01];
+        const complex128 s11 = state[idx11];
+        state[idx01] = s11;
+        state[idx11] = s01;
+    }
+}
+
+static inline void apply_SWAP_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+    const std::size_t dim = std::size_t{1} << num_qubits;
+    const std::size_t iters = dim >> 2;
+    const std::size_t q_min = q1 < q2 ? q1 : q2;
+    const std::size_t q_max = q1 > q2 ? q1 : q2;
+    const std::size_t m1 = (1ULL << q_min) - 1;
+    const std::size_t m2 = (1ULL << (q_max - 1)) - 1;
+    const std::size_t ull_q1 = 1ULL << q1;
+    const std::size_t ull_q2 = 1ULL << q2;
+    const std::size_t target_mask = ull_q1 | ull_q2;
+    #pragma omp parallel for num_threads(thread_count)
+    for (std::size_t i = 0; i < iters; ++i){
+        const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
+        const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
+        const std::size_t idx01 = pos | ull_q1;
+        const std::size_t idx10 = pos | ull_q2;
+        const complex128 s01 = state[idx01];
+        const complex128 s10 = state[idx10];
+        state[idx01] = s10;
+        state[idx10] = s01;
+    }
+}
+
+
 static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t num_targets = target_qubits.size();
     const std::size_t dim = std::size_t{1} << num_qubits;

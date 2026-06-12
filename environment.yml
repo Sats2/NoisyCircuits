@@ -24,3 +24,5 @@ dependencies:
     - sphinxcontrib-bibtex
     - sphinx-copybutton
     - ipykernel
+    - openqasm3
+    - openqasm3[parser]

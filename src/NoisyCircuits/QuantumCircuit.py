@@ -15,15 +15,12 @@ Example:\n
     [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
     >>> circuit.shutdown() # Shutdown the Ray parallel execution environment
 """
-import os
-os.environ["OMP_NUM_THREADS"] = "1"
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-os.environ["MKL_NUM_THREADS"] = "1"
 
 import numpy as np
 from NoisyCircuits.utils.BuildQubitGateModel import BuildModel
 from NoisyCircuits.utils.EagleDecomposition import EagleDecomposition
 from NoisyCircuits.utils.HeronDecomposition import HeronDecomposition
+from NoisyCircuits.utils import Parser
 from NoisyCircuits.utils.solvers import load_solver
 from NoisyCircuits.utils import compute_marginal_probs, convert_matrix_to_little_endian
 import measurement_error_applicator
@@ -149,6 +146,8 @@ class QuantumCircuit:
             qubit_map = modeller.qubit_coupling_map
         )
         self._ray_initialized = False
+        self._basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
+        self.basis_gates = self.basis_gates
 
     @property
     def sim_backend(self)->str:
@@ -204,12 +203,87 @@ class QuantumCircuit:
         """
         if name is not None:
             return getattr(self._gate_decomposer, name)
+        
+    @property
+    def basis_gates(self)->list[list[str]]:
+        """
+        Getter for the basis gates attribute.
+
+        Returns
+        -------
+        list[list[str]]
+            The list of basis gates supported by the simulator in the format [[single_qubit_gates], [two_qubit_gates]].
+        """
+        return self._basis_gates
+    
+    @basis_gates.setter
+    def basis_gates(self,
+                    basis_gates:list[list[str]]
+                    )->None:
+        """
+        Setter for the basis gates attribute.
+
+        Parameters
+        ----------
+        basis_gates : list[list[str]]
+            The list of basis gates supported by the simulator in the format [[single_qubit_gates], [two_qubit_gates]].
+        
+        Raises
+        ------
+        TypeError
+            If basis_gates is not a list of lists of strings.
+        """
+        if not isinstance(basis_gates, list) or any(not isinstance(sublist, list) for sublist in basis_gates) or any(not all(isinstance(gate, str) for gate in sublist) for sublist in self.basis_gates):
+            raise TypeError("basis_gates must be a list of lists of strings.")
+        self._basis_gates = basis_gates
 
     def refresh(self):
         """
         Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.
         """
         self._gate_decomposer.instruction_list = []
+
+    def _check_gates_in_noise_model(self)->None:
+        """
+        Private helper method to check if the gates used in the quantum circuit are supported by the noise model. Raises a ValueError if any unsupported gates are found.
+
+        Raises
+        ------
+        ValueError
+            If any gates used in the quantum circuit are not supported by the noise model.k
+        """
+        single_qubit_gates_in_model = self.single_qubit_error[0].keys()
+        two_qubit_gates_in_model = self.two_qubit_error.keys()
+        gate_list = [gate for sublist in [single_qubit_gates_in_model, two_qubit_gates_in_model] for gate in sublist]
+        unsupported_gate = []
+        for instruction in self.instruction_list:
+            if instruction[0] not in gate_list and instruction[0] != "unitary":
+                unsupported_gate.append(instruction[0])
+        if unsupported_gate != []:
+            raise ValueError(f"The following gates are not supported by the noise model: {unsupported_gate}. Supported gates are: {gate_list}")
+
+    def read_openqasm(self,
+                    file_path:str,
+                    append_to_circuit:bool=False
+                    )->None:
+        """
+        Reads an OpenQASM 3.0 file and adds the required instructions to build the quantum circuit.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the OpenQASM 3.0 file.
+        append_to_circuit : bool, optional
+            A flag to determine whether to add the parser
+        """
+        parser = Parser(
+                file_path = file_path,
+                instruction_list = self._gate_decomposer.instruction_list,
+                append_to_circuit = append_to_circuit,
+                basis_gates = self.basis_gates
+            )
+        self._gate_decomposer.instruction_list = parser.parse()   
+        self._check_gates_in_noise_model()     
     
     def _initialize_ray(self,
                         num_cores:int

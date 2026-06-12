@@ -13,6 +13,11 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
     gate_map["ecr"] = apply_ECR_gate;
     gate_map["rzz"] = apply_RZZ_gate;
     gate_map["unitary"] = apply_unitary_gate;
+    gate_map["h"] = apply_H_gate;
+    gate_map["cx"] = apply_CX_gate;
+    gate_map["ry"] = apply_RY_gate;
+    gate_map["p"] = apply_P_gate;
+    gate_map["swap"] = apply_SWAP_gate;
     return gate_map;
 }
 
@@ -23,11 +28,16 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
         "sx",
         "rz",
         "rx"
+        "ry",
+        "p",
+        "h"
     };
     std::list<std::string> two_qubit_gate_names = {
         "cz",
         "ecr",
-        "rzz"
+        "rzz",
+        "cx",
+        "swap"
     };
     for (const std::string& gate_name : single_qubit_gate_names){
         apply_noise_map[gate_name] = apply_single_qubit_noise;
