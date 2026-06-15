@@ -1,0 +1,17 @@
+# Ignore Python bytecode (covers all __pycache__ folders anywhere in the repo)
+**/__pycache__/
+*$py.class
+
+# Ignore Jupyter Notebook checkpoints
+**/.ipynb_checkpoints/
+
+# Ignore VSCode settings and workspace files
+.vscode/
+
+# Ignore C++ build artifacts
+build/
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
