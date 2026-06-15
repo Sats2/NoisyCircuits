@@ -71,7 +71,10 @@ for qubits in range(2, max_qubits + 1):
 
     for trial in range(trials):
         circuit_loc = file_loc_qubit + "/Circuit_Instructions/Circuit_Object_{}Q_{}Trial.json".format(qubits, trial)
-        mem_usage_init = benchmark_memory_initialization(qubits, 100, circuit_loc, trial, file_loc_qubit)
+        file_loc_initialization = file_loc_qubit + "/Initialization"
+        if not os.path.exists(file_loc_initialization):
+            os.mkdir(file_loc_initialization)
+        mem_usage_init = benchmark_memory_initialization(qubits, 100, circuit_loc, trial, file_loc_initialization)
         mem_usage_init_list.append(mem_usage_init)
         for trajectory_number in trajectory_list:
             file_loc_traj = file_loc_qubit + "/{}_Trajectories".format(trajectory_number)
