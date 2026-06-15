@@ -27,7 +27,7 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
         "x",
         "sx",
         "rz",
-        "rx"
+        "rx",
         "ry",
         "p",
         "h"

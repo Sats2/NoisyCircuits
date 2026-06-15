@@ -20,8 +20,9 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
+# fsanitize=address is used for debugging;
 system_gomp = "/lib/x86_64-linux-gnu/libgomp.so.1"
-cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops", "-fcf-protection=none", "-fno-stack-protector"]
+cpp_flags = ["-O2", "-march=native", "-mtune=native", "-funroll-loops", "-fcf-protection=none", "-fno-stack-protector"] 
 omp_flags = ["-fopenmp"]
 target_flags = ['-foffload=nvptx-none']
 # GCC OpenMP offload can crash with some LTO configurations; keep LTO disabled by default.

@@ -341,6 +341,10 @@ class QuantumCircuit:
             - Raised when there are no instructions in the circuit to execute.
             - Raised when num_trajectories is not a positive integer.
             - Raised when num_cores is not a positive integer or -1.
+
+        Notes
+        -----
+        This method is designed for shared memory parallel execution. In case where the RAM requirements for running a single trajectory are very high or single threaded execution is too long, users may consider the `execute_mpi` method that is specifically designed for distributed memory systems (eg. HPC clusters) for faster execution.
         """
         if qubits is None:
             qubits = list(range(self.num_qubits))
@@ -527,8 +531,102 @@ class QuantumCircuit:
             return output
         output = output.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
         return output
-            
     
+    def execute_mpi(self,
+                    qubits:list[int]=None,
+                    num_trajectories:int=100,
+                    num_nodes:int=1,
+                    num_cores_per_node:int=2
+                    )->np.ndarray[np.float64]:
+        """
+        Runs the quantum circuit simulation using the Monte-Carlo Wavefunction method in a distributed memory environment. This method is only supported with the custom simulation backend and requires the python binder for MPI, mpi4py, to be installed. 
+
+        Parameters
+        -----------
+        qubits : list[int], optional
+            List of qubits to be measured. If None, all qubits will be measured.
+        num_trajectories : int, optional
+            The total number of trajectories to run. Defaults to 100.
+        num_nodes : int, optional
+            The number of nodes to use for distributed execution. Defaults to 1.
+        num_cores_per_node : int, optional
+            The number of CPU cores to use per node for parallel execution. Defaults to 2.
+        
+        Returns
+        --------
+        np.ndarray[np.float64]
+            An array containing the probabilities of the output states after executing the quantum circuit.
+        
+        Raises
+        ------
+        TypeError
+            - Raised when qubits is not a list of integers.
+            - Raised when num_trajectories is not an integer.
+            - Raised when num_nodes is not an integer.
+            - Raised when num_cores_per_node is not an integer.
+        ValueError
+            - Raised when qubits contains invalid qubit indices.
+            - Raised when there are no instructions in the circuit to execute.
+            - Raised when num_trajectories is not a positive integer.
+            - Raised when num_nodes is not a positive integer.
+            - Raised when num_cores_per_node is not a positive integer.
+            - Raised when the simulation backend is not set to "custom".
+            - Raised when the specified number of nodes or cores per node exceeds the available resources.
+
+        Notes
+        -----
+        This method is designed for distributed execution in a high-performance computing environment. The parallelization is performed in the following manner:
+            - Each node runs a single trajectory at a time.
+            - Within each node, the quantum circuit simulation for the assigned trajectory is parallelized across the specified number of CPU cores.
+            - The results from all nodes are aggregated to compute the final probabilities of the output states.
+        Note that the MPI execution is only beneficial for large number of qubits where running a single trajectory on a single core can be computationally intensive or where there is a requirement for a large amount of RAM which cannot be setup on a shared memory systems.
+        """
+        if qubits is not None:
+            if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
+                raise TypeError("Qubits must be a list of integers.")
+            if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
+                raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
+        else:
+            qubits = list(range(self.num_qubits))
+        if not isinstance(num_trajectories, int):
+            raise TypeError("num_trajectories must be an integer.")
+        if num_trajectories < 1:
+            raise ValueError("num_trajectories must be a positive integer.")
+        if not isinstance(num_nodes, int):
+            raise TypeError("num_nodes must be an integer.")
+        if num_nodes < 1:
+            raise ValueError("num_nodes must be a positive integer.")
+        if not isinstance(num_cores_per_node, int):
+            raise TypeError("num_cores_per_node must be an integer.")
+        if num_cores_per_node < 1:
+            raise ValueError("num_cores_per_node must be a positive integer.")
+        if self.instruction_list == []:
+            raise ValueError("No instructions in the circuit to execute.")
+        if self.sim_backend != "custom":
+            raise ValueError("MPI execution is only supported with the custom simulation backend.")
+        mpi_solver = self.solver.MPIExecutor(
+            num_qubits = self.num_qubits,
+            single_qubit_noise = self.single_qubit_error,
+            two_qubit_noise = self.two_qubit_error,
+            num_nodes = num_nodes,
+            num_cores = num_cores_per_node
+        )
+        output = mpi_solver.run(
+            num_trajectories = num_trajectories,
+            instruction_list = self.instruction_list
+        )
+        output = compute_marginal_probs(output, [q for q in range(self.num_qubits) if q not in qubits])
+        m = len(qubits)
+        measurement_error_applicator.apply_measurement_error(
+            output,
+            self.measurement_error,
+            qubits,
+            m,
+            int(min(num_cores_per_node, m))
+        )
+        output = output.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
+        return output
+
     def draw_circuit(self,
                      style:str="mpl")->None:
         """

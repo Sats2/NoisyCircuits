@@ -95,9 +95,9 @@ class MPIExecutor:
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
+        self._import_mpi()
         self.num_nodes = num_nodes
         self.num_cores = num_cores
-        self._import_mpi()
 
     def _import_mpi(self):
         """
