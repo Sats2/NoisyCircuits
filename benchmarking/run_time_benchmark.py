@@ -50,8 +50,8 @@ def plot(data, save_loc, title):
     }
     for qubit in data.keys():
         for t in trajectory_list:
-            trajectory_times["mean"].append(np.mean(data[qubit]["MCWF"][t]) / 1e9)
-            trajectory_times["std"].append(np.std(data[qubit]["MCWF"][t]) / 1e9)
+            trajectory_times[t]["mean"].append(np.mean(data[qubit]["MCWF"][t]) / 1e9)
+            trajectory_times[t]["std"].append(np.std(data[qubit]["MCWF"][t]) / 1e9)
         density_matrix_times["mean"].append(np.mean(data[qubit]["Density_Matrix"]) / 1e9)
         density_matrix_times["std"].append(np.std(data[qubit]["Density_Matrix"]) / 1e9)
         qubit_list.append(qubit)
@@ -60,7 +60,7 @@ def plot(data, save_loc, title):
     plt.fill_between(
         qubit_list,
         np.array(density_matrix_times["mean"]) - 2*np.array(density_matrix_times["std"]),
-        np.array(density_matrix_times["mean"]) + 2*np.array(density_matrix_times["sttd"])
+        np.array(density_matrix_times["mean"]) + 2*np.array(density_matrix_times["std"])
     )
     for t in trajectory_list:
         plt.plot(qubit_list, trajectory_times[t]["mean"], label="{} Trajectories".format(t))
@@ -85,9 +85,10 @@ if __name__ == "__main__":
     trajectory_list =  [10, 100, 500, 1000]
     base_dir = os.path.join(os.path.expanduser("~"), "benchmarking_data/Time")
     num_trials = 40
-    data_logger = open(os.path.join(base_dir, "Time_Benchmark_Consolidated_Output.txt"))
+    data_logger = open(os.path.join(base_dir, "Time_Benchmark_Consolidated_Output.txt"), "w")
 
     for qubits in range(2, max_qubits + 1):
+        print("Running Benchmark for {} Qubits".format(qubits))
         qubit_dir = os.path.join(base_dir, f"{qubits}_Qubits")
         os.mkdir(qubit_dir)
         save_loc = os.path.join(qubit_dir, "Circuit_Instructions")
@@ -126,13 +127,17 @@ if __name__ == "__main__":
             times = qubit_data["MCWF"][trajectories]
             mean_time = np.mean(times)
             std_time = np.std(times)
-            data_logger.write("Trajectory Number: {}\nMean Simulation Runtime: {}, Std. Dev: {}".format(trajectories, mean_time, std_time))
+            data_logger.write("Trajectory Number: {}\nMean Simulation Runtime: {} s, Std. Dev: {} s\n".format(trajectories, mean_time*1e-9, std_time*1e-9))
+            print("Trajectory Number: {}\nMean Simulation Runtime: {} s, Std. Dev: {} s".format(trajectories, mean_time*1e-9, std_time*1e-9))
         dm_times = qubit_data["Density_Matrix"]
         mean_dm_time = np.mean(dm_times)
         std_dm_time = np.std(dm_times)
-        data_logger.write("Density Matrix Simulation:\nMean Simulation Runtime: {}, Std. Dev: {}\n".format(mean_dm_time, std_dm_time))
+        data_logger.write("Density Matrix Simulation:\nMean Simulation Runtime: {} s, Std. Dev: {} s\n".format(mean_dm_time*1e-9, std_dm_time*1e-9))
         data_logger.write("-" * 50 + "\n\n")
         data_logger.flush()
+        print("Density Matrix Simulation:\nMean Simulation Runtime: {} s, Std. Dev: {} s".format(mean_dm_time*1e-9, std_dm_time*1e-9))
+        print("Completed Benchmark for {} Qubits".format(qubits))
+        print("-" * 50)
     
     with open(os.path.join(base_dir, "Full_Time_Benchmark_Data.pkl"), "wb") as f:
         pickle.dump(data, f)

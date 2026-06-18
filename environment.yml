@@ -10,6 +10,7 @@ dependencies:
   - scipy
   - numba
   - matplotlib
+  - pybind11
   - pip:
     - qulacs
     - qiskit
