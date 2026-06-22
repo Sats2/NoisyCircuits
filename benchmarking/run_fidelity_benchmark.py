@@ -156,7 +156,7 @@ if __name__ == "__main__":
                 pickle.dump(depth_data, f)
             
             for trajectories in trajectory_list:
-                data_logger.write(f"{qubit}\t|\t{depth}\t|\t{trajectories}\t|\t{np.mean(depth_data[trajectories]['Bhattacharyya_Coefficient']):.4f}\t|\t{np.mean(depth_data[trajectories]['Bhattacharyya_Distance']):.4f}\t|\t{np.mean(depth_data[trajectories]['Hellinger_Distance']):.4f}\t|\t{np.mean(depth_data[trajectories]['JS_Divergence']):.4f}\n")
+                data_logger.write(f"{qubit}\t|\t{depth}\t|\t{trajectories}\t|\t{np.mean(depth_data[trajectories]['Bhattacharyya_Coefficient']):.4f} ± {np.std(depth_data[trajectories]['Bhattacharyya_Coefficient']):.2E}\t|\t{np.mean(depth_data[trajectories]['Bhattacharyya_Distance']):.4f} ± {np.std(depth_data[trajectories]['Bhattacharyya_Distance']):.2E}\t|\t{np.mean(depth_data[trajectories]['Hellinger_Distance']):.4f} ± {np.std(depth_data[trajectories]['Hellinger_Distance']):.2E}\t|\t{np.mean(depth_data[trajectories]['JS_Divergence']):.4f} ± {np.std(depth_data[trajectories]['JS_Divergence']):.2E}\n")
 
             qubit_data[f"Depth_{depth}"] = depth_data
             data_logger.write("\n")
