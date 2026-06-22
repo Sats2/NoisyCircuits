@@ -90,6 +90,16 @@ if __name__ == "__main__":
                 for t in trajectory_list
             }
 
+            density_matrix_loc = os.path.join(depth_loc, "Density_Matrix")
+            os.mkdir(density_matrix_loc)
+
+            trajectory_loc = {
+                t : os.path.join(depth_loc, f"{t}_Trajectories") for t in trajectory_list
+            }
+
+            for loc in trajectory_loc.values():
+                os.mkdir(loc)
+
             for trial in range(num_trials):
                 circuit_file_name = os.path.join(circuit_loc, "Circuit_Instructions_{}_Qubits_{}_Trial.json".format(qubits, trial))
                 generate_random_circuit(circuit, circuit_file_name, depth)
