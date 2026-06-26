@@ -57,7 +57,7 @@ class DensityMatrixSolver:
                 self.noise.add_quantum_error(error, gate, [qubit])
         for gate in two_qubit_noise:
             for qubit_pair in two_qubit_noise[gate]:
-                error = kraus_error(convert_matrix_to_little_endian(two_qubit_noise[gate][qubit_pair]))
+                error = kraus_error(two_qubit_noise[gate][qubit_pair])
                 self.noise.add_quantum_error(error, gate, list(qubit_pair))
     
     def solve(self,

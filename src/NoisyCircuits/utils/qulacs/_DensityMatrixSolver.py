@@ -52,7 +52,7 @@ class DensityMatrixSolver:
         self.single_qubit_noise = single_qubit_noise
         self.instruction_list = instruction_list
         self.two_qubit_noise = {
-            gate : {pair : convert_matrix_to_little_endian(payload) for pair, payload in pairs.items()}
+            gate : {pair : payload for pair, payload in pairs.items()}
             for gate, pairs in two_qubit_noise.items()
         }
         os.environ["QULACS_NUM_THREADS"] = str(num_cores)

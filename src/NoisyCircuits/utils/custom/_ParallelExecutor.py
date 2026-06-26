@@ -35,10 +35,7 @@ class RemoteExecutor:
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
-        self.two_qubit_noise = {
-            gate: {pair: convert_matrix_to_little_endian(payload) for pair, payload in pairs.items()} 
-            for gate, pairs in two_qubit_noise.items()
-        }
+        self.two_qubit_noise = two_qubit_noise
         self.num_cores = num_cores
 
     def run(self,

@@ -84,10 +84,10 @@ if __name__ == "__main__":
     data = {}
 
     base_dir = os.path.join(os.path.expanduser("~"), "benchmarking_data/Fidelity")
-    data_logger = open(os.path.join(base_dir, "Fidelity_Benchmark_Consolidated_Results.txt"), "w")
+    data_logger = open(os.path.join(base_dir, "Fidelity_Benchmark_Consolidated_Results.txt"), "a")
 
-    data_logger.write("Qubits\t|\tDepth\t|\tTrajectories\t|\tBhattacharyya Coefficient\t|\tBhattacharyya Distance\t|\tHellinger Distance\t|\tJS Divergence\n")
-    data_logger.flush()
+    # data_logger.write("Qubits\t|\tDepth\t|\tTrajectories\t|\tBhattacharyya Coefficient\t|\tBhattacharyya Distance\t|\tHellinger Distance\t|\tJS Divergence\n")
+    # data_logger.flush()
 
     for qubit in range(2, max_qubits+1):
 
@@ -96,6 +96,10 @@ if __name__ == "__main__":
         qubit_data = {}
 
         qubit_loc = os.path.join(base_dir, f"{qubit}_Qubits")
+        if os.path.exists(qubit_loc):
+            print(f"Directory for {qubit} Qubits exists.")
+            continue
+
         os.mkdir(qubit_loc)
 
         circuit = QuantumCircuit(
