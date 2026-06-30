@@ -80,7 +80,7 @@ if __name__ == "__main__":
     noise_model = pickle.load(open(noise_model_loc, "rb"))
     trajectory_list = [10, 100, 500, 1000]
     max_qubits = 16
-    num_trials = 100
+    num_trials = 40
     data = {}
 
     base_dir = os.path.join(os.path.expanduser("~"), "benchmarking_data/Fidelity")

@@ -1,27 +1,20 @@
 #pragma once
 #include "TypeDefs.hpp"
 
-static inline double compute_probability(const complex128* __restrict__ state, const std::size_t dim, uint8 thread_count){
+static inline double get_single_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
     double probability = 0.0;
     #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
-    for (std::size_t i = 0; i < dim; i++){
-        probability += state[i].real() * state[i].real()  + state[i].imag() * state[i].imag();
-    }
-    return probability;
-}
-
-static inline std::vector<complex128> apply_single_qubit_noise_operator(const complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
-    std::vector<complex128> new_state = std::vector<complex128>(dim, complex128(0.0, 0.0));
-    #pragma omp parallel for num_threads(thread_count)
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
         const std::size_t j = i | stride;
         const complex128 s0 = state[i];
         const complex128 s1 = state[j];
-        new_state[i] += u00 * s0 + u01 * s1;
-        new_state[j] += u10 * s0 + u11 * s1;
+        const complex128 n0 = u00 * s0 + u01 * s1;
+        const complex128 n1 = u10 * s0 + u11 * s1;
+        probability += n0.real() * n0.real() + n0.imag() * n0.imag() 
+                        + n1.real() * n1.real() + n1.imag() * n1.imag();
     }
-    return new_state;
+    return probability;
 }
 
 static inline void apply_inplace_operator_1q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
@@ -46,9 +39,7 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
         complex128 u01 = oper[0][1];
         complex128 u10 = oper[1][0];
         complex128 u11 = oper[1][1];
-        std::vector<complex128> new_state = apply_single_qubit_noise_operator(state, u00, u01, u10, u11, dim, stride, thread_count);
-        double prob = compute_probability(new_state.data(), dim, thread_count);
-        probability_list[counter] = prob;
+        probability_list[counter] = get_single_qubit_noise_probability(state, u00, u01, u10, u11, dim, stride, thread_count);
         counter++;
     }
     std::discrete_distribution<> d(probability_list.begin(), probability_list.end());
@@ -67,28 +58,28 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
     }
 }
 
-static inline std::vector<complex128> apply_two_qubit_noise_operator(const complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
-    std::vector<complex128> new_state = std::vector<complex128>(dim, complex128(0.0,0.0));
-    #pragma omp parallel for num_threads(thread_count)
+static inline double get_two_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
+    double probability = 0.0;
+    #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
         const std::size_t pos = (i_s1 & m2) | ((i_s1 & ~m2) << 1);
-        const std::size_t idx00 = pos;
-        const std::size_t idx01 = pos | ull_q1;
-        const std::size_t idx10 = pos | ull_q2;
-        const std::size_t idx11 = pos | target_mask;
+        const complex128 s00 = state[pos];
+        const complex128 s01 = state[pos | ull_q1];
+        const complex128 s10 = state[pos | ull_q2];
+        const complex128 s11 = state[pos | target_mask];
 
-        const complex128 s00 = state[idx00];
-        const complex128 s01 = state[idx01];
-        const complex128 s10 = state[idx10];
-        const complex128 s11 = state[idx11];
+        const complex128 n00 = u00 * s00 + u01 * s01 + u02 * s10 + u03 * s11;
+        const complex128 n01 = u10 * s00 + u11 * s01 + u12 * s10 + u13 * s11;
+        const complex128 n10 = u20 * s00 + u21 * s01 + u22 * s10 + u23 * s11;
+        const complex128 n11 = u30 * s00 + u31 * s01 + u32 * s10 + u33 * s11;
 
-        new_state[idx00] += u00 * s00 + u01 * s01 + u02 * s10 + u03 * s11;
-        new_state[idx01] += u10 * s00 + u11 * s01 + u12 * s10 + u13 * s11;
-        new_state[idx10] += u20 * s00 + u21 * s01 + u22 * s10 + u23 * s11;
-        new_state[idx11] += u30 * s00 + u31 * s01 + u32 * s10 + u33 * s11;
+        probability += n00.real() * n00.real() + n00.imag() * n00.imag()
+                        + n01.real() * n01.real() + n01.imag() * n01.imag()
+                        + n10.real() * n10.real() + n10.imag() * n10.imag()
+                        + n11.real() * n11.real() + n11.imag() * n11.imag();
     }
-    return new_state;
+    return probability;
 }
 
 static inline void apply_inplace_operator_2q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
@@ -147,9 +138,7 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
         complex128 u31 = oper[3][1];
         complex128 u32 = oper[3][2];
         complex128 u33 = oper[3][3];
-        std::vector<complex128> new_state = apply_two_qubit_noise_operator(state, u00, u01, u02, u03, u10, u11, u12, u13, u20, u21, u22, u23, u30, u31, u32, u33, dim, iters, m1, m2, ull_q1, ull_q2, target_mask, thread_count);
-        double prob = compute_probability(new_state.data(), dim, thread_count);
-        probability_list[counter] = prob;
+        probability_list[counter] = get_two_qubit_noise_probability(state, u00, u01, u02, u03, u10, u11, u12, u13, u20, u21, u22, u23, u30, u31, u32, u33, dim, iters, m1, m2, ull_q1, ull_q2, target_mask, thread_count);
         counter++;
     }
     std::discrete_distribution<> d(probability_list.begin(), probability_list.end());

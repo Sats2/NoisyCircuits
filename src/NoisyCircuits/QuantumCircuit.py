@@ -129,7 +129,7 @@ class QuantumCircuit:
         self.single_qubit_error = {
                 q : {gate : payload["qubit_channel"] for gate, payload in gates.items()} for q, gates in single_error.items()
             }
-        if self.sim_backend in ["pennylane"]:
+        if self.sim_backend not in ["pennylane"]:
             self.two_qubit_error = {
                 gate : {pair : convert_matrix_to_little_endian(payload["qubit_channel"]) for pair, payload in pairs.items()} for gate, pairs in multi_error.items()
             }

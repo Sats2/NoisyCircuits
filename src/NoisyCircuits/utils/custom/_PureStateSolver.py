@@ -19,7 +19,6 @@ This module contains only one class `PureStateSolver` which has only one callabl
 """
 import numpy as np
 import simulator
-from NoisyCircuits.utils import compute_marginal_probs
 
 
 class PureStateSolver:

@@ -20,7 +20,6 @@ from qiskit_aer.noise import NoiseModel, kraus_error
 from qiskit_aer.library import SaveDensityMatrix
 from qiskit.quantum_info import partial_trace
 import numpy as np
-from NoisyCircuits.utils import convert_matrix_to_little_endian
 
 
 class DensityMatrixSolver:
