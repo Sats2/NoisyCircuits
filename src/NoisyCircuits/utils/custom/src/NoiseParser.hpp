@@ -1,6 +1,21 @@
+/**
+ * This header file is responsible for Parsing and storing qubit noise operators from python to C++ objects.
+ */
+
 #pragma once
 #include "TypeDefs.hpp"
 
+/**
+ * Function that converts a numpy array from python to a C++ usable matrix
+ * 
+ * Inputs:
+ *      array_object : const py::array&
+ *          Reference to the numpy array
+ * 
+ * Returns:
+ *      matrix
+ *          The matrix representing the noise operator retreived from the numpy array.
+ */
 static inline matrix to_matrix(const py::array& array_object){
     auto arr = py::array_t<complex128, py::array::c_style | py::array::forcecast>(array_object);
     auto a = arr.unchecked<2>();
@@ -14,6 +29,20 @@ static inline matrix to_matrix(const py::array& array_object){
     return noise_matrix;
 };
 
+/**
+ * Function that parses single qubit noise instructions from a python dictionary.
+ * 
+ * Inputs:
+ *      noise_dictionary : const py::dict&
+ *          Reference to the python dictionary containing single qubit noise instructions.
+ * 
+ * Returns: 
+ *      std::vector<noise_map>
+ *          A vector of an unordered map of gate-names and Kraus operators where the index of the vector represents the qubit number.
+ * 
+ * Notes:
+ *      See _post_process_single_qubit_errors method in BuildQubitGateModel.py and __init__ of QuantumCircuit.py for more information on the structure of the dictionary. The qubit numbers must be in ascending order for this processing to work.
+ */
 static inline std::vector<noise_map> parse_single_qubit_noise(const py::dict& noise_dictionary){
     std::vector<noise_map> noise_list;
     for (auto item : noise_dictionary){
@@ -35,6 +64,20 @@ static inline std::vector<noise_map> parse_single_qubit_noise(const py::dict& no
     return noise_list;
 }
 
+/**
+ * Function that parses two qubit noise instructions from a python dictionary.
+ * 
+ * Inputs:
+ *      noise_dictionary : const py::dict&
+ *          Reference to the python dictionary containing two qubit noise instructions.
+ * 
+ * Returns: 
+ *      noise_map2q
+ *          An unordered map of keys gate name and value of an unordered map of keys qubit pairs and value the set of noise operators.
+ * 
+ * Notes:
+ *      See _get_two_qubit_gate_noise_operators method in BuildQubitGateModel.py and __init__ of QuantumCircuit.py for more information on the structure of the dictionary.
+ */
 static inline noise_map2q parse_two_qubit_noise(const py::dict& noise_dictionary){
     noise_map2q noise_list;
     for (auto item : noise_dictionary){
@@ -56,6 +99,28 @@ static inline noise_map2q parse_two_qubit_noise(const py::dict& noise_dictionary
     return noise_list;
 }
 
+/**
+ * Function that gets the whole set of noise instructions for a given gate applied on a particular qubit(s)
+ * 
+ * Inputs:
+ *      gate_name : const std::string&
+ *          Reference to the gate name
+ *      single_qubit_instructions : const std::vector<noise_map>&
+ *          Reference to the entire single qubit noise instructions for system
+ *      two_qubit_instructions : const noise_map2q&
+ *          Reference to the entire two qubit noise instructions for the system
+ *      q1 : const std::size_t
+ *          Qubit Index 1
+ *      q2 : const std::size_t
+ *          Qubit Index 2
+ * 
+ * Returns:
+ *      std::vector<matrix> 
+ *          A vector of Kraus operators (complex valued matrices) that represent the noise instructions for the applied gate on a qubit or pair of qubits.
+ * 
+ * Notes:
+ *      Two qubit indices are queried for the inputs to maintain consistent flow with single qubit gates having q1 and q2 with the same value.
+ */
 std::vector<matrix> get_matrix_list_for_instruction(const std::string& gate_name, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t q1, const std::size_t q2){
     if (q1 == q2){
         std::vector<matrix> noise_matrix_list = single_qubit_instructions[q1].at(gate_name);

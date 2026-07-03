@@ -1,10 +1,31 @@
+/**
+ * This source code provides the functionality required to execute quantum circuit simulations from python through the NoisyCircuits library within a shared memory environment.
+ */
+
 #include "TypeDefs.hpp"
 #include "NoiseParser.hpp"
 #include "QuantumGates.hpp"
 #include "FunctionMapper.hpp"
 
-
-void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t num_qubits, complex128* __restrict__ state, bool return_state, uint8 thread_count){
+/**
+ * Function that inplace evolves the state of a quantum circuit using the pure statevector simulation (no noise)
+ * 
+ * Inputs:
+ *      instruction_list : const std::list<ItemEntry>&
+ *          Reference to the list of instructions that are required to build the quantum circuit. Each entry in the list is a struct of ItemEntry
+ *      num_qubits : std::size_t
+ *          Total number of qubits in the system
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      return_sate : bool
+ *          A flag to specify whether to return the statevector or the probabilities associated to the statevector.
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
+void pure_state_solver(const std::list<ItemEntry>& instruction_list, std::size_t num_qubits, complex128* __restrict__ state, bool return_state, uint8 thread_count){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
     state[0] = complex128(1.0, 0.0);
     for (const ItemEntry& instruction : instruction_list){
@@ -23,6 +44,29 @@ void pure_state_solver(const std::list<ItemEntry> instruction_list, std::size_t 
     }
 }
 
+/**
+ * Function that computes the fully evolved statevector for a single trajectory of the Monte-Carlo Wavefunction method.
+ * 
+ * Inputs:
+ *      instruction_list : const std::list<ItemEntry>&
+ *          Reference to the list of instructions that are required to build the quantum circuit. Each entry in the list is a struct of ItemEntry
+ *      single_qubit_instructions : const std::vector<noise_map>& 
+ *          Reference to entire set of single qubit noise instructions (for all gates and qubits)
+ *      two_qubit_instructions : const noise_map2q&
+ *          Reference to entire set of two qubit noise instructions (for all gates and qubits)
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the system
+ *      gate_map : std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, const unsigned short)>
+ *          Unordered map that has a key - value pair of gate name (string) and the function that applies the gate          
+ *      noise_map : std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, const unsigned short)>
+ *          Unordered map that has a key - value pair of gate name (string) and the function which applies the required noise operators
+ *      seed : const unsigned short
+ *          Unique seed value for the trajectory to setup the RNG engine
+ * 
+ * Returns:
+ *      std::vector<complex128>
+ *          Probabilities of the statevector from the trajectory evolution.
+ */
 std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)>& noise_function_map, uint8 seed){
     std::mt19937_64 trajectory_engine(seed);
     std::vector<complex128> trajectory_state(std::size_t{1} << num_qubits, 0.0);
@@ -43,6 +87,28 @@ std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instructio
     return trajectory_state;
 }
 
+/**
+ * Function that performs the Monte-Carlo Wavefunction Method to approximate the density matrix simulation of a given quantum circuit with a noise instruction
+ * 
+ * Inputs:
+ *      instruction_list : const std::list<ItemEntry>
+ *          The list of instructions that are required to build the quantum circuit. Each entry in the list is a struct of ItemEntry
+ *      state : complex128*
+ *          Pointer to the statevector (or in this case the pointer to the vector that houses the probabilities from the different trajectories)
+ *      single_qubit_instructions : const std::vector<noise_map>&
+ *          Reference to the set of single qubit noise instructions
+ *      two_qubit_instructions : const noise_map2q&
+ *          Reference to the set of two qubit noise instructions
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the system
+ *      num_trajectories : const int
+ *          Total number of trajectories to simulate
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, const int num_trajectories, uint8 thread_count){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> noise_function_map = noise_function_mapper();
@@ -60,6 +126,32 @@ void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list
     }
 }
 
+/**
+ * Main method to act as interface to simulate a given quantum circuit with/without noise
+ * 
+ * Inputs:
+ *      instructions : py::list
+ *          List of instructions to build the quantum circuit obtained from python
+ *      statevector : py::array_t<complex128>
+ *          A numpy array of dtype np.complex128 for inplace modification of the statevector
+ *      single_qubit_noise_instructions : py::dict
+ *          Dictionary of single qubit noise instructions obtained from python
+ *      two_qubit_noise_instructions : py::dict
+ *          Dictionary of two qubit noise instructions obtained from python
+ *      num_qubits : std::size_t
+ *          Total number of qubits in the system
+ *      noisy : bool
+ *          Flag that is used to determine whether to perform a noise-free or noise-aware simulation
+ *      num_trajectories : const unsigned short
+ *          Total number of trajectories to simulate when performing the noise-aware simulations
+ *      return_state : bool
+ *          Flag used for pure statevector (noise-free) simulations to determine whether to return the state or it's probabilities
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute computation
+ * 
+ * Returns:
+ *      None
+ */
 void simulate_circuit(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, bool noisy, uint8 num_trajectories, bool return_state, uint8 thread_count){
     std::list<ItemEntry> instruction_list;
     for (auto item : instructions){
@@ -105,6 +197,9 @@ void simulate_circuit(py::list instructions, py::array_t<complex128> statevector
     }
 }
 
+/**
+ * Binder for syncing C++ code as a shared library to python.
+ */
 PYBIND11_MODULE(simulator, m){
     m.doc() = "Module for simulating quantum circuits with noise using the Monte Carlo Wavefunction method.";
     m.def("simulate_circuit", &simulate_circuit, "Simulates a quantum circuit with and without noise.", py::arg("instructions"), py::arg("statevector"), py::arg("single_qubit_noise_instructions"), py::arg("two_qubit_noise_instructions"), py::arg("num_qubits"), py::arg("noisy"), py::arg("num_trajectories"), py::arg("return_state"), py::arg("thread_count"));

@@ -1,7 +1,24 @@
+/**
+ * This source code applies the measurement noise to an array of probabilities.
+ */
+
 #include "TypeDefs.hpp"
 
-using real_matrix = std::vector<std::vector<double>>;
-
+/**
+ * Function that retrieves the single qubit measurement error matrices from a python dictionary.
+ * 
+ * Inputs:
+ *      noise_dictionary : const py::dict&
+ *          Noise dictionary from python containing single qubit measurement error matrices.
+ * 
+ * Returns:
+ *      std::vector<real_matrix>
+ *          A vector of real valued (double) matrices that contain the measurement error operators.
+ * 
+ * Notes:
+ *      The input dictionary is a python dictionary whose key-value pairs are qubit_number-measurement_noise (see _extract_measurement_errors method in BuildQubitGateModel.py for more information). The dictionary keys must always be in the ascending order of the qubit numbers.
+ *      The return is a vector of real matrices that shift the probabilities according to the observed behaviour of quantum hardware. The index of this vector corresponds to the qubit number and the matrix is the measurement noise.
+ */
 std::vector<real_matrix> get_measurement_error_matrices(const py::dict& noise_dictionary){
     std::vector<real_matrix> noise_matrix_list;
     for (auto item : noise_dictionary){
@@ -21,6 +38,24 @@ std::vector<real_matrix> get_measurement_error_matrices(const py::dict& noise_di
     return noise_matrix_list;
 }
 
+/**
+ * Function that applies the single qubit measurement noise operator inplace to the probabilities of the simulated quantum circuit.
+ * 
+ * Inputs:
+ *      probabilities : double*
+ *          Pointer to the probabilities of the quantum circuit
+ *      measurement_noise_operator : real_matrix
+ *          Single qubit measurement noise operator.
+ *      qubit : const int
+ *          Qubit index
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit.
+ *      num_threads : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_measurement_error_for_qubit(double * __restrict__ probabilities, real_matrix measurement_noise_operator, const int qubit, const std::size_t num_qubits, const uint8 num_threads){
     double m00 = measurement_noise_operator[0][0];
     double m01 = measurement_noise_operator[0][1];
@@ -39,6 +74,24 @@ static inline void apply_measurement_error_for_qubit(double * __restrict__ proba
     }
 }
 
+/**
+ * Main function that controls pre-processing noise and applying noise to the probabilities.
+ * 
+ * Inputs:
+ *      probabilities_array : py::array_t<double>
+ *          numpy array containing the probabilities of the simulated quantum circuit
+ *      measurement_noise : py::dict
+ *          Noise dictionary from python containing single qubit measurement error matrices.
+ *      qubit_list : py::list
+ *          List of qubits that are measured.
+ *      num_qubits : std::size_t
+ *          The total number of qubits in the circuit
+ *      num_threads : unsigned short
+ *          The number of threads to distribute computation
+ * 
+ * Returns:
+ *      None
+ */
 void apply_measurement_error(py::array_t<double> probabilities_array, py::dict measurement_noise, py::list qubit_list, std::size_t num_qubits, uint8 num_threads){
     std::vector<int> qubit_list_cpp;
     for (auto item : qubit_list){
@@ -54,6 +107,9 @@ void apply_measurement_error(py::array_t<double> probabilities_array, py::dict m
     }
 }
 
+/**
+ * Binder for syncing C++ code as a shared library to python.
+ */
 PYBIND11_MODULE(measurement_error_applicator, m){
     m.doc() = "Module that applies measurement error to a probability distribution over quantum states given a noise model.";
     m.def("apply_measurement_error", &apply_measurement_error, "Applies measurement error to a probability distribution over quantum states", py::arg("probabilities_array"), py::arg("measurement_noise"), py::arg("qubit_list"), py::arg("num_qubits"), py::arg("num_threads"));

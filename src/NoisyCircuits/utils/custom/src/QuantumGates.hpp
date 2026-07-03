@@ -1,6 +1,40 @@
+/**
+ * This header file consists of all necessary functions to apply quantum gates and noise operators to a statevector. 
+ * See the article: Díaz,  G. J., Steffenel,  L. A., Barrios,  C. J., & Couturier,  J. F. (2024). How to Build a Software Quantum Simulator. Preprints. https://doi.org/10.20944/preprints202409.1497.v1 for more information on the logic of applying local gate matrices to an entire statevector.
+ */
+
 #pragma once
 #include "TypeDefs.hpp"
 
+// --------------------------------------------------------------------------------------------------------------------------------------
+// Code Section for Noise Application
+// --------------------------------------------------------------------------------------------------------------------------------------
+
+
+/**
+ * Function that computes the probability of a Kraus operator on the state without the need for explicit buffer states for single qubit gates
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      u00 : const complex128&
+ *          Reference to the (0,0) element of the Kraus Operator
+ *      u01 : const complex128&
+ *          Reference to the (0,1) element of the Kraus Operator
+ *      u10 : const complex128&
+ *          Reference to the (1,0) element of the Kraus Operator
+ *      u11 : const complex128&
+ *          Reference to the (1,1) element of the Kraus Operator
+ *      dim : const std::size_t
+ *          The total number of elements in the statevector (2^n for n qubits)
+ *      stride : const std::size_t
+ *          Skipping value for updating the statevector (2^q for a gate applied to qubit q)
+ *      thread_count : const unsigned short
+ * 
+ * Returns
+ *      double
+ *          The probability of occurance for a Kraus Operator for the statevector - p = ⟨ψ|K|ψ⟩
+ */
 static inline double get_single_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
     double probability = 0.0;
     #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
@@ -17,6 +51,29 @@ static inline double get_single_qubit_noise_probability(complex128* __restrict__
     return probability;
 }
 
+/**
+ * Function that applies the selected Kraus operator to the statevector inplace.
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      u00 : const complex128&
+ *          Reference to the (0,0) element of the Kraus Operator
+ *      u01 : const complex128&
+ *          Reference to the (0,1) element of the Kraus Operator
+ *      u10 : const complex128&
+ *          Reference to the (1,0) element of the Kraus Operator
+ *      u11 : const complex128&
+ *          Reference to the (1,1) element of the Kraus Operator
+ *      dim : const std::size_t
+ *          The total number of elements in the statevector (2^n for n qubits)
+ *      stride : const std::size_t
+ *          Skipping value for updating the statevector (2^q for a gate applied to qubit q)
+ *      thread_count : const unsigned short
+ * 
+ * Returns
+ *      None
+ */
 static inline void apply_inplace_operator_1q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
@@ -29,6 +86,28 @@ static inline void apply_inplace_operator_1q(complex128* __restrict__ state, con
     }
 }
 
+/**
+ * Function that updates the statevector with a noise operator for single qubit gates
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Index of the qubit to which the noise is applied to
+ *      q_null : const std::size_t
+ *          Unused - Left to ensure noise operation functions have the same function type signature.
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      noise_operators : std::vector<matrix>&
+ *          Reference to the set of Kraus Operators that are to be used
+ *      traj_engine : std::mt19937_64&
+ *          Pre-seeded RNG Engine for random selection of a Kraus Operator
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute tasks
+ * 
+ * Returns
+ *      None
+ */
 static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
     int counter = 0;
     const std::size_t dim = std::size_t{1} << num_qubits;
@@ -58,6 +137,65 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
     }
 }
 
+/**
+ * Function that computes the probability of a Kraus operator on the state without the need for explicit buffer states for two qubit gates
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      u00 : const complex128&
+ *          Reference to the (0,0) element of the Kraus Operator
+ *      u01 : const complex128&
+ *          Reference to the (0,1) element of the Kraus Operator
+ *      u02 : const complex128&
+ *          Reference to the (0,2) element of the Kraus Operator
+ *      u03 : const complex128&
+ *          Reference to the (0,3) element of the Kraus Operator
+ *      u10 : const complex128&
+ *          Reference to the (1,0) element of the Kraus Operator
+ *      u11 : const complex128&
+ *          Reference to the (1,1) element of the Kraus Operator
+ *      u12 : const complex128&
+ *          Reference to the (1,2) element of the Kraus Operator
+ *      u13 : const complex128&
+ *          Reference to the (1,3) element of the Kraus Operator
+ *      u20 : const complex128&
+ *          Reference to the (2,0) element of the Kraus Operator
+ *      u21 : const complex128&
+ *          Reference to the (2,1) element of the Kraus Operator
+ *      u22 : const complex128&
+ *          Reference to the (2,2) element of the Kraus Operator
+ *      u23 : const complex128&
+ *          Reference to the (2,3) element of the Kraus Operator
+ *      u30 : const complex128&
+ *          Reference to the (3,0) element of the Kraus Operator
+ *      u31 : const complex128&
+ *          Reference to the (3,1) element of the Kraus Operator
+ *      u32 : const complex128&
+ *          Reference to the (3,2) element of the Kraus Operator
+ *      u33 : const complex128&
+ *          Reference to the (3,3) element of the Kraus Operator
+ *      dim : const std::size_t
+ *          Total number of entries in the statevector (2^n for n qubits)
+ *      iters : const std::size_t
+ *          Total number of iterations required to update the statevector
+ *      m1 : const std::size_t
+ *          Bit-mask of all positions below the lower target qubit --> open a 0-bit gap at q_min when expanding the loop index.
+ *      m2 : const std::size_t
+ *          Bit-mask of all positions below the higher target qubit shifted down by 1 to account for the gap created by m1
+ *      ull_q1 : const std::size_t
+ *          Single-bit mask for qubit q1
+ *      ull_q2 : const std::size_t
+ *          Single-bit mask for qubit q1
+ *      target_mask : const std::size_t
+ *          Combined mask with both target-qubit bits set
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute tasks
+ * 
+ * Returns:
+ *      double
+ *          The probability of occurance for a Kraus Operator for the statevector - p = ⟨ψ|K|ψ⟩
+ */
 static inline double get_two_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
     double probability = 0.0;
     #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
@@ -82,6 +220,64 @@ static inline double get_two_qubit_noise_probability(complex128* __restrict__ st
     return probability;
 }
 
+/**
+ * Function applies a selected Kraus operator to the statevector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      u00 : const complex128&
+ *          Reference to the (0,0) element of the Kraus Operator
+ *      u01 : const complex128&
+ *          Reference to the (0,1) element of the Kraus Operator
+ *      u02 : const complex128&
+ *          Reference to the (0,2) element of the Kraus Operator
+ *      u03 : const complex128&
+ *          Reference to the (0,3) element of the Kraus Operator
+ *      u10 : const complex128&
+ *          Reference to the (1,0) element of the Kraus Operator
+ *      u11 : const complex128&
+ *          Reference to the (1,1) element of the Kraus Operator
+ *      u12 : const complex128&
+ *          Reference to the (1,2) element of the Kraus Operator
+ *      u13 : const complex128&
+ *          Reference to the (1,3) element of the Kraus Operator
+ *      u20 : const complex128&
+ *          Reference to the (2,0) element of the Kraus Operator
+ *      u21 : const complex128&
+ *          Reference to the (2,1) element of the Kraus Operator
+ *      u22 : const complex128&
+ *          Reference to the (2,2) element of the Kraus Operator
+ *      u23 : const complex128&
+ *          Reference to the (2,3) element of the Kraus Operator
+ *      u30 : const complex128&
+ *          Reference to the (3,0) element of the Kraus Operator
+ *      u31 : const complex128&
+ *          Reference to the (3,1) element of the Kraus Operator
+ *      u32 : const complex128&
+ *          Reference to the (3,2) element of the Kraus Operator
+ *      u33 : const complex128&
+ *          Reference to the (3,3) element of the Kraus Operator
+ *      dim : const std::size_t
+ *          Total number of entries in the statevector (2^n for n qubits)
+ *      iters : const std::size_t
+ *          Total number of iterations required to update the statevector
+ *      m1 : const std::size_t
+ *          Bit-mask of all positions below the lower target qubit --> open a 0-bit gap at q_min when expanding the loop index.
+ *      m2 : const std::size_t
+ *          Bit-mask of all positions below the higher target qubit shifted down by 1 to account for the gap created by m1
+ *      ull_q1 : const std::size_t
+ *          Single-bit mask for qubit q1
+ *      ull_q2 : const std::size_t
+ *          Single-bit mask for qubit q1
+ *      target_mask : const std::size_t
+ *          Combined mask with both target-qubit bits set
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute tasks
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_inplace_operator_2q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
@@ -104,10 +300,57 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
     }
 }
 
+/**
+ * Function to update the statevector with noise evolution after applying a unitary operation
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Qubit index 1
+ *      q2 : const std::size_t
+ *          Qubit index 2
+ *      num_qubits : const std::size_t
+ *          Total number of qubits
+ *      noise_operators : const std::vector<matrix>&
+ *          Kraus Operators
+ *      traj_engine : std::mt19937_64&
+ *          Pre-seeded RNG engine
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute computation
+ * 
+ * Returns:
+ *      None
+ * 
+ * Notes:
+ *      This function is left blank as intended. Noise cannot be applied to arbitrary unitary operators acting on the circuit. This is kept to ensure consistency within the noise maps.
+ */
 static inline void apply_noise_for_unitary_matrix(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
 
 }
 
+/**
+ * Function that evoles the state of the circuit with the noise operator for a two qubit gate
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Control Qubit
+ *      q2 : const std::size_t
+ *          Target Qubit
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      noise_operators : const std::vector<matrix>& 
+ *          Reference to the set of Kraus Operators for the two qubit gate acting on qubits (q1, q2)
+ *      traj_engine : std::mt19937_64&
+ *          Pre-seeded RNG engine to randomly select the Kraus Operator based on the Kraus probabilities
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computations
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
     const int num_operators = noise_operators.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
@@ -169,6 +412,34 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
     }
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------
+// Code Section for Quantum Gate Application
+// --------------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Function that applies the X (NOT) Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -183,6 +454,30 @@ static inline void apply_X_gate(complex128* __restrict__ state, const std::size_
     }
 }
 
+/**
+ * Function that applies the RZ Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Angle of rotation
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -199,6 +494,30 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+/**
+ * Function that applies the RX Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Angle of rotation
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -215,6 +534,30 @@ static inline void apply_RX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+/**
+ * Function that applies the SX Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -231,6 +574,30 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+/**
+ * Function that applies the RY Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Angle of rotation
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_RY_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -247,6 +614,30 @@ static inline void apply_RY_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+/**
+ * Function that applies the Hadamard Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_H_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -262,6 +653,30 @@ static inline void apply_H_gate(complex128* __restrict__ state, const std::size_
     }
 }
 
+/**
+ * Function that applies the Phase Gate to the qubit q and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q : const std::size_t
+ *          Qubit index to which to apply the gate
+ *      q_null : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Phase Shift angle
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_P_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -278,6 +693,30 @@ static inline void apply_P_gate(complex128* __restrict__ state, const std::size_
     }
 }
 
+/**
+ * Function that applies the CZ Gate to the qubit q2 with qubit q1 as the control and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Control Qubit
+ *      q2 : const std::size_t
+ *          Target Qubit
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -292,6 +731,30 @@ static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+/**
+ * Function that applies the RZZ Gate to the qubits q1 and q2, and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Qubit Index 1
+ *      q2 : const std::size_t
+ *          Qubit Index 2
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Angle of rotation
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -323,6 +786,30 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
+/**
+ * Function that applies the ECR Gate to the qubit q2 with qubit q1 as the control and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Control Qubit
+ *      q2 : const std::size_t
+ *          Target Qubit
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -354,6 +841,30 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
     }
 }
 
+/**
+ * Function that applies the CX Gate to the qubit q2 with qubit q1 as the control and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Control Qubit
+ *      q2 : const std::size_t
+ *          Target Qubit
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_CX_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -377,6 +888,30 @@ static inline void apply_CX_gate(complex128* __restrict__ state, const std::size
     }
 }
 
+/**
+ * Function that applies the SWAP Gate to qubits q1 and q2 and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Qubit Index 1
+ *      q2 : const std::size_t
+ *          Qubit Index 2
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          Unused variable, kept for type signature consistency
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Unused variable, kept for type signature consistency
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_SWAP_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -400,7 +935,30 @@ static inline void apply_SWAP_gate(complex128* __restrict__ state, const std::si
     }
 }
 
-
+/**
+ * Function that applies an arbitrary unitary operator and modifies the state vector inplace
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      q1 : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      q2 : const std::size_t
+ *          Unused variable, kept for type signature consistency
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the circuit
+ *      theta : const double
+ *          Unused variable, kept for type signature consistency
+ *      U : const matrix&
+ *          The unitary operator that is to be applied to the circuit
+ *      target_qubits : const std::vector<std::size_t>& 
+ *          Set of qubits to which the unitary operator is to be applied to, must be in ascending order
+ *      thread_count : const unsigned short
+ *          Number of threads to distribute the computation
+ * 
+ * Returns:
+ *      None
+ */
 static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
     const std::size_t num_targets = target_qubits.size();
     const std::size_t dim = std::size_t{1} << num_qubits;

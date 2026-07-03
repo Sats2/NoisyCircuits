@@ -1,9 +1,36 @@
+/**
+ * This source code provides the functionality required to execute quantum circuit simulations from python through the NoisyCircuits library within a distributed memory environment.
+ */
+
 #include "TypeDefs.hpp"
 #include "NoiseParser.hpp"
 #include "QuantumGates.hpp"
 #include "FunctionMapper.hpp"
 
 
+/**
+ * Function that computes the fully evolved statevector for a single trajectory of the Monte-Carlo Wavefunction method.
+ * 
+ * Inputs:
+ *      state : complex128*
+ *          Pointer to the statevector
+ *      instruction_list : const std::list<ItemEntry>&
+ *          Reference to the list of instructions that are required to build the quantum circuit. Each entry in the list is a struct of ItemEntry
+ *      single_qubit_instructions : const std::vector<noise_map>& 
+ *          Reference to entire set of single qubit noise instructions (for all gates and qubits)
+ *      two_qubit_instructions : const noise_map2q&
+ *          Reference to entire set of two qubit noise instructions (for all gates and qubits)
+ *      num_qubits : const std::size_t
+ *          Total number of qubits in the system
+ *      seed : const unsigned short
+ *          Unique seed value for the trajectory to setup the RNG engine
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute the computation
+ * 
+ * Returns:
+ *      std::vector<complex128>
+ *          Probabilities of the statevector from the trajectory evolution.
+ */
 void simulate_circuit_instance(complex128* __restrict__ state, const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, uint8 seed, uint8 thread_count){
     std::mt19937_64 trajectory_engine(seed);
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
@@ -24,6 +51,28 @@ void simulate_circuit_instance(complex128* __restrict__ state, const std::list<I
     }
 }
 
+/**
+ * Main method to act as interface to simulate a single trajectory of the Monte-Carlo Wavefunction Method within a single MPI Rank.
+ * 
+ * Inputs:
+ *      instructions : py::list
+ *          List of instructions to build the quantum circuit obtained from python
+ *      statevector : py::array_t<complex128>
+ *          A numpy array of dtype np.complex128 for inplace modification of the statevector
+ *      single_qubit_noise_instructions : py::dict
+ *          Dictionary of single qubit noise instructions obtained from python
+ *      two_qubit_noise_instructions : py::dict
+ *          Dictionary of two qubit noise instructions obtained from python
+ *      num_qubits : std::size_t
+ *          Total number of qubits in the system
+ *      seed : const unsigned short
+ *          Unique seed value for the RNG engine for the trajectory
+ *      thread_count : const unsigned short
+ *          Total number of threads to distribute computation
+ * 
+ * Returns:
+ *      None
+ */
 void run_trajectory(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, uint8 seed, uint8 thread_count){
     std::list<ItemEntry> instruction_list;
     for (auto item : instructions){
@@ -62,6 +111,9 @@ void run_trajectory(py::list instructions, py::array_t<complex128> statevector, 
     simulate_circuit_instance(state, instruction_list, single_qubit_instructions, two_qubit_instructions, num_qubits, seed, thread_count);
 }
 
+/**
+ * Binder for syncing C++ code as a shared library to python.
+ */
 PYBIND11_MODULE(simulator_mpi, m){
     m.doc() = "Module for simulating a single trajectory of the Monte-Carlo Wavefunction method acroos an entire node within an MPI environment.";
     m.def("run_trajectory", &run_trajectory, "Run a single trajectory of the noisy quantum circuit simulation across an entire node.", py::arg("instructions"), py::arg("statevector"), py::arg("single_qubit_instructions"), py::arg("two_qubit_instructions"), py::arg("num_qubits"), py::arg("seed"), py::arg("thread_count"));

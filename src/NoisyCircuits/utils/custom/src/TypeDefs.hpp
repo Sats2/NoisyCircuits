@@ -1,3 +1,7 @@
+/**
+ * This header file is responsible for library imports and custom data type definitions.
+ */
+
 #pragma once
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -12,6 +16,9 @@
 
 namespace py = pybind11;
 
+/**
+ * Struct necessary to store information on 2 Qubit Noise operators.
+ */
 struct pair_hash{
     std::size_t operator()(const std::pair<int, int>& p) const noexcept {
         std::size_t h1 = std::hash<int>{}(p.first);
@@ -21,11 +28,16 @@ struct pair_hash{
 };
 
 using complex128 = std::complex<double>;
+// Confusing name --> Needs a name change and will be corrected later.
 using uint8 = const unsigned short;
 using matrix = std::vector<std::vector<complex128>>;
+using real_matrix = std::vector<std::vector<double>>;
 using noise_map = std::unordered_map<std::string, std::vector<matrix>>;
 using noise_map2q = std::unordered_map<std::string, std::unordered_map<std::pair<int, int>, std::vector<matrix>, pair_hash>>;
 
+/**
+ * Struct for holding information regarding the quantum circuit.
+ */
 struct ItemEntry{
     std::string gate_name;
     std::vector<std::size_t> qubits;

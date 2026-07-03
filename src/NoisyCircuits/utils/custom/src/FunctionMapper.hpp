@@ -1,8 +1,21 @@
+/**
+ * This header file provides code to generate maps between the gate name and it's functions.
+*/
+
 #pragma once
 #include "TypeDefs.hpp"
 #include "QuantumGates.hpp"
 
-
+/*
+ * Function that maps the gate name to the function that applies the gate to the state
+ * 
+ * Inputs:
+ *      None
+ * 
+ * Returns:
+ *      std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, unsigned short)
+ *          Map whose key is the name of the gate as a string and the return is the function call to apply the gate.
+ */
 static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_function_mapper(){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map;
     gate_map["x"] = apply_X_gate;
@@ -21,6 +34,16 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
     return gate_map;
 }
 
+/*
+ * Function that maps the gate to the correct noise function applicator.
+ * 
+ * Inputs:
+ *      None
+ * 
+ * Returns:
+ *      std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std:size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, unsigned short)
+ *          Map whose key is the gate name as a string and the return is the noise application function.
+ */
 static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> noise_function_mapper(){
     std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> apply_noise_map;
     std::list<std::string> single_qubit_gate_names = {

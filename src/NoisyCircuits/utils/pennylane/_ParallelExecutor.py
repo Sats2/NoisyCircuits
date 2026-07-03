@@ -9,7 +9,7 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import pennylane as qml
 import numpy as np
 import ray
-from NoisyCircuits.utils import compute_trajectory_probs_single, compute_trajectory_probs_two_q, update_state_inplace_1q, update_state_inplace_2q
+from NoisyCircuits.utils import compute_trajectory_probs_single, compute_trajectory_probs_two_q, update_state_inplace_1q, update_state_inplace_2q, convert_state_endianess
 
 
 @ray.remote
@@ -87,9 +87,11 @@ class RemoteExecutor:
             The updated state of the qubit system after applying the noise operator.
         """
         ops = self.single_qubit_noise[qubit[0]][1][gate]
+        convert_state_endianess(state)
         kraus_probs = compute_trajectory_probs_single(ops, state, qubit[0])
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
         update_state_inplace_1q(ops[chosen_index], state, qubit[0])
+        convert_state_endianess(state)
         return state / np.sqrt(kraus_probs[chosen_index])
     
     def _apply_two_qubit_noise(self,
@@ -116,9 +118,11 @@ class RemoteExecutor:
         """
         qubit_pair = tuple(qubit_index)
         ops = self.two_qubit_noise[self.two_qubit_noise_index[gate]][1][qubit_pair]
+        convert_state_endianess(state)
         kraus_probs = compute_trajectory_probs_two_q(ops, state, qubit_index)
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
         update_state_inplace_2q(ops[chosen_index], state, qubit_index[0], qubit_index[1])
+        convert_state_endianess(state)
         return state / np.sqrt(kraus_probs[chosen_index])
     
     def _apply_no_noise(self,
