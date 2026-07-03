@@ -443,12 +443,22 @@ class GetNoiseModel:
         }
         for qubit, items in enumerate(self.calibration_json["qubits"]):
             add_column_data["qubits"].append(qubit)
-            for entry in items:
-                if entry["name"] in add_column_data.keys():
-                    add_column_data[entry["name"]].append(entry["value"])
+            entries = {entry["name"]: entry["value"] for entry in items}
+            for name in ("T1", "T2", "prob_meas0_prep1", "prob_meas1_prep0"):
+                add_column_data[name].append(entries.get(name, np.nan))
         data["Qubit"] = add_column_data["qubits"]
-        data["T1 (us)"] = add_column_data["T1"]
-        data["T2 (us)"] = add_column_data["T2"]
+        t1 = pd.to_numeric(add_column_data["T1"], errors="coerce")
+        t2 = pd.to_numeric(add_column_data["T2"], errors="coerce")
+        t2_imputed_mask = np.isnan(t2) & ~np.isnan(t1)
+        t1_imputed_mask = np.isnan(t1) & ~np.isnan(t2)
+        t2 = np.where(t2_imputed_mask, t1, t2)
+        t1 = np.where(t1_imputed_mask, t2, t1)
+        data["T1 (us)"] = t1
+        data["T2 (us)"] = t2
+        if t2_imputed_mask.any():
+            print(f"Imputed T2 = T1 for qubit(s): {list(data.index[t2_imputed_mask])}")
+        if t1_imputed_mask.any():
+            print(f"Imputed T1 = T2 for qubit(s): {list(data.index[t1_imputed_mask])}")
         data["Prob meas 0 prep 1"] = add_column_data["prob_meas0_prep1"]
         data["Prob meas 1 prep 0"] = add_column_data["prob_meas1_prep0"]
         for gate in self._basis_gates[1]:
