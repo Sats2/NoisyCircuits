@@ -29,13 +29,13 @@
  *          The total number of elements in the statevector (2^n for n qubits)
  *      stride : const std::size_t
  *          Skipping value for updating the statevector (2^q for a gate applied to qubit q)
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  * 
  * Returns
  *      double
  *          The probability of occurance for a Kraus Operator for the statevector - p = ⟨ψ|K|ψ⟩
  */
-static inline double get_single_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
+static inline double get_single_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, cuint thread_count){
     double probability = 0.0;
     #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
@@ -69,12 +69,12 @@ static inline double get_single_qubit_noise_probability(complex128* __restrict__
  *          The total number of elements in the statevector (2^n for n qubits)
  *      stride : const std::size_t
  *          Skipping value for updating the statevector (2^q for a gate applied to qubit q)
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  * 
  * Returns
  *      None
  */
-static inline void apply_inplace_operator_1q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, uint8 thread_count){
+static inline void apply_inplace_operator_1q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const std::size_t dim, const std::size_t stride, cuint thread_count){
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t pair = 0; pair < (dim >> 1); ++pair){
         const std::size_t i = (pair & (stride - 1)) | ((pair & ~(stride - 1)) << 1);
@@ -102,13 +102,13 @@ static inline void apply_inplace_operator_1q(complex128* __restrict__ state, con
  *          Reference to the set of Kraus Operators that are to be used
  *      traj_engine : std::mt19937_64&
  *          Pre-seeded RNG Engine for random selection of a Kraus Operator
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute tasks
  * 
  * Returns
  *      None
  */
-static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
+static inline void apply_single_qubit_noise(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, cuint thread_count){
     int counter = 0;
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
@@ -189,14 +189,14 @@ static inline void apply_single_qubit_noise(complex128* __restrict__ state, cons
  *          Single-bit mask for qubit q1
  *      target_mask : const std::size_t
  *          Combined mask with both target-qubit bits set
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute tasks
  * 
  * Returns:
  *      double
  *          The probability of occurance for a Kraus Operator for the statevector - p = ⟨ψ|K|ψ⟩
  */
-static inline double get_two_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
+static inline double get_two_qubit_noise_probability(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, cuint thread_count){
     double probability = 0.0;
     #pragma omp parallel for reduction(+:probability) num_threads(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
@@ -272,13 +272,13 @@ static inline double get_two_qubit_noise_probability(complex128* __restrict__ st
  *          Single-bit mask for qubit q1
  *      target_mask : const std::size_t
  *          Combined mask with both target-qubit bits set
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute tasks
  * 
  * Returns:
  *      None
  */
-static inline void apply_inplace_operator_2q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, uint8 thread_count){
+static inline void apply_inplace_operator_2q(complex128* __restrict__ state, const complex128& __restrict__ u00, const complex128& __restrict__ u01, const complex128& __restrict__ u02, const complex128& __restrict__ u03, const complex128& __restrict__ u10, const complex128& __restrict__ u11, const complex128& __restrict__ u12, const complex128& __restrict__ u13, const complex128& __restrict__ u20, const complex128& __restrict__ u21, const complex128& __restrict__ u22, const complex128& __restrict__ u23, const complex128& __restrict__ u30, const complex128& __restrict__ u31, const complex128& __restrict__ u32, const complex128& __restrict__ u33, const std::size_t dim, const std::size_t iters, const std::size_t m1, const std::size_t m2, const std::size_t ull_q1, const std::size_t ull_q2, const std::size_t target_mask, cuint thread_count){
     #pragma omp parallel for num_threads(thread_count)
     for (std::size_t i = 0; i < iters; ++i){
         const std::size_t i_s1 = (i & m1) | ((i & ~m1) << 1);
@@ -316,7 +316,7 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
  *          Kraus Operators
  *      traj_engine : std::mt19937_64&
  *          Pre-seeded RNG engine
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute computation
  * 
  * Returns:
@@ -325,7 +325,7 @@ static inline void apply_inplace_operator_2q(complex128* __restrict__ state, con
  * Notes:
  *      This function is left blank as intended. Noise cannot be applied to arbitrary unitary operators acting on the circuit. This is kept to ensure consistency within the noise maps.
  */
-static inline void apply_noise_for_unitary_matrix(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
+static inline void apply_noise_for_unitary_matrix(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, cuint thread_count){
 
 }
 
@@ -345,13 +345,13 @@ static inline void apply_noise_for_unitary_matrix(complex128* __restrict__ state
  *          Reference to the set of Kraus Operators for the two qubit gate acting on qubits (q1, q2)
  *      traj_engine : std::mt19937_64&
  *          Pre-seeded RNG engine to randomly select the Kraus Operator based on the Kraus probabilities
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computations
  * 
  * Returns:
  *      None
  */
-static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, uint8 thread_count){
+static inline void apply_two_qubit_noise(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const std::vector<matrix>& noise_operators, std::mt19937_64& traj_engine, cuint thread_count){
     const int num_operators = noise_operators.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
@@ -434,13 +434,13 @@ static inline void apply_two_qubit_noise(complex128* __restrict__ state, const s
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_X_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     #pragma omp parallel for num_threads(thread_count)
@@ -472,13 +472,13 @@ static inline void apply_X_gate(complex128* __restrict__ state, const std::size_
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -512,13 +512,13 @@ static inline void apply_RZ_gate(complex128* __restrict__ state, const std::size
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_RX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -552,13 +552,13 @@ static inline void apply_RX_gate(complex128* __restrict__ state, const std::size
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_SX_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     constexpr complex128 post_i = complex128(0.5, 0.5);
@@ -592,13 +592,13 @@ static inline void apply_SX_gate(complex128* __restrict__ state, const std::size
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_RY_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_RY_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(0.5 * theta);
@@ -632,13 +632,13 @@ static inline void apply_RY_gate(complex128* __restrict__ state, const std::size
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_H_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_H_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     constexpr double inv_sqrt_2 = 0.7071067811865475;
@@ -671,13 +671,13 @@ static inline void apply_H_gate(complex128* __restrict__ state, const std::size_
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_P_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_P_gate(complex128* __restrict__ state, const std::size_t q, const std::size_t q_null, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t stride = std::size_t{1} << q;
     const double cosine = std::cos(theta);
@@ -711,13 +711,13 @@ static inline void apply_P_gate(complex128* __restrict__ state, const std::size_
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t m1 = (1ULL << (q1 < q2 ? q1 : q2)) - 1;
@@ -749,13 +749,13 @@ static inline void apply_CZ_gate(complex128* __restrict__ state, const std::size
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -804,13 +804,13 @@ static inline void apply_RZZ_gate(complex128* __restrict__ state, const std::siz
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_ECR_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -859,13 +859,13 @@ static inline void apply_ECR_gate(complex128* __restrict__ state, const std::siz
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_CX_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_CX_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -906,13 +906,13 @@ static inline void apply_CX_gate(complex128* __restrict__ state, const std::size
  *          Unused variable, kept for type signature consistency
  *      target_qubits : const std::vector<std::size_t>& 
  *          Unused variable, kept for type signature consistency
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_SWAP_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_SWAP_gate(complex128* __restrict__ state, const std::size_t q1, const std::size_t q2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t iters = dim >> 2;
     const std::size_t q_min = q1 < q2 ? q1 : q2;
@@ -953,13 +953,13 @@ static inline void apply_SWAP_gate(complex128* __restrict__ state, const std::si
  *          The unitary operator that is to be applied to the circuit
  *      target_qubits : const std::vector<std::size_t>& 
  *          Set of qubits to which the unitary operator is to be applied to, must be in ascending order
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, uint8 thread_count){
+static inline void apply_unitary_gate(complex128* __restrict__ state, const std::size_t q_null, const std::size_t q_null2, const std::size_t num_qubits, const double theta, const matrix& U, const std::vector<std::size_t>& target_qubits, cuint thread_count){
     const std::size_t num_targets = target_qubits.size();
     const std::size_t dim = std::size_t{1} << num_qubits;
     const std::size_t inner_dim = std::size_t{1} << num_targets;

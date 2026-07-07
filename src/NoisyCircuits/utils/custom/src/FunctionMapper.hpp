@@ -13,11 +13,11 @@
  *      None
  * 
  * Returns:
- *      std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, unsigned short)
+ *      std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, const unsigned int)
  *          Map whose key is the name of the gate as a string and the return is the function call to apply the gate.
  */
-static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_function_mapper(){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map;
+static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, cuint)> gate_function_mapper(){
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, cuint)> gate_map;
     gate_map["x"] = apply_X_gate;
     gate_map["sx"] = apply_SX_gate;
     gate_map["rz"] = apply_RZ_gate;
@@ -41,11 +41,11 @@ static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, 
  *      None
  * 
  * Returns:
- *      std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std:size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, unsigned short)
+ *      std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std:size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, const unsigned int)
  *          Map whose key is the gate name as a string and the return is the noise application function.
  */
-static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> noise_function_mapper(){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> apply_noise_map;
+static inline std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, cuint)> noise_function_mapper(){
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, cuint)> apply_noise_map;
     std::list<std::string> single_qubit_gate_names = {
         "x",
         "sx",

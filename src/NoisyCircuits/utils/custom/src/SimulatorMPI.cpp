@@ -22,19 +22,20 @@
  *          Reference to entire set of two qubit noise instructions (for all gates and qubits)
  *      num_qubits : const std::size_t
  *          Total number of qubits in the system
- *      seed : const unsigned short
+ *      seed : const unsigned int
  *          Unique seed value for the trajectory to setup the RNG engine
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute the computation
  * 
  * Returns:
  *      std::vector<complex128>
  *          Probabilities of the statevector from the trajectory evolution.
  */
-void simulate_circuit_instance(complex128* __restrict__ state, const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, uint8 seed, uint8 thread_count){
+void simulate_circuit_instance(complex128* __restrict__ state, const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, cuint seed, cuint thread_count){
     std::mt19937_64 trajectory_engine(seed);
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> function_noise_map = noise_function_mapper();
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, cuint)> gate_map = gate_function_mapper();
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, cuint)> function_noise_map = noise_function_mapper();
+    state[0] = complex128(1.0, 0.0);
     for (const ItemEntry& instruction : instruction_list){
         const std::string& gate_name = instruction.gate_name;
         const std::vector<std::size_t>& qubits = instruction.qubits;
@@ -65,15 +66,15 @@ void simulate_circuit_instance(complex128* __restrict__ state, const std::list<I
  *          Dictionary of two qubit noise instructions obtained from python
  *      num_qubits : std::size_t
  *          Total number of qubits in the system
- *      seed : const unsigned short
+ *      seed : const unsigned int
  *          Unique seed value for the RNG engine for the trajectory
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute computation
  * 
  * Returns:
  *      None
  */
-void run_trajectory(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, uint8 seed, uint8 thread_count){
+void run_trajectory(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, cuint seed, cuint thread_count){
     std::list<ItemEntry> instruction_list;
     for (auto item : instructions){
         auto item_tuple = item.cast<py::tuple>();

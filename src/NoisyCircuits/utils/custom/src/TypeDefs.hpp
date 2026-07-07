@@ -29,7 +29,7 @@ struct pair_hash{
 
 using complex128 = std::complex<double>;
 // Confusing name --> Needs a name change and will be corrected later.
-using uint8 = const unsigned short;
+using cuint = const unsigned int;
 using matrix = std::vector<std::vector<complex128>>;
 using real_matrix = std::vector<std::vector<double>>;
 using noise_map = std::unordered_map<std::string, std::vector<matrix>>;

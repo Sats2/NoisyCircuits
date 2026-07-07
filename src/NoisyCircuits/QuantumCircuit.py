@@ -1,9 +1,9 @@
 """
-This module allows users to create and simulate quantum circuits with noise models based on IBM quantum machines. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors.\n
+This module allows users to create and simulate quantum circuits with noise models based on quantum machine calibration data. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors.\n
 
 Example:\n
     >>> from NoisyCircuits.QuantumCircuit import QuantumCircuit
-    >>> circuit = QuantumCircuit(num_qubits=3, noise_model=my_noise_model, backend_qpu_type='Heron', num_trajectories=1000)
+    >>> circuit = QuantumCircuit(num_qubits=3, noise_model=my_noise_model, backend_qpu_type='Heron', sim_backend="custom", threshold=1e-8, verbose=False)
     >>> circuit.h(0)
     >>> circuit.cx(0, 1)
     >>> circuit.cx(1, 2)
@@ -11,9 +11,10 @@ Example:\n
     [0.39841323, 0.00300163, 0.09303931, 0.00615167, 0.00616272, 0.09281154, 0.00300024, 0.39741967]
     >>> circuit.execute(qubits=[0, 1, 2]) # Executes the circuit using the Monte-Carlo Wavefunction method
     [0.39748485, 0.0037614 , 0.09168292, 0.00799886, 0.00746056, 0.09156762, 0.00367236, 0.39637143]
-    >>> circuit.run_pure_state(qubits=[0, 1, 2]) # Executes the circuit using the pure state solver
+    >>> circuit.run_pure_state(qubits=[0, 1, 2], num_cores=2, return_statevector=False) # Executes the circuit using the pure state solver to return probabilities
     [0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
-    >>> circuit.shutdown() # Shutdown the Ray parallel execution environment
+    >>> circuit.run_pure_state(qubits=[0, 1, 2], num_cores=2, return_statevector=False) # Executes the circuit using the pure state solver to return amplitudes
+    [0.7071067811865475 + 0j, 0 + 0j, 0 + 0j, 0 + 0j, 0 + 0j, 0 + 0j, 0 + 0j, 0.7071067811865475 + 0j]
 """
 
 import numpy as np
@@ -530,101 +531,6 @@ class QuantumCircuit:
         if self._sim_backend in ["pennylane"] and len(qubits) == self.num_qubits:
             return output
         output = output.reshape([2]*len(qubits)).transpose(list(range(len(qubits)))[::-1]).reshape(-1)
-        return output
-    
-    def execute_mpi(self,
-                    qubits:list[int]=None,
-                    num_trajectories:int=100,
-                    num_nodes:int=1,
-                    num_cores_per_node:int=2
-                    )->np.ndarray[np.float64]:
-        """
-        Runs the quantum circuit simulation using the Monte-Carlo Wavefunction method in a distributed memory environment. This method is only supported with the custom simulation backend and requires the python binder for MPI, mpi4py, to be installed. 
-
-        Parameters
-        -----------
-        qubits : list[int], optional
-            List of qubits to be measured. If None, all qubits will be measured.
-        num_trajectories : int, optional
-            The total number of trajectories to run. Defaults to 100.
-        num_nodes : int, optional
-            The number of nodes to use for distributed execution. Defaults to 1.
-        num_cores_per_node : int, optional
-            The number of CPU cores to use per node for parallel execution. Defaults to 2.
-        
-        Returns
-        --------
-        np.ndarray[np.float64]
-            An array containing the probabilities of the output states after executing the quantum circuit.
-        
-        Raises
-        ------
-        TypeError
-            - Raised when qubits is not a list of integers.
-            - Raised when num_trajectories is not an integer.
-            - Raised when num_nodes is not an integer.
-            - Raised when num_cores_per_node is not an integer.
-        ValueError
-            - Raised when qubits contains invalid qubit indices.
-            - Raised when there are no instructions in the circuit to execute.
-            - Raised when num_trajectories is not a positive integer.
-            - Raised when num_nodes is not a positive integer.
-            - Raised when num_cores_per_node is not a positive integer.
-            - Raised when the simulation backend is not set to "custom".
-            - Raised when the specified number of nodes or cores per node exceeds the available resources.
-
-        Notes
-        -----
-        This method is designed for distributed execution in a high-performance computing environment. The parallelization is performed in the following manner:
-            - Each node runs a single trajectory at a time.
-            - Within each node, the quantum circuit simulation for the assigned trajectory is parallelized across the specified number of CPU cores.
-            - The results from all nodes are aggregated to compute the final probabilities of the output states.
-        Note that the MPI execution is only beneficial for large number of qubits where running a single trajectory on a single core can be computationally intensive or where there is a requirement for a large amount of RAM which cannot be setup on a shared memory systems.
-        """
-        if qubits is not None:
-            if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
-                raise TypeError("Qubits must be a list of integers.")
-            if any((qubit < 0 or qubit >= self.num_qubits) for qubit in qubits):
-                raise ValueError(f"One or more qubits are out of range. The valid range is from 0 to {self.num_qubits - 1}.")
-        else:
-            qubits = list(range(self.num_qubits))
-        if not isinstance(num_trajectories, int):
-            raise TypeError("num_trajectories must be an integer.")
-        if num_trajectories < 1:
-            raise ValueError("num_trajectories must be a positive integer.")
-        if not isinstance(num_nodes, int):
-            raise TypeError("num_nodes must be an integer.")
-        if num_nodes < 1:
-            raise ValueError("num_nodes must be a positive integer.")
-        if not isinstance(num_cores_per_node, int):
-            raise TypeError("num_cores_per_node must be an integer.")
-        if num_cores_per_node < 1:
-            raise ValueError("num_cores_per_node must be a positive integer.")
-        if self.instruction_list == []:
-            raise ValueError("No instructions in the circuit to execute.")
-        if self.sim_backend != "custom":
-            raise ValueError("MPI execution is only supported with the custom simulation backend.")
-        mpi_solver = self.solver.MPIExecutor(
-            num_qubits = self.num_qubits,
-            single_qubit_noise = self.single_qubit_error,
-            two_qubit_noise = self.two_qubit_error,
-            num_nodes = num_nodes,
-            num_cores = num_cores_per_node
-        )
-        output = mpi_solver.run(
-            num_trajectories = num_trajectories,
-            instruction_list = self.instruction_list
-        )
-        output = compute_marginal_probs(output, [q for q in range(self.num_qubits) if q not in qubits])
-        m = len(qubits)
-        measurement_error_applicator.apply_measurement_error(
-            output,
-            self.measurement_error,
-            qubits,
-            m,
-            int(min(num_cores_per_node, m))
-        )
-        output = output.reshape([2]*m).transpose(list(range(m))[::-1]).reshape(-1)
         return output
 
     def draw_circuit(self,

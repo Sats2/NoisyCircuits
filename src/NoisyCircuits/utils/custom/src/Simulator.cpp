@@ -19,14 +19,14 @@
  *          Pointer to the statevector
  *      return_sate : bool
  *          A flag to specify whether to return the statevector or the probabilities associated to the statevector.
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-void pure_state_solver(const std::list<ItemEntry>& instruction_list, std::size_t num_qubits, complex128* __restrict__ state, bool return_state, uint8 thread_count){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
+void pure_state_solver(const std::list<ItemEntry>& instruction_list, std::size_t num_qubits, complex128* __restrict__ state, bool return_state, cuint thread_count){
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, cuint)> gate_map = gate_function_mapper();
     state[0] = complex128(1.0, 0.0);
     for (const ItemEntry& instruction : instruction_list){
         const std::string& gate_name = instruction.gate_name;
@@ -56,18 +56,18 @@ void pure_state_solver(const std::list<ItemEntry>& instruction_list, std::size_t
  *          Reference to entire set of two qubit noise instructions (for all gates and qubits)
  *      num_qubits : const std::size_t
  *          Total number of qubits in the system
- *      gate_map : std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, const unsigned short)>
+ *      gate_map : std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, const unsigned int)>
  *          Unordered map that has a key - value pair of gate name (string) and the function that applies the gate          
- *      noise_map : std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, const unsigned short)>
+ *      noise_map : std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, const unsigned int)>
  *          Unordered map that has a key - value pair of gate name (string) and the function which applies the required noise operators
- *      seed : const unsigned short
+ *      seed : const unsigned int
  *          Unique seed value for the trajectory to setup the RNG engine
  * 
  * Returns:
  *      std::vector<complex128>
  *          Probabilities of the statevector from the trajectory evolution.
  */
-std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)>& noise_function_map, uint8 seed){
+std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instruction_list, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, cuint)>& gate_map, std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, cuint)>& noise_function_map, cuint seed){
     std::mt19937_64 trajectory_engine(seed);
     std::vector<complex128> trajectory_state(std::size_t{1} << num_qubits, 0.0);
     trajectory_state[0] = 1.0;
@@ -103,19 +103,19 @@ std::vector<complex128> single_trajectory(const std::list<ItemEntry>& instructio
  *          Total number of qubits in the system
  *      num_trajectories : const int
  *          Total number of trajectories to simulate
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, const int num_trajectories, uint8 thread_count){
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, uint8)> gate_map = gate_function_mapper();
-    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, uint8)> noise_function_map = noise_function_mapper();
+void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list, complex128* __restrict__ state, const std::vector<noise_map>& single_qubit_instructions, const noise_map2q& two_qubit_instructions, const std::size_t num_qubits, const int num_trajectories, cuint thread_count){
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const double, const matrix&, const std::vector<std::size_t>&, cuint)> gate_map = gate_function_mapper();
+    std::unordered_map<std::string, void(*)(complex128* __restrict__, const std::size_t, const std::size_t, const std::size_t, const std::vector<matrix>&, std::mt19937_64&, cuint)> noise_function_map = noise_function_mapper();
     double averaging_factor = 1 / static_cast<double>(num_trajectories);
     #pragma omp parallel for shared(instruction_list, num_qubits, single_qubit_instructions, two_qubit_instructions, gate_map, noise_function_map) schedule(dynamic) num_threads(thread_count)
     for (unsigned short t = 0; t < num_trajectories; t++){
-        uint8 seed = static_cast<uint8>(42 + t);
+        cuint seed = static_cast<cuint>(42 + t);
         std::vector<complex128> trajectory_state = single_trajectory(instruction_list, single_qubit_instructions, two_qubit_instructions, num_qubits, gate_map, noise_function_map, seed);
         #pragma omp critical
         {
@@ -142,17 +142,17 @@ void monte_carlo_wavefunction_solver(const std::list<ItemEntry> instruction_list
  *          Total number of qubits in the system
  *      noisy : bool
  *          Flag that is used to determine whether to perform a noise-free or noise-aware simulation
- *      num_trajectories : const unsigned short
+ *      num_trajectories : const unsigned int
  *          Total number of trajectories to simulate when performing the noise-aware simulations
  *      return_state : bool
  *          Flag used for pure statevector (noise-free) simulations to determine whether to return the state or it's probabilities
- *      thread_count : const unsigned short
+ *      thread_count : const unsigned int
  *          Total number of threads to distribute computation
  * 
  * Returns:
  *      None
  */
-void simulate_circuit(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, bool noisy, uint8 num_trajectories, bool return_state, uint8 thread_count){
+void simulate_circuit(py::list instructions, py::array_t<complex128> statevector, py::dict single_qubit_noise_instructions, py::dict two_qubit_noise_instructions, std::size_t num_qubits, bool noisy, cuint num_trajectories, bool return_state, cuint thread_count){
     std::list<ItemEntry> instruction_list;
     for (auto item : instructions){
         auto item_tuple = item.cast<py::tuple>();

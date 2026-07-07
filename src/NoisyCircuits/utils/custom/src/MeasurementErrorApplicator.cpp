@@ -50,13 +50,13 @@ std::vector<real_matrix> get_measurement_error_matrices(const py::dict& noise_di
  *          Qubit index
  *      num_qubits : const std::size_t
  *          Total number of qubits in the circuit.
- *      num_threads : const unsigned short
+ *      num_threads : const unsigned int
  *          Number of threads to distribute the computation
  * 
  * Returns:
  *      None
  */
-static inline void apply_measurement_error_for_qubit(double * __restrict__ probabilities, real_matrix measurement_noise_operator, const int qubit, const std::size_t num_qubits, const uint8 num_threads){
+static inline void apply_measurement_error_for_qubit(double * __restrict__ probabilities, real_matrix measurement_noise_operator, const int qubit, const std::size_t num_qubits, cuint num_threads){
     double m00 = measurement_noise_operator[0][0];
     double m01 = measurement_noise_operator[0][1];
     double m10 = measurement_noise_operator[1][0];
@@ -86,13 +86,13 @@ static inline void apply_measurement_error_for_qubit(double * __restrict__ proba
  *          List of qubits that are measured.
  *      num_qubits : std::size_t
  *          The total number of qubits in the circuit
- *      num_threads : unsigned short
+ *      num_threads : const unsigned int
  *          The number of threads to distribute computation
  * 
  * Returns:
  *      None
  */
-void apply_measurement_error(py::array_t<double> probabilities_array, py::dict measurement_noise, py::list qubit_list, std::size_t num_qubits, uint8 num_threads){
+void apply_measurement_error(py::array_t<double> probabilities_array, py::dict measurement_noise, py::list qubit_list, std::size_t num_qubits, cuint num_threads){
     std::vector<int> qubit_list_cpp;
     for (auto item : qubit_list){
         qubit_list_cpp.push_back(py::cast<int>(item));
