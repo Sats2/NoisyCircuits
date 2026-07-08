@@ -13,7 +13,9 @@ class EagleDecomposition(Decomposition):
     def __init__(self,
                  num_qubits:int,
                  connectivity:dict,
-                 qubit_map:list[tuple]):
+                 qubit_map:list[tuple],
+                 use_fractional:bool=False
+                ):
         """
         Constructor for the EagleDecomposition class that applies the quantum gates for the IBM Eagle QPU Architectures.
 
@@ -25,6 +27,8 @@ class EagleDecomposition(Decomposition):
             A dictionary representing the connectivity of the qubits.
         qubit_map : list[tuple]
             A list of tuples representing the mapping of logical qubits to physical qubits.
+        use_fractional : bool
+            A flag to indicate usage of fractional gates. Unused here as Eagle does not support fractional gates.
         """
         super().__init__(num_qubits=num_qubits)
         self.instruction_list = []

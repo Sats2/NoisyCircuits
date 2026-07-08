@@ -13,7 +13,9 @@ class HeronDecomposition(Decomposition):
     def __init__(self,
                  num_qubits:int,
                  connectivity:dict,
-                 qubit_map:list[tuple]):
+                 qubit_map:list[tuple],
+                 use_fractional:bool = False
+                 ):
         """
         Constructor for the HeronDecomposition class that applies the quantum gates for the IBM Heron QPU Architectures.
 
@@ -25,6 +27,8 @@ class HeronDecomposition(Decomposition):
             A dictionary representing the connectivity of the qubits.
         qubit_map : list[tuple]
             A list of tuples representing the mapping of logical qubits to physical qubits.
+        use_fractional : bool
+            A flag to indicate whether to use fractional gates or not.
         """
         super().__init__(num_qubits=num_qubits)
         self.instruction_list = []
@@ -32,6 +36,7 @@ class HeronDecomposition(Decomposition):
         self.connectivity = connectivity
         self.qubit_map = qubit_map
         self.qubit_coupling = QubitCouplingMap(num_qubits=self.num_qubits, connectivity=self.connectivity)
+        self.use_fractional = use_fractional
 
     def X(self,
           qubit:int):
@@ -53,7 +58,15 @@ class HeronDecomposition(Decomposition):
            theta:int|float,
            qubit:int):
         if super().RX(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rx", [qubit, qubit], theta])
+            if self.use_fractional:
+                self.instruction_list.append(["rx", [qubit, qubit], theta])
+            else:
+                self.RZ(theta=np.pi/2, qubit=qubit)
+                self.SX(qubit=qubit)
+                self.RZ(theta=2*np.pi + theta, qubit=qubit)
+                self.SX(qubit=qubit)
+                self.RZ(theta=5*np.pi/2, qubit=qubit)
+                self.X(qubit=qubit)
     
     def RY(self,
            theta:int|float,

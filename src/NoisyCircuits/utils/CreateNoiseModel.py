@@ -451,10 +451,15 @@ class GetNoiseModel:
         t2 = pd.to_numeric(add_column_data["T2"], errors="coerce")
         t2_imputed_mask = np.isnan(t2) & ~np.isnan(t1)
         t1_imputed_mask = np.isnan(t1) & ~np.isnan(t2)
+        both_missing_mask = np.isnan(t1) & np.isnan(t2)
         t2 = np.where(t2_imputed_mask, t1, t2)
         t1 = np.where(t1_imputed_mask, t2, t1)
+        t1 = np.where(both_missing_mask, np.inf, t1)
+        t2 = np.where(both_missing_mask, np.inf, t2)
         data["T1 (us)"] = t1
         data["T2 (us)"] = t2
+        if both_missing_mask.any():
+            print(f"T1 and T2 both unreported, setting to inf (no thermal decay) for qubits: {list(data.index[both_missing_mask])}")
         if t2_imputed_mask.any():
             print(f"Imputed T2 = T1 for qubit(s): {list(data.index[t2_imputed_mask])}")
         if t1_imputed_mask.any():

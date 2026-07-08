@@ -151,6 +151,12 @@ class RunOnHardware:
                 initial_layout=layout
             )
             self.isa_circuits.append(pass_manager.run(circuit))
+
+    def reset_circuits(self)->None:
+        """
+        Method that removes any previous circuits stored in the object.
+        """
+        self.circuit_list = []
     
     def run(self)->str:
         """

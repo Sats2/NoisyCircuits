@@ -29,6 +29,9 @@ import ray
 import gc
 import os
 from collections.abc import Callable
+import warnings
+
+warnings.filterwarnings("ignore", category=np.exceptions.ComplexWarning)
 
 
 class QuantumCircuit:
@@ -45,6 +48,8 @@ class QuantumCircuit:
         A dictionary containing the raw noise model for the quantum circuit.
     backend_qpu_type : str
         The QPU architecture to use. Supported options are eagle and heron. (Defaults to heron)
+    use_fractional : bool
+        A flag to determine whether to use fractional gates or not. Applicable to QPUs which allow fractional gates (Defaults to True)
     sim_backend : str
         The simulation backend to use for propogating the quantum circuit. Supported options are custom, pennylane, qiskit and qulacs. (Defaults to custom)
     threshold : float
@@ -58,6 +63,7 @@ class QuantumCircuit:
         - num_qubits must be an integer.
         - noise_model must be a dictionary.
         - backend_qpu_type must be a string.
+        - use_fractional must be a boolean.
         - sim_backend must be a string.
         - threshold must be a float.
         - verbose must be a boolean.
@@ -84,6 +90,7 @@ class QuantumCircuit:
                  num_qubits:int,
                  noise_model:dict,
                  backend_qpu_type:str="heron",
+                 use_fractional:bool=True,
                  sim_backend:str="custom",
                  threshold:float=1e-12,
                  verbose:bool=True
@@ -111,6 +118,8 @@ class QuantumCircuit:
             raise ValueError("threshold must be between 0 and 1 (exclusive).")
         if not isinstance(verbose, bool):
             raise TypeError("verbose must be a boolean.")
+        if not isinstance(use_fractional, bool):
+            raise TypeError("use_fractional must be a boolean.")
         self.num_qubits = num_qubits
         self.qpu = backend_qpu_type.lower()
         self.threshold = threshold
@@ -144,7 +153,8 @@ class QuantumCircuit:
         self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
             num_qubits = self.num_qubits,
             connectivity = self.connectivity,
-            qubit_map = modeller.qubit_coupling_map
+            qubit_map = modeller.qubit_coupling_map,
+            use_fractional = use_fractional
         )
         self._ray_initialized = False
         self._basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
