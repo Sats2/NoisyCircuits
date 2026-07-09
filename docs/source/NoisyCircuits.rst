@@ -17,6 +17,14 @@ QuantumCircuit
    :undoc-members:
    :show-inheritance:
 
+QuantumCircuitMPI
+------------------------------------
+
+.. automodule:: NoisyCircuits.QuantumCircuitMPI
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 RunOnHardware
 ----------------------------------
 

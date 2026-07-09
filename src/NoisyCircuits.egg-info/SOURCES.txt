@@ -12,7 +12,6 @@ src/NoisyCircuits/__init__.py
 src/NoisyCircuits.egg-info/PKG-INFO
 src/NoisyCircuits.egg-info/SOURCES.txt
 src/NoisyCircuits.egg-info/dependency_links.txt
-src/NoisyCircuits.egg-info/entry_points.txt
 src/NoisyCircuits.egg-info/requires.txt
 src/NoisyCircuits.egg-info/top_level.txt
 src/NoisyCircuits/utils/BuildQubitGateModel.py
@@ -28,6 +27,9 @@ src/NoisyCircuits/utils/custom/_DensityMatrixSolver.py
 src/NoisyCircuits/utils/custom/_ParallelExecutor.py
 src/NoisyCircuits/utils/custom/_PureStateSolver.py
 src/NoisyCircuits/utils/custom/__init__.py
+src/NoisyCircuits/utils/custom/src/MeasurementErrorApplicator.cpp
+src/NoisyCircuits/utils/custom/src/Simulator.cpp
+src/NoisyCircuits/utils/custom/src/SimulatorMPI.cpp
 src/NoisyCircuits/utils/pennylane/_DensityMatrixSolver.py
 src/NoisyCircuits/utils/pennylane/_ParallelExecutor.py
 src/NoisyCircuits/utils/pennylane/_PureStateSolver.py

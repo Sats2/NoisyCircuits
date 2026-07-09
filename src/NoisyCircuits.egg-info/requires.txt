@@ -1,15 +1,32 @@
-peppercorn
-qulacs
+joblib
+matplotlib
+numba
+numpy
+openqasm3[parser]
+pandas
+pennylane
 qiskit
 qiskit-aer
 qiskit-ibm-runtime
-ray
-scipy
-numba
 pybind11
+ray
+requests
+scipy
 
 [dev]
 check-manifest
 
+[docs]
+sphinx
+sphinx-rtd-theme
+nbsphinx
+sphinxcontrib-bibtex
+sphinx-copybutton
+
+[mpi]
+mpi4py
+
 [test]
+pytest
+pytest-cov
 coverage
