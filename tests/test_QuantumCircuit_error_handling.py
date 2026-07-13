@@ -124,6 +124,18 @@ def test_verbose_type():
         QuantumCircuit(num_qubits=2, noise_model=noise_model, backend_qpu_type="heron", threshold=1e-4, verbose=0)
     with pytest.raises(TypeError):
         QuantumCircuit(num_qubits=2, noise_model=noise_model, backend_qpu_type="heron", threshold=1e-4, verbose=[False])
+
+def test_use_fractional_type():
+    """
+    Test that use_fractional parameter raises TypeError for non-boolean types.
+    """
+    noise_model = pickle.load(open(file_path, "rb"))
+    with pytest.raises(TypeError):
+        QuantumCircuit(num_qubits=2, noise_model=noise_model, use_fractional="True")
+    with pytest.raises(TypeError):
+        QuantumCircuit(num_qubits=2, noise_model=noise_model, use_fractional=[True])
+    with pytest.raises(TypeError):
+        QuantumCircuit(num_qubits=2, noise_model=noise_model, use_fractional=1)
         
 def test_execute_qubits_type():
     """

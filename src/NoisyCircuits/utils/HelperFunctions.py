@@ -82,9 +82,9 @@ def get_single_qubit_noise_probability(
     for p in range(0, dim >> 1, 1):
         i = (p & (stride - 1)) | ((p & ~(stride - 1)) << 1)
         j = i | stride
-        n0 += gate_op[0,0] * state[i] + gate_op[0,1] * state[j]
-        n1 += gate_op[1,0] * state[i] + gate_op[1,1] * state[j]
-        probability += np.abs(n0) + np.abs(n1)
+        n0 = gate_op[0,0] * state[i] + gate_op[0,1] * state[j]
+        n1 = gate_op[1,0] * state[i] + gate_op[1,1] * state[j]
+        probability += np.abs(n0)**2 + np.abs(n1)**2
     return probability
 
 @njit(fastmath=False)
@@ -158,11 +158,11 @@ def get_two_qubit_noise_probability(
         idx01 = pos | ull_q1
         idx10 = pos | ull_q2
         idx11 = pos | target_mask
-        n00 += gate_op[0,0] * state[idx00] + gate_op[0,1] * state[idx01] + gate_op[0,2] * state[idx10] + gate_op[0,3] * state[idx11]
-        n01 += gate_op[1,0] * state[idx00] + gate_op[1,1] * state[idx01] + gate_op[1,2] * state[idx10] + gate_op[1,3] * state[idx11]
-        n10 += gate_op[2,0] * state[idx00] + gate_op[2,1] * state[idx01] + gate_op[2,2] * state[idx10] + gate_op[2,3] * state[idx11]
-        n11 += gate_op[3,0] * state[idx00] + gate_op[3,1] * state[idx01] + gate_op[3,2] * state[idx10] + gate_op[3,3] * state[idx11]
-        probability += np.abs(n00) + np.abs(n01) + np.abs(n10) + np.abs(n11)
+        n00 = gate_op[0,0] * state[idx00] + gate_op[0,1] * state[idx01] + gate_op[0,2] * state[idx10] + gate_op[0,3] * state[idx11]
+        n01 = gate_op[1,0] * state[idx00] + gate_op[1,1] * state[idx01] + gate_op[1,2] * state[idx10] + gate_op[1,3] * state[idx11]
+        n10 = gate_op[2,0] * state[idx00] + gate_op[2,1] * state[idx01] + gate_op[2,2] * state[idx10] + gate_op[2,3] * state[idx11]
+        n11 = gate_op[3,0] * state[idx00] + gate_op[3,1] * state[idx01] + gate_op[3,2] * state[idx10] + gate_op[3,3] * state[idx11]
+        probability += np.abs(n00)**2 + np.abs(n01)**2 + np.abs(n10)**2 + np.abs(n11)**2
     return probability
 
 @njit(fastmath=False)

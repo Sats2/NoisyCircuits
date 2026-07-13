@@ -12,26 +12,29 @@ circuit_list_double_qubit = []
 for qpu in qpus:
     noise_model_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
     noise_model = pickle.load(open(noise_model_path, "rb"))
-    circuit_list_single_qubit.append(
-        QuantumCircuit(
-            num_qubits=1,
-            noise_model=noise_model,
-            backend_qpu_type=qpu,
-            sim_backend="custom",
-            threshold=1e-6,
-            verbose=False
+    for fractional in [True, False]:
+        circuit_list_single_qubit.append(
+            QuantumCircuit(
+                num_qubits=1,
+                noise_model=noise_model,
+                backend_qpu_type=qpu,
+                sim_backend="custom",
+                use_fractional=fractional,
+                threshold=1e-6,
+                verbose=False
+            )
         )
-    )
-    circuit_list_double_qubit.append(
-        QuantumCircuit(
-            num_qubits=2,
-            noise_model=noise_model,
-            backend_qpu_type=qpu,
-            sim_backend="custom",
-            threshold=1e-6,
-            verbose=False
+        circuit_list_double_qubit.append(
+            QuantumCircuit(
+                num_qubits=2,
+                noise_model=noise_model,
+                backend_qpu_type=qpu,
+                use_fractional=fractional,
+                sim_backend="custom",
+                threshold=1e-6,
+                verbose=False
+            )
         )
-    )
 
 instruction_map = {
             "x": lambda q: qml.X(q[0]),

@@ -18,10 +18,11 @@ for qpu in qpus:
         noise_model = CreateNoiseModel(calibration_data_file=str(file_path), 
                                         basis_gates=[["x", "sx", "rz", "rx"], ["cz", "rzz"]]).create_noise_model()
     for sim_backend in QuantumCircuit.available_sim_backends:
-        circuit_list.append(
-            (QuantumCircuit, (4, noise_model, qpu, sim_backend, 1e-6, False))
-        )
-num_cores = 40
+        for use_fractional in [True, False]:
+            circuit_list.append(
+                (QuantumCircuit, (4, noise_model, qpu, use_fractional, sim_backend, 1e-6, False))
+            )
+num_cores = 4
 np.random.seed(42)
 
 @pytest.fixture
@@ -161,7 +162,7 @@ def test_ghz_noisy_simulation(circuit):
     p_software = circuit.execute([0, 1, 2, 3], 1000, num_cores)
     p_reference = circuit.run_with_density_matrix([0, 1, 2, 3], 2)
     fid = fidelity(p_software, p_reference)
-    assert fid < 0.05, f"Fidelity too low for the GHZ state for {circuit.qpu} QPU with {circuit.sim_backend} simulator.\nHellinger Distance: {fid}"
+    assert fid < 0.05, f"Fidelity too low for the GHZ state for {circuit.qpu} QPU with {circuit.sim_backend} simulator. Hellinger Distance: {fid}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_parametrized_circuit_probabilities(circuit):
@@ -233,7 +234,7 @@ def test_parametrized_circuit_noisy_simulation(circuit):
     p_software = circuit.execute([0, 1, 2, 3], 1000, num_cores)
     p_reference = circuit.run_with_density_matrix([0, 1, 2, 3], 2)
     fid = fidelity(p_software, p_reference)
-    assert fid < 0.05, f"Fidelity too low for the parametrized circuit for {circuit.qpu} QPU with {circuit.sim_backend} simulator.\nHellinger Distance: {fid}"
+    assert fid < 0.05, f"Fidelity too low for the parametrized circuit for {circuit.qpu} QPU with {circuit.sim_backend} simulator.  Hellinger Distance: {fid}"
 
 @pytest.mark.parametrize("circuit", circuit_list, indirect=True)
 def test_shutdown(circuit):
