@@ -3,7 +3,7 @@ This module allows users to create and simulate quantum circuits with noise mode
 
 Example:\n
     >>> from NoisyCircuits.QuantumCircuit import QuantumCircuit
-    >>> circuit = QuantumCircuit(num_qubits=3, noise_model=my_noise_model, backend_qpu_type='Heron', sim_backend="custom", threshold=1e-8, verbose=False)
+    >>> circuit = QuantumCircuit(num_qubits=3, noise_model=my_noise_model, backend_qpu_type='Heron', use_fractional=True, sim_backend="custom", threshold=1e-8, verbose=False) # Using the default value for basis_gates --> basis gates of the Heron QPU.
     >>> circuit.h(0)
     >>> circuit.cx(0, 1)
     >>> circuit.cx(1, 2)
@@ -36,9 +36,9 @@ warnings.filterwarnings("ignore", category=np.exceptions.ComplexWarning)
 
 class QuantumCircuit:
     r"""
-    This class allows a user to create a quantum circuit with error model from IBM machines where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)` and :math:`ECR`) / Heron (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)`, :math:`R_X(\theta)`, :math:`CZ` and :math:`RZZ(\theta)`) QPUs.
+    This class allows a user to create a quantum circuit with error model from IBM machines (or an available CSV data file with the machine calibration data) where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)` and :math:`ECR`) / Heron (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)`, :math:`R_X(\theta)`, :math:`CZ` and :math:`RZZ(\theta)`) QPUs. Users can use custom gate decompositions/basis gates by utilizing the OpenQasm 3.0 data format to read-in quantum circuits.
 
-    Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates, please refer to the Decomposition :func:`NoisyCircuits.utils.Decomposition` class documentation.
+    Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation (except when imported via OpenQasm). For a full list of supported gates, please refer to the Decomposition :func:`NoisyCircuits.utils.Decomposition` class documentation.
 
     Parameters
     -----------
@@ -48,6 +48,8 @@ class QuantumCircuit:
         A dictionary containing the raw noise model for the quantum circuit.
     backend_qpu_type : str
         The QPU architecture to use. Supported options are eagle and heron. (Defaults to heron)
+    basis_gates : list[list[str]]
+        A list of list of basis gates given in the format [[single qubit gates], [two qubit gates]]. (Defaults to the basis gates of the Heron QPU)
     use_fractional : bool
         A flag to determine whether to use fractional gates or not. Applicable to QPUs which allow fractional gates (Defaults to True)
     sim_backend : str
@@ -63,6 +65,7 @@ class QuantumCircuit:
         - num_qubits must be an integer.
         - noise_model must be a dictionary.
         - backend_qpu_type must be a string.
+        - basis_gates must be a list of list of strings.
         - use_fractional must be a boolean.
         - sim_backend must be a string.
         - threshold must be a float.
@@ -86,15 +89,17 @@ class QuantumCircuit:
     }
     available_sim_backends = ["custom", "pennylane", "qiskit", "qulacs"]
 
-    def __init__(self, 
-                 num_qubits:int,
-                 noise_model:dict,
-                 backend_qpu_type:str="heron",
-                 use_fractional:bool=True,
-                 sim_backend:str="custom",
-                 threshold:float=1e-12,
-                 verbose:bool=True
-                )->None:
+    def __init__(
+                self, 
+                num_qubits:int,
+                noise_model:dict,
+                backend_qpu_type:str="heron",
+                basis_gates:list[list[str]]=[['rz', 'rx', 'sx', 'x'], ['cz', 'rzz']],
+                use_fractional:bool=True,
+                sim_backend:str="custom",
+                threshold:float=1e-12,
+                verbose:bool=True
+            )->None:
         """
         Initializes the QuantumCircuit with the specified number of qubits, noise model, number of trajectories for Monte-Carlo simulation, and threshold for noise application.
         """
@@ -120,6 +125,10 @@ class QuantumCircuit:
             raise TypeError("verbose must be a boolean.")
         if not isinstance(use_fractional, bool):
             raise TypeError("use_fractional must be a boolean.")
+        if not isinstance(basis_gates, list) or any(not isinstance(gate_set, list) for gate_set in basis_gates):
+            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuit.basis_gates_set["heron"]["basis_gates"]))
+        if not any(any(isinstance(gate, str) for gate in gate_set) for gate_set in basis_gates):
+            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuit.basis_gates_set["heron"]["basis_gates"]))
         self.num_qubits = num_qubits
         self.qpu = backend_qpu_type.lower()
         self.threshold = threshold
@@ -127,12 +136,14 @@ class QuantumCircuit:
         self._sim_backend = None
         self.solver = None
         self.sim_backend = sim_backend.lower()
+        self._basis_gates = basis_gates
+        self.basis_gates = self._basis_gates
         modeller = BuildModel(
             noise_model = noise_model,
             num_qubits = self.num_qubits,
             num_cores = int(os.cpu_count() // 2),
             threshold = self.threshold,
-            basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"],
+            basis_gates = self.basis_gates,
             verbose = self.verbose
         )
         single_error, multi_error, measurement_error, connectivity = modeller.build_qubit_gate_model()
@@ -150,15 +161,16 @@ class QuantumCircuit:
         self.measurement_error = measurement_error
         self.measurement_error_operator = None
         self.connectivity = connectivity
-        self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
-            num_qubits = self.num_qubits,
-            connectivity = self.connectivity,
-            qubit_map = modeller.qubit_coupling_map,
-            use_fractional = use_fractional
-        )
+        if self.basis_gates == QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]:
+            self._gate_decomposer = QuantumCircuit.basis_gates_set[self.qpu]["gate_decomposition"](
+                num_qubits = self.num_qubits,
+                connectivity = self.connectivity,
+                qubit_map = modeller.qubit_coupling_map,
+                use_fractional = use_fractional
+            )
+        else:
+            print("Warning: A decomposition for the given basis gates does not exist. In-built circuit building methods are not available. Please use the OpenQasm Parser to generate the circuit.")
         self._ray_initialized = False
-        self._basis_gates = QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
-        self.basis_gates = self.basis_gates
 
     @property
     def sim_backend(self)->str:
@@ -287,13 +299,23 @@ class QuantumCircuit:
         append_to_circuit : bool, optional
             A flag to determine whether to add the parser
         """
-        parser = Parser(
+        try:
+            parser = Parser(
+                    file_path = file_path,
+                    instruction_list = self._gate_decomposer.instruction_list,
+                    append_to_circuit = append_to_circuit,
+                    basis_gates = self.basis_gates
+                )
+            self._gate_decomposer.instruction_list = parser.parse()
+        except:
+            self.instruction_list = []
+            parser = Parser(
                 file_path = file_path,
-                instruction_list = self._gate_decomposer.instruction_list,
+                instruction_list = self.instruction_list,
                 append_to_circuit = append_to_circuit,
                 basis_gates = self.basis_gates
             )
-        self._gate_decomposer.instruction_list = parser.parse()   
+            self.instruction_list = parser.parse()   
         self._check_gates_in_noise_model()     
     
     def _initialize_ray(self,
@@ -339,7 +361,7 @@ class QuantumCircuit:
         Returns
         --------
         np.ndarray[np.float64]
-            An array containing the probabilities of the output states after executing the quantum circuit.
+            An array containing the probabilities of the executed quantum circuit.
 
         Raises
         -------

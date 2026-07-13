@@ -14,6 +14,61 @@ from NoisyCircuits.utils.HeronDecomposition import HeronDecomposition
 
 
 class QuantumCircuitMPI:
+    r"""
+    This class allows a user to create a quantum circuit with error model from IBM machines (or an available CSV data file with the machine calibration data) where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)` and :math:`ECR`) / Heron (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)`, :math:`R_X(\theta)`, :math:`CZ` and :math:`RZZ(\theta)`) QPUs. Users can use custom gate decompositions/basis gates by utilizing the OpenQasm 3.0 data format to read-in quantum circuits.
+
+    Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates (except when imported via OpenQasm), please refer to the Decomposition :func:`NoisyCircuits.utils.Decomposition` class documentation.
+
+    Parameters
+    ----------
+    num_qubits : int
+        The number of qubits in the quantum circuit.
+    noise_model : dict
+        A dictionary containing the raw noise model for the quantum circuit.
+    use_fractional : bool
+        A flag to determine whether to use fractional gates or not. Applicable to QPUs which allow fractional gates (Defaults to True)
+    backend_qpu_type : str
+        The QPU architecture to use. Supported options are eagle and heron. (Defaults to heron)
+    basis_gates : list[list[str]]
+        A list of list of basis gates given in the format [[single qubit gates], [two qubit gates]]. (Defaults to the basis gates of the Heron QPU)
+    num_nodes : int
+        The total number of nodes in the HPC that can be used for the computation. (Defaults to 1)
+    cores_per_node : int
+        The total number of cores available for computation within a single node. (Defaults to 1)
+    cores_per_trajectory : int
+        The total number of cores that can be used by a single trajectory at any given time. (Defaults to 1)
+    threshold : float
+        The threshold for pruning errors in the noise model. (Defaults to 1e-6)
+    verbose : bool
+        Whether to print verbose output during the noise model construction. (Defaults to False)
+
+    Raises
+    ------
+    TypeError : 
+        - num_qubits must be an integer.
+        - noise_model must be a dictionary.
+        - use_fractional must be a boolean.
+        - backend_qpu_type must be a string.
+        - basis_gates must be a list of list of strings.
+        - num_nodes must be an integer.
+        - num_nodes must be an integer.
+        - cores_per_node must be an integer.
+        - cores_per_trajectory must be an integer.
+        - threshold must be a float.
+        - verbose must be a boolean.
+    ValueError :
+        - num_qubits must be a positive integer.
+        - backend_qpu_type must be one of the supported QPU architectures.
+        - num_nodes must be :math:`\geq 1`
+        - cores_per_node must be :math:`\geq 1`
+        - cores_per_trajectory must be :math:`\geq 1`
+        - threshold must be between 0 and 1 (exclusive).
+
+    Notes
+    -----
+    - Using the default values of the arguements `num_nodes`, `core_per_node` and `cores_per_trajectory` results in a fully serial execution.
+    - Users need to be aware of the MPI environment of the HPC they have access to and build necessary dependencies themselves as a pre-compiled pip package install or conda install may result in dependency clashes. (See HPC Installation guidelines for more information)
+    """
     basis_gate_set = {
         "eagle" : {
             "basis_gates" : [["x", "sx", "rz"], ["ecr"]],
@@ -29,7 +84,9 @@ class QuantumCircuitMPI:
                 self,
                 num_qubits : int,
                 noise_model : dict,
+                use_fractional : bool = True,
                 backend_qpu_type : str = "heron",
+                basis_gates : list[list[str]] = [["x", "sx", "rz", "rx"], ["rzz", "cz"]],
                 num_nodes : int = 1,
                 cores_per_node : int = 1,
                 cores_per_trajectory : int = 1,
@@ -66,18 +123,24 @@ class QuantumCircuitMPI:
             raise TypeError("verbose must be of type boolean")
         if cores_per_trajectory > cores_per_node:
             raise ValueError("cores_per_trajectory must be lesser than or equal to cores_per_node")
+        if not isinstance(basis_gates, list) or any(not isinstance(gate_set, list) for gate_set in basis_gates):
+            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuitMPI.basis_gates_set["heron"]["basis_gates"]))
+        if not any(any(isinstance(gate, str) for gate in gate_set) for gate_set in basis_gates):
+            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuitMPI.basis_gates_set["heron"]["basis_gates"]))
         self.num_qubits = num_qubits
         self.num_nodes = num_nodes
         self.cores_per_node = cores_per_node
         self.cores_per_trajectory = cores_per_trajectory
         self._import_mpi()
         self.verbose = verbose
+        self._basis_gates = QuantumCircuitMPI.basis_gate_set[backend_qpu_type.lower()]["basis_gates"]
+        self.basis_gates = self._basis_gates
         modeller = BuildModel(
             noise_model = noise_model,
             num_qubits = self.num_qubits,
             num_cores = self.cores_per_node,
             threshold = threshold,
-            basis_gates = QuantumCircuitMPI.basis_gate_set[backend_qpu_type.lower()]["basis_gates"],
+            basis_gates = self.basis_gates,
             verbose = self.verbose
         )
         single_error, multi_error, measurement_error, connectivity = modeller.build_qubit_gate_model()
@@ -89,24 +152,45 @@ class QuantumCircuitMPI:
         }
         self.measurement_error = measurement_error
         self.connectivity = connectivity
-        self._gate_decomposer = QuantumCircuitMPI.basis_gate_set[backend_qpu_type.lower()]["gate_decomposition"](
-            num_qubits = self.num_qubits,
-            connectivity = self.connectivity,
-            qubit_map = modeller.qubit_coupling_map
-        )
-        self._basis_gates = QuantumCircuitMPI.basis_gate_set[backend_qpu_type.lower()]["basis_gates"]
+        if self.basis_gates == QuantumCircuitMPI.basis_gates_set[self.qpu]["basis_gates"]:
+            self._gate_decomposer = QuantumCircuitMPI.basis_gates_set[self.qpu]["gate_decomposition"](
+                num_qubits = self.num_qubits,
+                connectivity = self.connectivity,
+                qubit_map = modeller.qubit_coupling_map,
+                use_fractional = use_fractional
+            )
+        else:
+            print("Warning: A decomposition for the given basis gates does not exist. In-built circuit building methods are not available. Please use the OpenQasm Parser to generate the circuit.")        
 
     def __getattr__(
             self,
             name : str
         ) -> Callable:
+        """
+        Delegate unknown attributes/methods to the selected methods class.
+
+        Returns
+        -------
+        Callable
+            The method corresponding to the gate name if it exists in the gate decomposer, otherwise raises an AttributeError.
+        """
         if name is not None:
             return getattr(self._gate_decomposer, name)
     
     def refresh(self) -> None:
+        """
+        Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.
+        """
         self._gate_decomposer.instruction_list = []
 
     def _import_mpi(self) -> None:
+        """
+        Imports the MPI wrapper for python.
+
+        Raises
+        ------
+        ImportError : mpi4py (the MPI wrapper for Python) is not found in the environment.
+        """
         global MPI
         try:
             from mpi4py import MPI
@@ -117,6 +201,14 @@ class QuantumCircuitMPI:
         self.size = self.comm.Get_size()
 
     def _check_gates_in_noise_model(self) -> None:
+        """
+        Private helper method to check if the gates used in the quantum circuit are supported by the noise model. Raises a ValueError if any unsupported gates are found.
+
+        Raises
+        ------
+        ValueError
+            If any gates used in the quantum circuit are not supported by the noise model.k
+        """
         single_qubit_gates_in_model = self.single_qubit_error[0].keys()
         two_qubit_gates_in_model = self.two_qubit_error.keys()
         gate_list = [gate for sublist in [single_qubit_gates_in_model, two_qubit_gates_in_model] for gate in sublist]
@@ -132,20 +224,79 @@ class QuantumCircuitMPI:
             file_path : str,
             append_to_circuit : bool = False
         ) -> None:
-        parser = Parser(
-            file_pat = file_path,
-            instruction_list = self._gate_decomposer.instruction_list,
-            append_to_circuit = append_to_circuit,
-            basis_gates = self._basis_gates
-        )
-        self._gate_decomposer.instruction_list = parser.parse()
-        self._check_gates_in_noise_model()
+        """
+        Reads an OpenQASM 3.0 file and adds the required instructions to build the quantum circuit.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the OpenQASM 3.0 file.
+        append_to_circuit : bool, optional
+            A flag to determine whether to add the parser
+        """
+        try:
+            parser = Parser(
+                    file_path = file_path,
+                    instruction_list = self._gate_decomposer.instruction_list,
+                    append_to_circuit = append_to_circuit,
+                    basis_gates = self.basis_gates
+                )
+            self._gate_decomposer.instruction_list = parser.parse()
+        except:
+            self.instruction_list = []
+            parser = Parser(
+                file_path = file_path,
+                instruction_list = self.instruction_list,
+                append_to_circuit = append_to_circuit,
+                basis_gates = self.basis_gates
+            )
+            self.instruction_list = parser.parse()   
+        self._check_gates_in_noise_model()     
 
     def execute(
             self,
-            qubits : list[int],
-            num_trajectories : int
+            qubits : list[int] = None,
+            num_trajectories : int = 100
         ) -> np.ndarray[np.float64]:
+        r"""
+        Executes the quantum circuit simulation using the Monte-Carlo Wavefunction method on a HPC cluster in a distributed memory environment.
+
+        Parameters
+        ----------
+        qubits : list[int], optional
+            List of qubits to be measured. If None, all qubits will be measured.
+        num_trajectories : int
+            The total number of trajectories to run. Defaults to 100.
+
+        Returns
+        -------
+        np.ndarray[np.float64]
+            An array containing the probabilities of the executed quantum circuit.
+
+        Raises
+        ------
+        TypeError
+            - Raised when qubits is not a list of integers.
+            - Raised when num_trajectories is not an integer.
+        ValueError
+            - Raised when qubits contains invalid qubit indices.
+            - Raised when there are no instructions in the circuit to execute.
+            - Raised when num_trajectories is not a positive integer.
+        RuntimeError
+            - Raised when the total estimated MPI ranks does not equal the total number of available MPI ranks (See Notes for more information)
+
+        Notes
+        -----
+        The module first estimates the total number of ranks required to safely run the simulation based on the user input data of `num_nodes` (mathematically denoted as :math:`n_N`), `cores_per_node` (mathematically denoted as :math:`c_N`) and `cores_per_trajectory` (mathematically denoted as :math:`c_T`). The total number of ranks (mathematically denoted as :math:`n_R`) required is estimated by using the following formula:
+
+        .. math::
+
+            n_R = n_N \cdot \lfloor\frac{c_N}{c_T}\rfloor
+
+        The above estimate provides the minimum number of MPI ranks to safely perform the simulation. If this estimate does not match the available number of MPI ranks set by the MPI execution environment (e.g., SLURM/mpiexec), then a RuntimeError is raised in order to avoid any potential issues. 
+        """
+        if qubits is None:
+            qubits = list(range(self.num_qubits))
         if not isinstance(qubits, list) or any(not isinstance(q, int) for q in qubits):
             raise TypeError("Qubits must be a list of integers")
         if any((qubit < 0 or  qubit >= self.num_qubits) for qubit in qubits):
