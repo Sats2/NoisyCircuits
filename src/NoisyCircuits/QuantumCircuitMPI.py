@@ -68,6 +68,7 @@ class QuantumCircuitMPI:
     -----
     - Using the default values of the arguements `num_nodes`, `core_per_node` and `cores_per_trajectory` results in a fully serial execution.
     - Users need to be aware of the MPI environment of the HPC they have access to and build necessary dependencies themselves as a pre-compiled pip package install or conda install may result in dependency clashes. (See HPC Installation guidelines for more information)
+    - For using a different backend QPU, write in the basis gate set of the QPU in the arguement and leave the `backend_qpu_type` empty to let it default to "heron" but the customized basis gate set is given priority.
     """
     basis_gate_set = {
         "eagle" : {
@@ -116,7 +117,7 @@ class QuantumCircuitMPI:
         if cores_per_trajectory < 1:
             raise ValueError("cores_per_trajectory must be greater than or equal to 1")
         if not isinstance(threshold, float):
-            raise ValueError("threshold must be of type float")
+            raise TypeError("threshold must be of type float")
         if threshold < 0 or threshold > 1:
             raise ValueError("threshold must be between [0, 1]")
         if not isinstance(verbose, bool):
@@ -124,9 +125,9 @@ class QuantumCircuitMPI:
         if cores_per_trajectory > cores_per_node:
             raise ValueError("cores_per_trajectory must be lesser than or equal to cores_per_node")
         if not isinstance(basis_gates, list) or any(not isinstance(gate_set, list) for gate_set in basis_gates):
-            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuitMPI.basis_gates_set["heron"]["basis_gates"]))
-        if not any(any(isinstance(gate, str) for gate in gate_set) for gate_set in basis_gates):
-            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuitMPI.basis_gates_set["heron"]["basis_gates"]))
+            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuitMPI.basis_gate_set["heron"]["basis_gates"]))
+        if not all(all(isinstance(gate, str) for gate in gate_set) for gate_set in basis_gates):
+            raise TypeError("basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as {}".format(QuantumCircuitMPI.basis_gate_set["heron"]["basis_gates"]))
         self.num_qubits = num_qubits
         self.num_nodes = num_nodes
         self.cores_per_node = cores_per_node
@@ -143,6 +144,7 @@ class QuantumCircuitMPI:
             basis_gates = self.basis_gates,
             verbose = self.verbose
         )
+        self.qpu = backend_qpu_type.lower()
         single_error, multi_error, measurement_error, connectivity = modeller.build_qubit_gate_model()
         self.single_qubit_error = {
             q : {gate : payload["qubit_channel"] for gate, payload in gates.items()} for q, gates in single_error.items()
@@ -152,14 +154,15 @@ class QuantumCircuitMPI:
         }
         self.measurement_error = measurement_error
         self.connectivity = connectivity
-        if self.basis_gates == QuantumCircuitMPI.basis_gates_set[self.qpu]["basis_gates"]:
-            self._gate_decomposer = QuantumCircuitMPI.basis_gates_set[self.qpu]["gate_decomposition"](
+        if self.basis_gates == QuantumCircuitMPI.basis_gate_set[self.qpu]["basis_gates"]:
+            self._gate_decomposer = QuantumCircuitMPI.basis_gate_set[self.qpu]["gate_decomposition"](
                 num_qubits = self.num_qubits,
                 connectivity = self.connectivity,
                 qubit_map = modeller.qubit_coupling_map,
                 use_fractional = use_fractional
             )
         else:
+            self._gate_decomposer = None
             print("Warning: A decomposition for the given basis gates does not exist. In-built circuit building methods are not available. Please use the OpenQasm Parser to generate the circuit.")        
 
     def __getattr__(
@@ -194,7 +197,7 @@ class QuantumCircuitMPI:
         global MPI
         try:
             from mpi4py import MPI
-        except ImportError as e:
+        except (ImportError, RuntimeError) as e:
             raise ImportError("mpi4py is required for MPI execution but is not installed. Please install mpi4py.")
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
@@ -316,7 +319,7 @@ class QuantumCircuitMPI:
                 f"--cpus-per-task={self.cores_per_trajectory} python3 <script>.py"
             )
         self._base_seed = 42
-        instruction_list = self.comm.bcast(self.instruction_list if self.ranl == 0 else None, root=0)
+        instruction_list = self.comm.bcast(self.instruction_list if self.rank == 0 else None, root=0)
         if not instruction_list:
             raise ValueError("No instructions in the circuit to execute")
         base = num_trajectories // self.size

@@ -75,6 +75,10 @@ class QuantumCircuit:
         - backend_qpu_type must be one of the supported QPU architectures.
         - sim_backend must be one of the supported simulation backends.
         - threshold must be between 0 and 1 (exclusive).
+
+    Notes
+    -----
+    - For using a different backend QPU, write in the basis gate set of the QPU in the arguement and leave the `backend_qpu_type` empty to let it default to "heron" but the customized basis gate set is given priority.
     """
     # Update QPU Basis Gates Here!
     basis_gates_set = {
@@ -136,7 +140,7 @@ class QuantumCircuit:
         self._sim_backend = None
         self.solver = None
         self.sim_backend = sim_backend.lower()
-        self._basis_gates = basis_gates
+        self._basis_gates = basis_gates if self.qpu == "heron" else QuantumCircuit.basis_gates_set[self.qpu]["basis_gates"]
         self.basis_gates = self._basis_gates
         modeller = BuildModel(
             noise_model = noise_model,
@@ -170,6 +174,7 @@ class QuantumCircuit:
             )
         else:
             print("Warning: A decomposition for the given basis gates does not exist. In-built circuit building methods are not available. Please use the OpenQasm Parser to generate the circuit.")
+            self._gate_decomposer = None
         self._ray_initialized = False
 
     @property

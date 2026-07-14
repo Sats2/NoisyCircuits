@@ -20,7 +20,7 @@ for qpu in qpus:
     for sim_backend in QuantumCircuit.available_sim_backends:
         for use_fractional in [True, False]:
             circuit_list.append(
-                (QuantumCircuit, (4, noise_model, qpu, use_fractional, sim_backend, 1e-6, False))
+                (QuantumCircuit, (4, noise_model, qpu, QuantumCircuit.basis_gates_set[qpu]["basis_gates"], use_fractional, sim_backend, 1e-6, False))
             )
 num_cores = 4
 np.random.seed(42)
