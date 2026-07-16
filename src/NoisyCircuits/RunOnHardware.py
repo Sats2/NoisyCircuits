@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module contains the `RunOnHardware` class which allows users to run quantum circuits on IBM Quantum Hardware. The class provides methods to create circuits (according to hardware requirements), set them up for execution, submit them to the hardware, check job status, cancel jobs, and retrieve results. IBM Quantum's Qiskit Runtime Service is utilized for backend communication and job management. The retrieved results are formatted as probability distributions from little Endian format to big Endian format for easy analysis.
 

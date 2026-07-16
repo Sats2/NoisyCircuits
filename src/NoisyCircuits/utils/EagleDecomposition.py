@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module provides the exact decomposition for several single and two qubit gates using only the gates that are available in the Eagle QPU from IBM quantum hardware (now deprecated and no hardware is available, however simulations can still be performed using previously stored noise information). The decomposition also considers the swap sequencing required for connecting qubits in the systems while keeping the directionality of qubits in mind. It is implemented with the abtract class `Decomposition` in the background to conform to error handling and skeleton templates. It is selected according to the user specified QPU in the QuantumCircuit class.
 """

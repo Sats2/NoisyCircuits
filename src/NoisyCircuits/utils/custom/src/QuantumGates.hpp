@@ -1,4 +1,10 @@
 /**
+ * This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+ */
+
+/**
  * This header file consists of all necessary functions to apply quantum gates and noise operators to a statevector. 
  * See the article: Díaz,  G. J., Steffenel,  L. A., Barrios,  C. J., & Couturier,  J. F. (2024). How to Build a Software Quantum Simulator. Preprints. https://doi.org/10.20944/preprints202409.1497.v1 for more information on the logic of applying local gate matrices to an entire statevector.
  */

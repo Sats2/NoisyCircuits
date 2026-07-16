@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module allows users to create a noise model from user provided calibration data in a CSV file format. The calibration data should include specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.
 

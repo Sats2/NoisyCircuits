@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module provides the ability for the QuantumCircuit module to perform a pure statevector simulation for a specific quantum circuit using Qulacs as a quantum circuit simulator backend. Alternatively, the user can opt to use just this method to perform a pure statevector simulation using a custom instruction set as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. It is recommended to run all simulations via the QuantumCircuit module in order to allow for the correct decomposition of quantum gates according to the QPU's basis gates.
 

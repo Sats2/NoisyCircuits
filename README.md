@@ -1,6 +1,6 @@
 # NoisyCircuits
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://shields.io/badge/license-Apache%202-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 ![coverage](./coverage.svg)
 ![GitHub Tag](https://img.shields.io/github/v/tag/Sats2/NoisyCircuits)
@@ -42,7 +42,7 @@ The supported gated are fully decomposed into the hardware basis gates and this 
 
 - Python 3.10 or higher
 - A conda-based environment manager ([Miniconda](https://docs.conda.io/en/latest/miniconda.html), [Anaconda](https://www.anaconda.com/), or [Micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html))
-- IBM Quantum account and API token (for noise model access, optional. Sample Noise Data is made available.)
+- IBM Quantum account and API token (for noise model access, optional. Sample Noise Data is made available.) for hardware submissions and direct pulls via API.
 
 ### Installation Steps
 
@@ -73,10 +73,10 @@ pip install -e .
 ### Dependencies
 
 Core dependencies are automatically installed:
-- **PennyLane**: Quantum computing framework
 - **Qiskit**: IBM Quantum software stack
 - **Ray**: Distributed computing for parallel execution
 - **NumPy, Matplotlib**: Scientific computing and visualization
+- **PyBind11**: C++ binder for python
 
 ## Examples and Validation
 
@@ -130,48 +130,6 @@ We welcome contributions to NoisyCircuits! Here's how you can help:
 - **Testing**: Add test cases or improve validation coverage
 - **Code Contributions**: Implement new features or optimize existing code
 
-### Repository Structure
-_To be updated along with version release_
-```
-NoisyCircuits/
-├── src/NoisyCircuits/                          # Main package source code
-│   ├── __init__.py
-│   ├── QuantumCircuit.py                       # Core quantum circuit class
-│   └── utils/                                  # Utility modules
-│       └── __init__.py
-│       ├── GetNoiseModel.py                    # IBM backend integration to retreive Calibration Data
-│       ├── BuildQubitGateModel.py              # Module to generate the noise operators
-│       ├── DensityMatrixSolver.py              # Module to simulate a circuit with the density matrix method
-│       ├── PureStateSolver.py                  # Module to simulate a circuit without noise (statevector simulator)
-│       └── ParallelExecutor.py                 # Module to simulate a circuit with the MCWF method
-│       └── Decomposition.py                    # Abstract class for QPU based gate decomposition
-│       └── EagleDecomposition.py               # Gate Decomposition for Eagle QPU
-│       └── HeronDecomposition.py               # Gate Decomposition for Heron QPU
-│       └── SwapSequence.py                     # Module that ensures correct qubit coupling
-├── docs/                                       # Directory with documentation. Automatically generated from source code API --> DO NOT CHANGE
-├── noise_models/                               # Directory with sample noise models
-│   ├── README.md                               # Detailed documentation (will be added)
-│   ├── Noise_Model_Eagle_QPU.pkl               # Sample Noise Model for the Eagle QPU taken from IBM Brisbane calibration data
-│   ├── Noise_Model_Heron_QPU.pkl               # Sample Noise Model for the Heron QPU taken from IBM Fez calibration data
-├── examples/                                   # Example suite and examples
-│   ├── README.md                               # Detailed documentation
-│   ├── introduction.ipynb                      # Getting started tutorial
-│   ├── quantum_neural_networks.ipynb           # ML application example
-│   └── run_on_hardware.ipynb                   # Tutorial to create, submit and retreive a quantum circuit from hardware
-│   └── run_multiple_on_hardware.ipynb          # Tutorial to create, submit and retreive multiple quantum circuits from hardware
-│   └── design_study_single_feature.csv         # Sample dataset
-├── validation/                                 # Validation suite
-│   ├── README.md                               # Detailed documentation
-│   ├── method_verification.ipynb               # Validation against exact methods
-│   ├── Results_Log_File.txt                    # Results of the validation study compiled in a single log file
-├── tests/                                      # Test suite for Unit and Integration Testing consisting of local and Git CI/CD actions testing. 
-├── environment.yml                             # Conda environment specification
-├── setup.py                                    # Package installation configuration
-├── requirements.txt                            # Python dependencies
-├── pytest.toml                                 # Configuration for Pytest
-└── LICENSE                                     # MIT License
-```
-
 ### Development Workflow
 
 1. **Fork the repository** and create a feature branch:
@@ -209,7 +167,7 @@ NoisyCircuits/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Citing NoisyCircuits
 
@@ -218,9 +176,9 @@ If you use NoisyCircuits in your research, please cite the software as follows:
 @software{NoisyCircuits2025,
    author = {Hegde, Sathyamurthy},
    title = {NoisyCircuits},
-   year = {2025},
+   year = {2026},
    url = {https://github.com/Sats2/NoisyCircuits},
-   version = {1.3.0},
+   version = {2.0.0},
 }
 ```
 

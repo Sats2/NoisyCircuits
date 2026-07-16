@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module builds the connectivity map for the given hardware for the number of qubits used. This module also generates the shortest path to connect qubits in the hardware to ensure that the least possible number of SWAP operations are performed to connect two qubits on the system hardware. It is not meant to be used as a standalone module, but could be used to determine qubit connection paths for a given qubit layout which is provided as a dictionary.
 """
