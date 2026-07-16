@@ -32,20 +32,20 @@ Configuration
 Tutorials List
 --------------
 
-* :doc:`Introduction to NoisyCircuits <examples/introduction>`
-* :doc:`Running Single Circuits on Hardware <examples/run_on_hardware>`
-* :doc:`Running Multiple Circuits on Hardware <examples/run_multiple_on_hardware>`
-* :doc:`Application - Quantum Neural Networks <examples/quantum_neural_networks>`
+* :doc:`Introduction to NoisyCircuits <../../examples/introduction>`
+* :doc:`Running Single Circuits on Hardware <../../examples/run_on_hardware>`
+* :doc:`Running Multiple Circuits on Hardware <../../examples/run_multiple_on_hardware>`
+* :doc:`Application - Quantum Neural Networks <../../examples/quantum_neural_networks>`
 
 .. toctree::
     :maxdepth: 1
     :caption: Tutorials
     :hidden:
 
-    examples/introduction
-    examples/run_on_hardware
-    examples/run_multiple_on_hardware
-    examples/quantum_neural_networks
+    ../../examples/introduction
+    ../../examples/run_on_hardware
+    ../../examples/run_multiple_on_hardware
+    ../../examples/quantum_neural_networks
 
 Downloads
 ----------
