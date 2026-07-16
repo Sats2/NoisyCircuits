@@ -52,4 +52,4 @@ Downloads
 
 All the tutorial notebooks along with the sample noise models can be downloaded from here by clicking the link below.
 
-:download:`Download Tutorials <assets/tutorials.zip>`
+:download:`Download Tutorials <assets/Tutorials.zip>`

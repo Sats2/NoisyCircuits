@@ -1,166 +1,151 @@
-"""A setuptools based setup module.
+"""Build script for the compiled pybind11 extension modules.
 
-See:
-https://packaging.python.org/guides/distributing-packages-using-setuptools/
-https://github.com/pypa/sampleproject
+All package metadata lives in pyproject.toml; this file only defines the
+C++ extensions, which cannot be expressed declaratively.
+
+Optimisation and OpenMP flags are chosen at build time based on the compiler
+actually in use: each candidate flag is test-compiled against the real
+compiler and dropped if it is rejected, so the same script builds with GCC,
+Clang (including Apple Clang with Homebrew libomp), Intel (icc/icx) and MSVC.
 """
 
-# Always prefer setuptools over distutils
-from setuptools import setup, find_packages
-import pathlib
+import os
+import shlex
+import subprocess
+import sys
+import tempfile
 
-here = pathlib.Path(__file__).parent.resolve()
+import pybind11
+from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext
+from setuptools.errors import CompileError
 
-# Get the long description from the README file
-long_description = (here / "README.md").read_text(encoding="utf-8")
+# The #error makes this a functional test: it fails unless the flag really
+# enables OpenMP, guarding against compilers that only warn on unknown flags.
+OPENMP_TEST_SOURCE = """\
+#include <omp.h>
+#ifndef _OPENMP
+#error OpenMP support is not enabled
+#endif
+int main() { return omp_get_max_threads() > 0 ? 0 : 1; }
+"""
 
-# Arguments marked as "Required" below must be included for upload to PyPI.
-# Fields marked as "Optional" may be commented out.
 
-setup(
-    # This is the name of your project. The first time you publish this
-    # package, this name will be registered for you. It will determine how
-    # users can install this project, e.g.:
-    #
-    # $ pip install sampleproject
-    #
-    # And where it will live on PyPI: https://pypi.org/project/sampleproject/
-    #
-    # There are some restrictions on what makes a valid project name
-    # specification here:
-    # https://packaging.python.org/specifications/core-metadata/#name
-    name="NoisyCircuits",  # Required
-    # Versions should comply with PEP 440:
-    # https://www.python.org/dev/peps/pep-0440/
-    #
-    # For a discussion on single-sourcing the version across setup.py and the
-    # project code, see
-    # https://packaging.python.org/guides/single-sourcing-package-version/
-    version="1.3.0",  # Required
-    # This is a one-line description or tagline of what your project does. This
-    # corresponds to the "Summary" metadata field:
-    # https://packaging.python.org/specifications/core-metadata/#summary
-    description="A python package that build error modelled quantum gates from IBM QPUs",  # Optional
-    # This is an optional longer description of your project that represents
-    # the body of text which users will see when they visit PyPI.
-    #
-    # Often, this is the same as your README, so you can just read it in from
-    # that file directly (as we have already done above)
-    #
-    # This field corresponds to the "Description" metadata field:
-    # https://packaging.python.org/specifications/core-metadata/#description-optional
-    long_description=long_description,  # Optional
-    # Denotes that our long_description is in Markdown; valid values are
-    # text/plain, text/x-rst, and text/markdown
-    #
-    # Optional if long_description is written in reStructuredText (rst) but
-    # required for plain-text or Markdown; if unspecified, "applications should
-    # attempt to render [the long_description] as text/x-rst; charset=UTF-8 and
-    # fall back to text/plain if it is not valid rst" (see link below)
-    #
-    # This field corresponds to the "Description-Content-Type" metadata field:
-    # https://packaging.python.org/specifications/core-metadata/#description-content-type-optional
-    long_description_content_type="text/markdown",  # Optional (see note above)
-    # This should be a valid link to your project's main homepage.
-    #
-    # This field corresponds to the "Home-Page" metadata field:
-    # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url="https://github.com/Sats2/NoisyCircuits",  # Optional
-    # This should be your name or the name of the organization which owns the
-    # project.
-    author="Sathyamurthy Hegde",  # Optional
-    # This should be a valid email address corresponding to the author listed
-    # above.
-    author_email="sathyamurthy.hegde@rwth-aachen.de",  # Optional
-    # Classifiers help users find your project by categorizing it.
-    #
-    # For a list of valid classifiers, see https://pypi.org/classifiers/
-    classifiers=[  # Optional
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        "Development Status :: 4 - Beta",
-        # Indicate who your project is intended for
-        "Intended Audience :: Researchers",
-        "Topic :: Quantum-Computing, Error-Modeling",
-        # Pick your license as you wish
-        "License :: OSI Approved :: MIT License",
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate you support Python 3. These classifiers are *not*
-        # checked by 'pip install'. See instead 'python_requires' below.
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3 :: Only",
-    ],
-    # This field adds keywords for your project which will appear on the
-    # project page. What does your project relate to?
-    #
-    # Note that this is a list of additional keywords, separated
-    # by commas, to be used to assist searching for the distribution in a
-    # larger catalog.
-    keywords="quantum-computing, error-modeling",  # Optional
-    # When your source code is in a subdirectory under the project root, e.g.
-    # `src/`, it is necessary to specify the `package_dir` argument.
-    package_dir={"": "src"},  # Optional
-    # You can just specify package directories manually here if your project is
-    # simple. Or you can use find_packages().
-    #
-    # Alternatively, if you just want to distribute a single Python file, use
-    # the `py_modules` argument instead as follows, which will expect a file
-    # called `my_module.py` to exist:
-    #
-    #   py_modules=["my_module"],
-    #
-    packages=find_packages(where="src"),  # Required
-    # Specify which Python versions you support. In contrast to the
-    # 'Programming Language' classifiers above, 'pip install' will check this
-    # and refuse to install the project if the version does not match. See
-    # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-    python_requires=">=3.10",
-    # This field lists other packages that your project depends on to run.
-    # Any package you put here will be installed by pip when your project is
-    # installed, so they must be valid existing projects.
-    #
-    # For an analysis of "install_requires" vs pip's requirements files see:
-    # https://packaging.python.org/discussions/install-requires-vs-requirements/
-    install_requires=["peppercorn", "qulacs", "qiskit", "qiskit-aer", "qiskit-ibm-runtime", "ray", "scipy", "numba"],  # Optional
-    # List additional groups of dependencies here (e.g. development
-    # dependencies). Users will be able to install these using the "extras"
-    # syntax, for example:
-    #
-    #   $ pip install sampleproject[dev]
-    #
-    # Similar to `install_requires` above, these must be valid existing
-    # projects.
-    extras_require={  # Optional
-        "dev": ["check-manifest"],
-        "test": ["coverage"],
-    },
-    # If there are data files included in your packages that need to be
-    # installed, specify them here.
-    package_data={  # Optional
-        "sample": ["package_data.dat"],
-    },
-    # Entry points. The following would provide a command called `sample` which
-    # executes the function `main` from this package when invoked:
-    entry_points={  # Optional
-        "console_scripts": [
-            "sample=sample:main",
-        ],
-    },
-    # List additional URLs that are relevant to your project as a dict.
-    #
-    # This field corresponds to the "Project-URL" metadata fields:
-    # https://packaging.python.org/specifications/core-metadata/#project-url-multiple-use
-    #
-    # Examples listed include a pattern for specifying where the package tracks
-    # issues, where the source is hosted, where to say thanks to the package
-    # maintainers, and where to support the project financially. The key is
-    # what's used to render the link text on PyPI.
-  #  project_urls={  # Optional
- #       "Bug Reports": "https://github.com/pypa/sampleproject/issues",
-   #     "Funding": "https://donate.pypi.org",
-   #     "Say Thanks!": "http://saythanks.io/to/example",
-  #      "Source": "https://github.com/pypa/sampleproject/",
-  #  },
-)
+def try_compile(compiler, flags, source="int main() { return 0; }\n"):
+    """Return True if a trivial file compiles with the given extra flags."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        src = os.path.join(tmpdir, "flag_check.cpp")
+        with open(src, "w", encoding="utf-8") as f:
+            f.write(source)
+        try:
+            compiler.compile([src], output_dir=tmpdir, extra_postargs=list(flags))
+        except CompileError:
+            return False
+        return True
+
+
+def homebrew_libomp_prefix():
+    """Locate Homebrew's libomp, which Apple Clang needs for OpenMP."""
+    try:
+        prefix = subprocess.check_output(["brew", "--prefix", "libomp"], text=True).strip()
+        if os.path.isdir(prefix):
+            return prefix
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    for prefix in ("/opt/homebrew/opt/libomp", "/usr/local/opt/libomp"):
+        if os.path.isdir(prefix):
+            return prefix
+    return None
+
+
+class BuildExt(build_ext):
+    """Apply per-compiler flags to every extension before building."""
+
+    # Tried individually on GCC-style compilers; unsupported flags are dropped.
+    candidate_opt_flags = [
+        "-O2",
+        "-march=native",
+        "-mtune=native",
+        "-funroll-loops",
+        "-fcf-protection=none",
+        "-fno-stack-protector",
+    ]
+
+    def build_extensions(self):
+        if self.compiler.compiler_type == "msvc":
+            compile_args, link_args = self.msvc_flags()
+        else:
+            compile_args, link_args = self.unix_flags()
+        for ext in self.extensions:
+            ext.extra_compile_args = compile_args
+            ext.extra_link_args = link_args
+        super().build_extensions()
+
+    def msvc_flags(self):
+        compile_args = ["/O2"]
+        # /openmp:llvm (VS 2019 16.9+) supports unsigned loop counters; plain
+        # /openmp is the OpenMP 2.0 fallback. MSVC links its OpenMP runtime
+        # automatically, so no link flags are needed.
+        for omp_flag in ("/openmp:llvm", "/openmp"):
+            if try_compile(self.compiler, [omp_flag], OPENMP_TEST_SOURCE):
+                compile_args.append(omp_flag)
+                return compile_args, []
+        raise RuntimeError("This MSVC installation does not support OpenMP (/openmp).")
+
+    def unix_flags(self):
+        compile_args = [f for f in self.candidate_opt_flags if try_compile(self.compiler, [f])]
+        omp_compile, omp_link = self.unix_openmp_flags()
+        # GCC OpenMP offload can crash with some LTO configurations; keep LTO
+        # disabled by default but overridable via the environment.
+        lto_flags = [
+            f
+            for f in shlex.split(os.environ.get("NOISYCIRCUITS_LTO_FLAGS", "-fno-lto"))
+            if try_compile(self.compiler, [f])
+        ]
+        return compile_args + lto_flags + omp_compile, omp_link + lto_flags
+
+    def unix_openmp_flags(self):
+        # GCC, Clang and Intel icx take -fopenmp; classic Intel icc prefers
+        # -qopenmp. Apple Clang recognises neither and needs the preprocessor
+        # form plus Homebrew's libomp for the header and library.
+        for flag in ("-fopenmp", "-qopenmp"):
+            if try_compile(self.compiler, [flag], OPENMP_TEST_SOURCE):
+                return [flag], [flag]
+        if sys.platform == "darwin":
+            prefix = homebrew_libomp_prefix()
+            if prefix is not None:
+                omp_compile = [
+                    "-Xpreprocessor",
+                    "-fopenmp",
+                    "-I" + os.path.join(prefix, "include"),
+                ]
+                if try_compile(self.compiler, omp_compile, OPENMP_TEST_SOURCE):
+                    return omp_compile, ["-L" + os.path.join(prefix, "lib"), "-lomp"]
+        raise RuntimeError(
+            "No working OpenMP flag was found for this compiler. On macOS, "
+            "install libomp (brew install libomp) or build with GCC."
+        )
+
+
+ext_modules = [
+    Extension(
+        "simulator",
+        ["./src/NoisyCircuits/utils/custom/src/Simulator.cpp"],
+        include_dirs=[pybind11.get_include()],
+        language="c++",
+    ),
+    Extension(
+        "simulator_mpi",
+        ["./src/NoisyCircuits/utils/custom/src/SimulatorMPI.cpp"],
+        include_dirs=[pybind11.get_include()],
+        language="c++",
+    ),
+    Extension(
+        "measurement_error_applicator",
+        ["./src/NoisyCircuits/utils/custom/src/MeasurementErrorApplicator.cpp"],
+        include_dirs=[pybind11.get_include()],
+        language="c++",
+    ),
+]
+
+setup(ext_modules=ext_modules, cmdclass={"build_ext": BuildExt})

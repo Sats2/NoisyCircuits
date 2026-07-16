@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module provides the ability for the QuantumCircuit module to perform a density matrix simulation for a specific quantum circuit using pennylane as a quantum circuit simulation backend. Alternatively, the user can opt to use just this method to perform a density matrix simulation using a custom instruction set with a custom noise model for single qubit and two qubit gates, as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. The measurement error is not considered in this module and is only applied from within the QuantumCircuit module. For the full application of noise information from the quantum hardware, it is recommended to run all simulations via the QuantumCircuit module. 
 
@@ -16,6 +20,7 @@ This module contains only one class `DensityMatrixSolver` which has only one cal
 
 import pennylane as qml
 from pennylane import numpy as np
+import numpy as npy
 
 
 class DensityMatrixSolver:
@@ -26,22 +31,34 @@ class DensityMatrixSolver:
                  num_qubits:int,
                  single_qubit_noise:dict,
                  two_qubit_noise:dict,
-                 instruction_list:list)->None:
+                 instruction_list:list,
+                 num_cores:int=None
+                )->None:
         """
         Initializes the DensityMatrixSolver with the given parameters.
 
-        Args:
-            num_qubits (int): Number of qubits in the circuit.
-            single_qubit_noise (dict): Noise instructions for single qubit gates for all qubits used.
-            two_qubit_noise (dict): Noise instructions for entangling gates for all qubits used.
-            instruction_list (list): List of instructions to be executed on the circuit.
+        Parameters
+        ----------
+        num_qubits : int
+            Number of qubits in the circuit.
+        single_qubit_noise : dict
+            Noise instructions for single qubit gates for all qubits used.
+        two_qubit_noise : dict
+            Noise instructions for entangling gates for all qubits used.
+        instruction_list : list
+            List of instructions to be executed on the circuit.
+        num_cores : int, optional
+            Number of CPU cores to use, but pennylane does not support single circuit parallelization so the parameter is unused and is only included for consistency with the QuantumCircuit class.
 
-        Raises:
-            TypeError: If any of the input types are incorrect.
-            ValueError: If num_qubits is less than 1.
-            TypeError: If single_qubit_noise is not a dictionary.
-            TypeError: If two_qubit_noise is not a dictionary.
-            TypeError: If instruction_list is not a list.
+        Raises
+        ------
+        TypeError
+            - If any of the input types are incorrect.
+            - If single_qubit_noise is not a dictionary.
+            - If two_qubit_noise is not a dictionary.
+            - If instruction_list is not a list.
+        ValueError
+            If num_qubits is less than 1.
         """
         if not isinstance(num_qubits, int):
             raise TypeError("num_qubits must be an integer")
@@ -59,26 +76,34 @@ class DensityMatrixSolver:
         self.instruction_list = instruction_list
 
     def solve(self,
-              qubits:list)->np.ndarray[np.float64]:
+              qubits:list[int]
+            )->np.ndarray[np.float64]:
         """
         Solves the quantum circuit using density matrix simulation and returns the probabilities of measuring the specified qubits in the computational basis.
 
-        Args:
-            qubits (list): List of qubits to be measured.
+        Parameters
+        ----------
+        qubits : list[int]
+            List of qubits to be measured.
 
-        Returns:
-            np.ndarray: Probabilities of measuring each qubit in the computational basis.
+        Returns
+        -------
+        np.ndarray[np.float64]
+            Probabilities of measuring each qubit in the computational basis.
         """
         dev_mixed = qml.device("default.mixed", wires=self.num_qubits)
 
         @qml.qnode(dev_mixed)
         def run_circuit():
+            """
+            Internal function to run the quantum circuit.
+            """
             # Define gate execution functions
             gate_executors = {
-                "x": lambda params, qubits: qml.X(qubits),
-                "sx": lambda params, qubits: qml.SX(qubits),
-                "rz": lambda params, qubits: qml.RZ(params, qubits),
-                "rx": lambda params, qubits: qml.RX(params, qubits),
+                "x": lambda params, qubits: qml.X(qubits[0]),
+                "sx": lambda params, qubits: qml.SX(qubits[0]),
+                "rz": lambda params, qubits: qml.RZ(params, qubits[0]),
+                "rx": lambda params, qubits: qml.RX(params, qubits[0]),
                 "ecr": lambda params, qubits: qml.ECR(qubits),
                 "cz": lambda params, qubits: qml.CZ(qubits),
                 "rzz": lambda params, qubits: qml.IsingZZ(params, qubits),
@@ -87,20 +112,20 @@ class DensityMatrixSolver:
             
             # Define noise application functions
             def apply_two_qubit_noise(gate, qubits):
-                qml.QubitChannel(self.two_qubit_noise[gate][tuple(qubits)]["qubit_channel"], wires=qubits)
+                qml.QubitChannel(self.two_qubit_noise[gate][tuple(qubits)], wires=qubits)
             
             def apply_single_qubit_noise(gate, qubits):
-                qml.QubitChannel(self.single_qubit_noise[qubits[0]][gate]["qubit_channel"], wires=qubits)
+                qml.QubitChannel(self.single_qubit_noise[qubits][gate], wires=qubits)
             
             def no_noise(qubits):
                 pass  # No noise applied
             
             # Direct lookup mapping for noise handlers - no conditionals needed
             noise_handlers = {
-                "x": lambda qubits: apply_single_qubit_noise("x", qubits),
-                "sx": lambda qubits: apply_single_qubit_noise("sx", qubits),
-                "rz": lambda qubits: apply_single_qubit_noise("rz", qubits),
-                "rx": lambda qubits: apply_single_qubit_noise("rx", qubits),
+                "x": lambda qubits: apply_single_qubit_noise("x", qubits[0]),
+                "sx": lambda qubits: apply_single_qubit_noise("sx", qubits[0]),
+                "rz": lambda qubits: apply_single_qubit_noise("rz", qubits[0]),
+                "rx": lambda qubits: apply_single_qubit_noise("rx", qubits[0]),
                 "ecr": lambda qubits:apply_two_qubit_noise("ecr", qubits),
                 "cz": lambda qubits: apply_two_qubit_noise("cz", qubits),
                 "rzz": lambda qubits: apply_two_qubit_noise("rzz", qubits),
@@ -119,4 +144,4 @@ class DensityMatrixSolver:
             return qml.probs(wires=qubits)
         
         probs = run_circuit()
-        return probs
+        return npy.asarray(probs, order="C")

@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module contains the `RunOnHardware` class which allows users to run quantum circuits on IBM Quantum Hardware. The class provides methods to create circuits (according to hardware requirements), set them up for execution, submit them to the hardware, check job status, cancel jobs, and retrieve results. IBM Quantum's Qiskit Runtime Service is utilized for backend communication and job management. The retrieved results are formatted as probability distributions from little Endian format to big Endian format for easy analysis.
 
@@ -33,16 +37,23 @@ class RunOnHardware:
     """
     A class to run quantum circuits on IBM Quantum Hardware.
 
-    Args:
-        token (str): IBM Quantum token.
-        backend (str): Backend name.
-        shots (int): Number of shots.
+    Parameters
+    -----------
+    token : str
+        IBM Quantum token.
+    backend : str
+        Backend name.
+    shots : int
+        Number of shots.
     
-    Raises:
-        ValueError: When the token, backend or shots are not provided.
-        TypeError: When the token, backend or shots are not of the expected type -> (str, str, int) respectively.
-        ValueError: When the shots are less than or equal to zero.
-        ValueError: When the backend is not available.
+    Raises
+    ------
+    TypeError: 
+        - When the token, backend or shots are not of the expected type -> (str, str, int) respectively.
+    ValueError:
+        - When the token, backend or shots are not provided.
+        - When the shots are less than or equal to zero.
+        - When the backend is not available.
     """
     def __init__(self,
                  token:str=None,
@@ -80,18 +91,24 @@ class RunOnHardware:
         """
         Method that generates the fully decomposed circuit list in qiskit for IBM Hardware execution.
 
-        Args:
-            circuit (NoisyCircuit.QuantumCircuit.QuantumCircuit): The quantum circuit to add in qiskit version.
-            measure_qubits (list[int]): The list of qubits to measure.
+        Parameters
+        -----------
+        circuit : NoisyCircuit.QuantumCircuit.QuantumCircuit
+            The quantum circuit to add in qiskit version.
+        measure_qubits : list[int]
+            The list of qubits to measure.
         
-        Raises:
-            ValueError: When the circuit is not provided.
-            TypeError: When the circuit is not of the expected type -> NoisyCircuits.QuantumCircuit.
-            TypeError: When the measure_qubits is not of the expected type -> list.
-            TypeError: When the elements of measure_qubits are not of the expected type -> int.
-            ValueError: When the circuit is empty.
-            ValueError: When the measure_qubits contain invalid qubit indices.
-            ValueError: When the circuit contains gates that are not in the backend's basis gates.
+        Raises
+        ------
+        TypeError:
+            - When the circuit is not of the expected type -> NoisyCircuits.QuantumCircuit.
+            - When the measure_qubits is not of the expected type -> list.
+            - When the elements of measure_qubits are not of the expected type -> int.
+        ValueError:
+            - When the circuit is not provided.
+            - When the circuit is empty.
+            - When the measure_qubits contain invalid qubit indices.
+            - When the circuit contains gates that are not in the backend's basis gates.
         """
         if circuit is None:
             raise ValueError("Please provide a QuantumCircuit object.")
@@ -108,22 +125,19 @@ class RunOnHardware:
             raise ValueError("The circuit is empty.")
         qc = QuantumCircuit(circuit.num_qubits, len(measure_qubits))
         instruction_map = {
-            "x" : lambda q: qc.x(q[0]),
-            "sx": lambda q: qc.sx(q[0]),
+            "x" : lambda p, q: qc.x(q[0]),
+            "sx": lambda p, q: qc.sx(q[0]),
             "rz": lambda p, q: qc.rz(p, q[0]),
             "rx": lambda p, q: qc.rx(p, q[0]),
-            "ecr": lambda q: qc.append(ecr(), [q[0], q[1]]),
-            "cz": lambda q: qc.cz(q[0], q[1]),
+            "ecr": lambda p, q: qc.append(ecr(), [q[0], q[1]]),
+            "cz": lambda p, q: qc.cz(q[0], q[1]),
             "rzz": lambda p, q: qc.rzz(p, q[0], q[1])
         }
         self.qubit_list_per_circuit.append(list(range(circuit.num_qubits)))
         for inst in instructions:
             gate, qubits, params = inst
             try:
-                if params is not None:
-                    instruction_map[gate](params, qubits)
-                else:
-                    instruction_map[gate](qubits)
+                instruction_map[gate](params, qubits)
             except KeyError:
                 raise ValueError(f"The gate '{gate}' is not supported on the backend '{self.backend}'. Please check the backend's basis gates.")
         qc.measure(measure_qubits, measure_qubits)
@@ -141,16 +155,26 @@ class RunOnHardware:
                 initial_layout=layout
             )
             self.isa_circuits.append(pass_manager.run(circuit))
+
+    def reset_circuits(self)->None:
+        """
+        Method that removes any previous circuits stored in the object.
+        """
+        self.circuit_list = []
     
     def run(self)->str:
         """
         Method that submits the generated PUB for execution on the IBM Hardware.
 
-        Raises:
-            ValueError: When the maximum circuit execution limit of 10,000,000 is exceeded.
+        Returns
+        -------
+        str 
+            Returns the Job Id for the submitted batch of PUBs for retrieval.
 
-        Returns:
-            str: Returns the Job Id for the submitted batch of PUBs for retrieval.
+        Raises
+        ------
+        ValueError: 
+            When the maximum circuit execution limit of 10,000,000 is exceeded.
         """
         sampler = Sampler(mode=self.service.backend(self.backend))
         if len(self.isa_circuits) * self.shots > 10_000_000:
@@ -165,16 +189,22 @@ class RunOnHardware:
         """
         Method that retrieves the status of the submitted job.
 
-        Args:
-            job_id (str, optional): The Job Id for the submitted batch of PUBs. If not provided, uses the 
-                                    last submitted job_id provided the class object is not destroyed.
-        
-        Raises:
-            TypeError: When the job_id is not of the expected type -> str.
-            ValueError: When the job_id is not provided and the class object is destroyed.
+        Parameters
+        -----------
+        job_id : str, optional
+            The Job Id for the submitted batch of PUBs. If not provided, uses the last submitted job_id provided the class object is not destroyed.
 
-        Returns:
-            str: The status of the submitted job.
+        Returns
+        -------
+        str
+            The status of the submitted job.
+        
+        Raises
+        ------
+        TypeError
+            When the job_id is not of the expected type -> str.
+        ValueError
+            When the job_id is not provided and the class object is destroyed.
         """
         if job_id is not None:
             if not isinstance(job_id, str):
@@ -190,13 +220,17 @@ class RunOnHardware:
         """
         Method to cancel the submitted job.
 
-        Args:
-            job_id (str, optional): The Job Id for the submitted batch of PUBs. If not provided, uses the 
-                                    last submitted job_id provided the class object is not destroyed.
+        Parameters
+        ----------
+        job_id : str, optional
+            The Job Id for the submitted batch of PUBs. If not provided, uses the last submitted job_id provided the class object is not destroyed.
 
-        Raises:
-            TypeError: When the job_id is not of the expected type -> str.
-            ValueError: When the job_id is not provided and the class object is destroyed.
+        Raises
+        ------
+        TypeError
+            When the job_id is not of the expected type -> str.
+        ValueError
+            When the job_id is not provided and the class object is destroyed.
         """
         if job_id is not None:
             if not isinstance(job_id, str):
@@ -211,19 +245,27 @@ class RunOnHardware:
             print(f"An error occurred while cancelling the job: {e}")
 
     def get_results(self,
-                    job_id:str=None)->list[np.ndarray]:
+                    job_id:str=None
+                )->list[np.ndarray]:
         """
         Method that retrieves the results of the submitted job.
 
-        Args:
-            job_id (str, optional): The Job Id for the submitted batch of PUBs. If not provided, uses the last submitted job_id provided the class object is not destroyed.
-
-        Raises:
-            TypeError: When the job_id is not of the expected type -> str.
-            ValueError: When the job_id is not provided and the class object is destroyed.
+        Parameters
+        -----------
+        job_id : str, optional
+            The Job Id for the submitted batch of PUBs. If not provided, uses the last submitted job_id provided the class object is not destroyed.
         
-        Returns:
-            list[np.ndarray]: The results of the submitted job. The list contains probabilities of the quantum circuit and the ordering is as inputted into the PUBs.
+        Returns
+        -------
+        list[np.ndarray]
+            The results of the submitted job. The list contains probabilities of the quantum circuit and the ordering is as inputted into the PUBs.
+        
+        Raises
+        ------
+        TypeError
+            When the job_id is not of the expected type -> str.
+        ValueError
+            When the job_id is not provided and the class object is destroyed.
         """
         if job_id is not None:
             if not isinstance(job_id, str):

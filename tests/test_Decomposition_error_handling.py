@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 import pytest
 import os
 import pickle
@@ -13,14 +17,12 @@ for qpu in qpus:
     noise_model = pickle.load(open(file_path, "rb"))
     circuits_list.append(
         QuantumCircuit(
-            num_qubits=2,
+            num_qubits=3,
             noise_model=noise_model,
             backend_qpu_type=qpu,
-            num_trajectories=1,
-            num_cores=1,
-            jsonize=True,
-            verbose=False,
-            threshold=0.1
+            sim_backend="custom",
+            threshold=1e-6,
+            verbose=False
         )
     )
 

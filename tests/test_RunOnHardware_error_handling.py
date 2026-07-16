@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 from NoisyCircuits.QuantumCircuit import QuantumCircuit
 from NoisyCircuits.RunOnHardware import RunOnHardware
 import pytest
@@ -11,9 +15,9 @@ circuit = QuantumCircuit(
     num_qubits=2,
     noise_model=pickle.load(open(file_path, "rb")),
     backend_qpu_type="heron",
-    num_trajectories=100,
-    jsonize=True,
-    verbose=True
+    sim_backend="custom",
+    threshold=1e-6,
+    verbose=False
 )
 
 def test_token_type():

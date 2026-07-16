@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module allows users to create a noise model from user provided calibration data in a CSV file format. The calibration data should include specific columns for qubit properties and gate errors. The class reads the calibration data, processes it, and constructs a noise model that can be used for quantum circuit simulations.
 
@@ -42,17 +46,23 @@ class CreateNoiseModel:
 
     For a better example of the content of the CSV file, please refer to the example CSV file provided in the NoisyCircuits repository within the noise_models directory.
 
-    Args:
-        calibration_data_file (str): The path to the CSV file containing the calibration data.
+    Parameters
+    ----------
+    calibration_data_file : str
+        The path to the CSV file containing the calibration data.
     
-    Raises:
-        TypeError: Raised when the input arguements are not of the expected type.
-            - calibration_data_file should be a string representing the path to the CSV file.
-            - basis_gates should be a list of lists of strings representing the basis gates for the quantum hardware.
-        FileNotFoundError: If the specified CSV file is not found.
-        ValueError: If the CSV file does not contain the required columns or if the data is not in the expected format.
+    Raises
+    ------
+    TypeError:
+        - calibration_data_file should be a string representing the path to the CSV file.
+        - basis_gates should be a list of lists of strings representing the basis gates for the quantum hardware.
+    FileNotFoundError
+        If the specified CSV file is not found.
+    ValueError
+        If the CSV file does not contain the required columns or if the data is not in the expected format.
 
-    Example:
+    Example
+    -------
         >>> from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel
         >>> calibration_file_path = "path/to/calibration_data.csv"
         >>> basis_gates = [["x", "sx", "rz"], ["cz"]]
@@ -60,7 +70,8 @@ class CreateNoiseModel:
     """
     def __init__(self, 
                  calibration_data_file:str,
-                 basis_gates:list[list[str]])->None:
+                 basis_gates:list[list[str]]
+                )->None:
         """
         Constructor for the CreateNoiseModel class.
         """
@@ -89,6 +100,23 @@ class CreateNoiseModel:
                                           F_thermal:float,
                                           dim:int
                                           )->float:
+        """
+        Private method to compute the depolarizing probability.
+
+        Parameters
+        ----------
+        gate_error : float
+            The error rate of the gate.
+        F_thermal : float
+            The average gate fidelity of the thermal relaxation error.
+        dim : int
+            The dimension of the gate matrix
+
+        Returns
+        -------
+        float
+            The depolarizing probability.
+        """
         depol_prob = dim * (gate_error - (1 - F_thermal)) / (dim * F_thermal - 1)
         n = int(np.log2(dim))
         max_depol_prob = 4**n / (4**n - 1)
@@ -98,8 +126,10 @@ class CreateNoiseModel:
         """
         Method to create the noise model from the calibration data.
 
-        Returns:
-            dict: The noise model of the specified backend in dictionary format.
+        Returns
+        -------
+        dict
+            The noise model of the specified backend in dictionary format.
         """
         noise_model = NoiseModel()
         qubits = self.calibration_data["Qubit"].tolist()
@@ -264,16 +294,24 @@ class GetNoiseModel:
 
     A valid IBM Quantum API token and CRN is required to access the calibration data of the backend.
 
-    Args:
-        backend_name (str): The name of the IBM Quantum backend.
-        token (str): The IBM Quantum API token.
-        service_crn (str): The CRN of the IBM Quantum service instance.
+    Parameters
+    ----------
+    backend_name : str
+        The name of the IBM Quantum backend.
+    token : str
+        The IBM Quantum API token.
+    service_crn : str
+        The CRN of the IBM Quantum service instance.
 
-    Raises:
-        TypeError: If backend_name, token or service_crn is not a string.
-        ValueError: If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user's account.
+    Raises
+    ------
+    TypeError
+        If backend_name, token or service_crn is not a string.
+    ValueError
+        If there is an issue connecting to the IBM Quantum API or if the backend is not found in the user's account.
 
-    Example:
+    Example
+    -------
         >>> from NoisyCircuits.utils.CreateNoiseModel import GetNoiseModel
         >>> backend_name = "ibm_perth"
         >>> token = "your_ibm_quantum_api_token"
@@ -284,7 +322,8 @@ class GetNoiseModel:
     def __init__(self,
                  backend_name:str,
                  token:str,
-                 service_crn:str)->None:
+                 service_crn:str
+                )->None:
         """
         Constructor for the GetNoiseModel class.
         """
@@ -311,11 +350,15 @@ class GetNoiseModel:
         """
         Private method to obtain the basis gates for the specified backend from IBM Quantum REST API using the QPU family information.
 
-        Returns:
-            list[list[str]]: A list of lists containing the single qubit and two qubit basis gates for the specified backend.
+        Returns
+        -------
+        list[list[str]]
+            A list of lists containing the single qubit and two qubit basis gates for the specified backend.
         
-        Raises:
-            ValueError: If the API request fails or if the QPU family is not supported, an error is raised with the detailed error message from the API response or with the unsupported QPU family information.
+        Raises
+        ------
+        ValueError
+            If the API request fails or if the QPU family is not supported, an error is raised with the detailed error message from the API response or with the unsupported QPU family information.
         """
         basis_gates_url = "https://quantum.cloud.ibm.com/api/v1/backends/{}/configuration".format(self.backend_name)
         response = requests.request(
@@ -338,8 +381,10 @@ class GetNoiseModel:
         """
         Private method to obtain the IAM token for authentication with the IBM Quantum API using the provided token.
 
-        Raises:
-            ValueError: If the API request fails, an error is raised with the detailed error message from the API response.
+        Raises
+        ------
+        ValueError
+            If the API request fails, an error is raised with the detailed error message from the API response.
         """
         iam_response = requests.post(
             "https://iam.cloud.ibm.com/identity/token",
@@ -356,8 +401,10 @@ class GetNoiseModel:
         """
         Private method of the class to obtain the raw calibration data in JSON format from the IBM Quantum API for the specified backend.
 
-        Raises:
-            ValueError: If the API request fails or if the backend is not found in the user's account, an error is raised with the detailed error message from the API response.
+        Raises
+        ------
+        ValueError
+            If the API request fails or if the backend is not found in the user's account, an error is raised with the detailed error message from the API response.
         """
         response = requests.request(
             "GET", 
@@ -372,14 +419,16 @@ class GetNoiseModel:
                              save_csv:bool=False,
                              destination:str=None,
                              file_name:str=None
-                             )->None:
+                            )->None:
         """
         Private method of the class that converts the raw calibration data in the JSON format obtained from IBM Quantum API to a dataframe and optionally saves it as a CSV file.
 
-        Args:
-            save_csv (bool, optional): Flag to decide whether to save the converted calibration data as a CSV file. Defaults to False.
-            desitnation (str, optional): The directory where the CSV file should be saved if required by the user. If None and the csv needs to be saved, the file will be saved in the current working directory. Defaults to None.
-            
+        Parameters
+        ----------
+        save_csv : bool, optional
+            Flag to decide whether to save the converted calibration data as a CSV file. Defaults to False.
+        desitnation : str, optional
+            The directory where the CSV file should be saved if required by the user. If None and the csv needs to be saved, the file will be saved in the current working directory. Defaults to None.
         """
         column_names = ["Qubit", "T1 (us)", "T2 (us)", "Prob meas 0 prep 1", "Prob meas 1 prep 0", "Single Qubit Gate Length (ns)"]
         for gate in self._basis_gates[0]:
@@ -398,12 +447,27 @@ class GetNoiseModel:
         }
         for qubit, items in enumerate(self.calibration_json["qubits"]):
             add_column_data["qubits"].append(qubit)
-            for entry in items:
-                if entry["name"] in add_column_data.keys():
-                    add_column_data[entry["name"]].append(entry["value"])
+            entries = {entry["name"]: entry["value"] for entry in items}
+            for name in ("T1", "T2", "prob_meas0_prep1", "prob_meas1_prep0"):
+                add_column_data[name].append(entries.get(name, np.nan))
         data["Qubit"] = add_column_data["qubits"]
-        data["T1 (us)"] = add_column_data["T1"]
-        data["T2 (us)"] = add_column_data["T2"]
+        t1 = pd.to_numeric(add_column_data["T1"], errors="coerce")
+        t2 = pd.to_numeric(add_column_data["T2"], errors="coerce")
+        t2_imputed_mask = np.isnan(t2) & ~np.isnan(t1)
+        t1_imputed_mask = np.isnan(t1) & ~np.isnan(t2)
+        both_missing_mask = np.isnan(t1) & np.isnan(t2)
+        t2 = np.where(t2_imputed_mask, t1, t2)
+        t1 = np.where(t1_imputed_mask, t2, t1)
+        t1 = np.where(both_missing_mask, np.inf, t1)
+        t2 = np.where(both_missing_mask, np.inf, t2)
+        data["T1 (us)"] = t1
+        data["T2 (us)"] = t2
+        if both_missing_mask.any():
+            print(f"T1 and T2 both unreported, setting to inf (no thermal decay) for qubits: {list(data.index[both_missing_mask])}")
+        if t2_imputed_mask.any():
+            print(f"Imputed T2 = T1 for qubit(s): {list(data.index[t2_imputed_mask])}")
+        if t1_imputed_mask.any():
+            print(f"Imputed T1 = T2 for qubit(s): {list(data.index[t1_imputed_mask])}")
         data["Prob meas 0 prep 1"] = add_column_data["prob_meas0_prep1"]
         data["Prob meas 1 prep 0"] = add_column_data["prob_meas1_prep0"]
         for gate in self._basis_gates[1]:
@@ -458,21 +522,30 @@ class GetNoiseModel:
                         save_csv:bool=False,
                         destination:str=None,
                         file_name:str=None
-                        )->dict:       
+                    )->dict:       
         """
         Method to obtain the noise model in dictionary format from the calibration data of the specified backend. 
 
-        Args:
-            save_csv (bool, optional): Flag to enable saving the converted calibration data as a CSV file. Defaults to False.
-            destination (str, optional): The directory where the CSV file should be saved if required by the used. Defaults to None, in which case the file will be saved in the current working directory. Relevant only if save_csv is set to True.
-            file_name (str, optional): The name of the CSV file to save the converted calibration data. Defaults to None, in which case the file will be saved with a computer generated name. Relevant only if save_csv is set to True.
+        Parameters
+        ----------
+        save_csv : bool, optional
+            Flag to enable saving the converted calibration data as a CSV file. Defaults to False.
+        destination : str, optional
+            The directory where the CSV file should be saved if required by the used. Defaults to None, in which case the file will be saved in the current working directory. Relevant only if save_csv is set to True.
+        file_name : str, optional
+            The name of the CSV file to save the converted calibration data. Defaults to None, in which case the file will be saved with a computer generated name. Relevant only if save_csv is set to True.
 
-        Returns:
-            dict: The noise model of the specified backend in dictionary format.
+        Returns
+        -------
+        dict
+            The noise model of the specified backend in dictionary format.
         
-        Raises:
-            TypeError: If any of the input arguments are not of the expected type, an error is raised with a detailed message indicating the expected type for each argument.
-            NotADirectoryError: If the specified destination for saving the CSV file is not a valid directory, an error is raised with a detailed message indicating the issue with the provided destination path.
+        Raises
+        ------
+        TypeError
+            If any of the input arguments are not of the expected type, an error is raised with a detailed message indicating the expected type for each argument.
+        NotADirectoryError
+            If the specified destination for saving the CSV file is not a valid directory, an error is raised with a detailed message indicating the issue with the provided destination path.
         """
         if not isinstance(save_csv, bool):
             raise TypeError("save_csv must be a boolean value")

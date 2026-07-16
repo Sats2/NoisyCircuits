@@ -40,11 +40,10 @@ To compare the different methods, we use the following metrics:
      JSD(P, Q) = \frac{1}{2} D_{KL}(P || M) + \frac{1}{2} D_{KL}(Q || M)
 
 
-
 Setup
-------
+-----
 
-For both comparisons, we use a randomized quantum circuit. The circuit consists of layers of single qubit gates followed by entangling gates. The depth of the circuit is varied to observe the performance under different noise levels. Only single qubit gates are subject to noise and the entangling gates are assumed to be ideal. The randomized circuit blueprint is shown in Figure 1.
+For both comparisons, we use a randomized quantum circuit. The circuit consists of layers of single qubit gates followed by entagling gates on each pair of adjacent qubits. The depth of the circuit and the number of qubits in the circuit is varied to observe the performance under different noise levels. The randomized circuit blueprint is shown in Figure 1.
 
 .. figure:: ../assets/randomized_circuit.png
     :alt: Randomized Circuit Blueprint
@@ -53,9 +52,9 @@ For both comparisons, we use a randomized quantum circuit. The circuit consists 
 
     Figure 1: Randomized Circuit Blueprint
 
-The Randomized Circuit generation for the two cases are as follows:
+The randomized circuit generation for the two cases are as follows:
 
-- **Noise Filtering:** The circuit size is fixed to :math:`4` qubits. The single qubit gates are chosen randomly from :math:`\{X, Y, Z, \sqrt{X}, H, R_x(\theta), R_y(\theta), R_z(\theta)\}` and the entagling gates are chosen randomly from :math:`\{CX, CY, CZ\}`. The rotation angles :math:`\theta` is sampled from a normal distribution :math:`\mathcal{N}(0, 2\pi)`. The initial state of the circuit is also randomly initialied from uniform distribution over the Bloch sphere, but is the same for all depths. This randomized circuit setup is repeated :math:`100` times for each of the depths :math:`\{1, 5, 10, 20, 50, 100, 250\}`, with each repeated run starting at the different initial state. The noise model used for each single qubit gate is given below:
+- **Noise Filtering:** The number of qubits in the circuit is fixed to :math:`4` qubits. The single qubit gates are randomly chosen from :math:`\{X, Y, Z, \sqrt{X}, H, R_x(\theta), R_y(\theta), R_z(\theta) \}` and the entangling gates from :math:`\{CX, CY, CZ \}`. The rotation angles for the parametrized gates are sampled randomly from a normal distribution :math:`\mathcal{N}(0, 2\pi)`. The initial state of the circuit is also randomly initialized from a uniform distribution over the Hilbert Space of the :math:`4` qubits, but kept constant when varying the depth of the circuit. This randomized experiment is repeated for a total of :math:`100` times for each of the depths :math:`\{1, 5, 10, 20, 50, 100, 250\}`, with each repeated run starting at a different initial state :math:`|\psi\rangle`. The noise model used for each single qubit gate is given below:
 
 +-------------------+-----------------------+
 | Error Instruction |      Probability      |
@@ -85,11 +84,24 @@ The Randomized Circuit generation for the two cases are as follows:
 |      Z-Reset      | 2.434416438154702e-09 |
 +-------------------+-----------------------+
 
-- **MCWF Vs Density Matrix Simulation:** The circuit size is varied from :math:`2` qubits to :math:`9` qubits and the depth is varied from :math:`1` to :math:`200` layers. The single qubit gates are chosen randomly from :math:`\{X, \sqrt{X}\}` and the entangling gate is fixed to :math:`ECR`, which are the basis gates of the IBM Eagle QPU. The noise model used is generated from the calibration data of the IBM Eagle device and applied to both single qubit and two qubit gates. The initial state of the circuit is fixed to :math:`|0\rangle^{\otimes n}` for all runs. For this case, the results with the Battacharyya Coefficient and the Jensen-Shannon Divergence are presented for depths of :math:`\{1, 50, 200\}`. For the MCWF simulations, a total of :math:`50` cores were used to parallelize the trajectory simulations. The number of trajectories used are varied from :math:`10` to :math:`1000` to observe the influence on the accuracy of the results.
+Additionally, the above noise is only applied to single qubit gates and the entangling gates are assumed to be ideal (this is done for the purpose of simplification).
+
+- **MCWF Vs Density Matrix Simulations:** The randomized circuit for this case are all initialized to the state :math:`|0\rangle`. The number of qubits in the circuit are varied from :math:`2` qubits to :math:`16` qubits. The time and memory benchmarks are performed with a circuit depth of :math:`100`. The fidelity benchmark is performed for the depths: :math:`\{1, 50, 100, 200\}`. The single qubit gates are randomly chosen from :math:`\{X, \sqrt{X}, R_x(\theta), R_z(\theta) \}` and the entangling gates chosen from :math:`\{CZ, RZZ(\theta) \}`. The angles for the parametrized gates are randomly sampled from a uniform distribution - :math:`\mathcal{U}(-2\pi, 2\pi)`. This randomized experiment is repeated :math:`40` times. An actual noise model from the calibration data of an IBM Qauntum device is used for this benchmark where every gate applied in the circuit is subject to noise. Given below is the system setup used for the benchmark.
+
++-----------+----------------------+---------------------+--------------------+
+| Benchmark | Number of Cores Used | Total Available RAM | System Exclusivity |
++-----------+----------------------+---------------------+--------------------+
+|   Memory  |           50         |        1TB          |          No        |
++-----------+----------------------+---------------------+--------------------+
+|   Time    |           50         |       256GB         |          Yes       |
++-----------+----------------------+---------------------+--------------------+
+| Fidelity  |           50         |        1TB          |          No        |
++-----------+----------------------+---------------------+--------------------+
+
 
 
 Noise Filtering
-----------------
+---------------
 Noise models from real-world quantum devices show a relatively large chance of success, especially for single qubit gates :cite:p:`GEZ21`. The noise model built from the calibration data generated from the `Randomized Benchmark <https://en.wikipedia.org/wiki/Randomized_benchmarking>`_ tests :cite:p:`randomized_benchmark` performed on the hardware is very comprehensive. The idea of noise filtering is to remove low probability noise instructions from the noise model to reduce the computational overhead from many Kraus operators with very low probabilities and reduce the memory consumption during the simulation.
 
 .. figure:: ../assets/noise_cutoff.png
@@ -103,132 +115,110 @@ From figure 2, it can be inferred that the noise model can be safely filtered as
 
 
 MCWF Vs Density Matrix Simulation
-----------------------------------
+---------------------------------
 
-In this section, we compare the performance of the Monte Carlo Wave Function (MCWF) simulation method against the Density Matrix simulation method for varying circuit sizes and depths. The comparison is based on the Battacharyya Coefficient and the Jensen-Shannon Divergence metrics. For the MCWF simulations, we also compare the influence of different numbers of trajectories on the accuracy of the results to determine a reasonlable number of trajectories to use.
-
-.. container:: plot-grid
-
-   .. container:: plot-row
-
-      .. image:: ../assets/BC_depth_1.svg
-         :width: 45%
-         :alt: BC comparison at depth 1
-         :class: plot-img
-
-      .. image:: ../assets/BC_depth_50.svg
-         :width: 45%
-         :alt: BC comparison at depth 50
-         :class: plot-img
-
-   .. container:: plot-row
-
-      .. image:: ../assets/BC_depth_200.svg
-         :width: 45%
-         :alt: BC comparison at depth 200
-         :class: plot-img
-
-   .. container:: plot-caption
-
-      Figure 3: Battacharyya Coefficient Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.
-
-From figure 3, it can be observed that the MCWF simulation method achieves a high Battacharyya Coefficient compared to the Density Matrix simulation method across all circuit sizes and depths. The accuracy of the MCWF method improves with an increasing number of trajectories, with :math:`1000` trajectories providing results that are very close to those of the Density Matrix method. This behaviour is consistant across the different depths tested. This is also reflected in the Jensen-Shannon Divergence results shown in figure 4.
+In this section, we compare the performance of the Monte-Carlo Wavefunction (MCWF) simulation method against the Density Matrix simulation method for varying circuit sizes and depths. The comparison is based on the Hellinger Distance and the Jenson-Shannon Divergence metrics. For the MCWF simulations, we also compare the influence of the number of trajectories on the accuracy of the results to determine a reasonable numbber of trajectories that can be used to get a good approximation.
 
 .. container:: plot-grid
 
-   .. container:: plot-row
+  .. container:: plot-row
 
-      .. image:: ../assets/JS_Depth_1.svg
-         :width: 45%
-         :alt: JS comparison at depth 1
-         :class: plot-img
+    .. image:: ../assets/Fidelity_Benchmark_Depth_1_Hellinger_Distance.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 1
+      :class: plot-img
 
-      .. image:: ../assets/JS_Depth_50.svg
-         :width: 45%
-         :alt: JS comparison at depth 50
-         :class: plot-img
+    .. image:: ../assets/Fidelity_Benchmark_Depth_50_Hellinger_Distance.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 50
+      :class: plot-img
 
-   .. container:: plot-row
+  ..container:: plot-row
 
-      .. image:: ../assets/JS_Depth_200.svg
-         :width: 45%
-         :alt: JS comparison at depth 200
-         :class: plot-img
+    .. image:: ../assets/Fidelity_Benchmark_Depth_100_Hellinger_Distance.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 100
+      :class: plot-img
 
-   .. container:: plot-caption
+    .. image:: ../assets/Fidelity_Benchmark_Depth_200_Hellinger_Distance.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 200
+      :class: plot-img
+  
+  ..container:: plot-caption
 
-      Figure 4: JS Divergence Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.
+    Figure 3: Hellinger Distance Comparison between MCWF and Density Matrix Simulations at depths 1, 50, 100 and 200.
 
-From both figure 3 and 4, it can be concluded that the MCWF simulation method is a viable alternative to the Density Matrix simulation method, especially for larger circuits where the computational resources required for Density Matrix simulations become prohibitive. The choice of the number of trajectories in the MCWF method is crucial for achieving a balance between accuracy and computational efficiency. From the above conducted experiments, using approximately :math:`100` trajectories seems to provide a good trade-off for most scenarios, but more trajectories may be required at higher circuit depths for a larger qubit system size to maintain accuracy.
-
-Additionally, we also compare the execution time of both simulation methods as well as the memory consumption during the simulations. The results are summarized in figure 5 and 6 below.
-
-.. container:: plot-grid
-
-   .. container:: plot-row
-
-      .. image:: ../assets/Runtime_Comparison_Depth_1.svg
-         :width: 45%
-         :alt: Runtime comparison at depth 1
-         :class: plot-img
-
-      .. image:: ../assets/Runtime_Comparison_Depth_50.svg
-         :width: 45%
-         :alt: Runtime comparison at depth 50
-         :class: plot-img
-
-   .. container:: plot-row
-
-      .. image:: ../assets/Runtime_Comparison_Depth_200.svg
-         :width: 45%
-         :alt: Runtime comparison at depth 200
-         :class: plot-img
-
-   .. container:: plot-caption
-
-      Figure 5: Runtime Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.
-
+From figure 3, it can be observed that the MCWF simulation method achieves a low distance value when using the Hellinger Distance across circuit size/depth. The accuracy improves with increases to the trajectory count, with :math:`1000` trajectories providing the best results. This behaviour is also reflected in the Jensen-Shannon Divergence results shown in figure 4.
 
 .. container:: plot-grid
 
-   .. container:: plot-row
+  .. container:: plot-row
 
-      .. image:: ../assets/Memory_Comparison_Depth_1.svg
-         :width: 45%
-         :alt: Memory comparison at depth 1
-         :class: plot-img
+    .. image:: ../assets/Fidelity_Benchmark_Depth_1_JS_Divergence.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 1
+      :class: plot-img
 
-      .. image:: ../assets/Memory_Comparison_Depth_50.svg
-         :width: 45%
-         :alt: Memory comparison at depth 50
-         :class: plot-img
+    .. image:: ../assets/Fidelity_Benchmark_Depth_50_JS_Divergence.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 50
+      :class: plot-img
 
-   .. container:: plot-row
+  ..container:: plot-row
 
-      .. image:: ../assets/Memory_Comparison_Depth_200.svg
-         :width: 45%
-         :alt: Memory comparison at depth 200
-         :class: plot-img
+    .. image:: ../assets/Fidelity_Benchmark_Depth_100_JS_Divergence.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 100
+      :class: plot-img
 
-   .. container:: plot-caption
+    .. image:: ../assets/Fidelity_Benchmark_Depth_200_JS_Divergence.svg
+      :width: 45%
+      :alt: Hellinger Distance for circuit depth of 200
+      :class: plot-img
+  
+  ..container:: plot-caption
 
-      Figure 6: Memory Comparison between MCWF and Density Matrix Simulations at depths 1, 50, and 200.
+    Figure 4: Jenson-Shannon Divergence Comparison between MCWF and Density Matrix Simulations at depths 1, 50, 100 and 200.
+
+The result of the memory benchmark is shown below in figure 5 where tthe peak Resident Set Size (RSS) of the process is measured using the `usr/bin/time -v` command on a linux machine.
+
+.. figure:: ../assets/Memory_Benchmark_Logscale.svg
+  :alt: Memory Benchmark Results
+  :align: center
+  :width: 700px
+
+  Figure 5: Results of the Memory Benchmark of the MCWF and Density Matrix Simulation methods at a circuit depth of 100.
+
+The result of the runtime benchmark is shown below in figure 6. This benchmark was performed on a High Performance Computer cluster with a single node completely blocked and the benchmark performed on this node exclusively (no other tasks/process execpt OS processes on this node).
+
+.. figure:: ../assets/Time_Benchmark_Logscale.svg
+  :alt: Time Benchmark Results
+  :align: center
+  :width: 700px
+
+  Figure 6: Results of the Runtime Benchmark of the MCWF and Density Matrix Simulation methods at a circuit depth of 100.
+
+From the benchmark results, it can be concluded that the MCWF method is a viable alternative to the Density Matrix simulation method, especially for larger/deeper circuits where computational resources requirements for Density Matrix simulations can become prohibitive. The choice of the number of trajectories in the MCWF method is crucial to balance accuracy and computational efficiency. From the fidelity experiments, using :math:`100` trajectories seems to be sufficient with diminishing returns after :math:`500` trajectories.
 
 
 Reproducibility
------------------
-The above comparisons can be reproduced using the latest calibration data or using the sample noise models provided in the repository. The scripts for reproducing the comparisons can be found in the `verification` folder of the repository, linked below:
+---------------
+
+The above benchmarks can be reproduced (however, please be aware that runtime benchmarks require exclusive machine access in order to avoid unneccessary interferences that make results unusable) by using the benchmark scripts and visualization notebook available in the git repository `NoisyCircuits_Benchmark <https://github.com/Sats2/NoisyCircuits_Benchmark>`_ .
+
+Additionally, this repository also contains a notebook for local verification (restricted to smaller system sizes due to longer runtimes of the density matrix simulations) and result visualization which uses all available simulation backends. The `verification` folder is linked below:
 
 - :doc:`Verification Script <verification/method_verification>`
-
+  
 .. toctree::
-   :maxdepth: 1
-   :caption: Reproducibility
-   :hidden:
+  :maxdepth: 1
+  :caption: Reproducibility
+  :hidden:
 
-   verification/method_verification
+  verification/method_verification
 
 
 Conclusion
 ----------
-From the comparisons conducted, it is evident that both noise filtering and the MCWF simulation method offer significant advantages in terms of computational efficiency without compromising accuracy. Noise filtering effectively reduces the complexity of the noise model, leading to faster simulations. The MCWF method provides a scalable alternative to Density Matrix simulations, particularly for larger circuits, while still maintaining high accuracy with an appropriate choice of trajectories. These methods are valuable tools for simulating noisy quantum circuits and can be tailored to specific requirements based on the desired balance between accuracy and computational resources.
+From the benchmarks, it is evident that both noise filtering and using the MCWF method offer significant advantages in terms of computational efficiency without compromising on accuracy. Noise Filtering effectively reduces the complexity of the noise model leading to faster simulations (both with the density matrix and MCWF methods). The MCWF method provides a scalable alternative to density matrix simulations, particularly for larger circuits which still maintaining high accuracy with an appropriate choice of trajectories. These methods are valuable tools for simulating noisy quantum circuits and can be tailored to specific requirements based on the desired balance between computational efficiency and accuracy.

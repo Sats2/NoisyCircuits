@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 import os
 import pathlib
 import pandas as pd
@@ -9,6 +13,7 @@ from NoisyCircuits.utils.CreateNoiseModel import CreateNoiseModel, GetNoiseModel
 """
 Unit Tests for error handling in the CreateNoiseModel class within the module.
 """
+
 def test_invalid_calibration_file_path_type():
     """
     Test whether the CreateNoiseModel class raises a TypeError when the calibration_data_file is not a string.
@@ -84,6 +89,7 @@ def test_missing_column_names():
 """
 Unit Tests for error handling in the GetNoiseModel class within the module.
 """
+
 def test_invalid_backend_type():
     """
     Test whether the GetNoiseModel class raises a TypeError when the backend_name is not a string.

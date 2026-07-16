@@ -20,6 +20,7 @@ Prerequisites
 ~~~~~~~~~~~~~
 
 - A conda-style environment manager: `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_, `Anaconda <https://www.anaconda.com/>`_, or `Micromamba <https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html>`_.
+- A C/C++ compiler such as GCC/clang/intel C++/MSVC. It is highly recommended to use GCC.
 - An IBM Quantum (IBMQ) account + API token (optional but recommended, only needed to pull live hardware data or submit jobs to real devices). Sample Noise models are provided for testing without an IBMQ account.
 
 Steps
@@ -49,7 +50,7 @@ Steps
 
 		conda activate NoisyCircuits
 
-5. Install the package:
+5. Install the package
 
 	.. code-block:: bash
 
@@ -68,9 +69,9 @@ If you use NoisyCircuits in your research, please cite the software as follows:
 	@software{NoisyCircuits2025,
   		author = {Hegde, Sathyamurthy},
   		title = {NoisyCircuits},
-  		year = {2025},
+  		year = {2026},
   		url = {https://github.com/Sats2/NoisyCircuits},
-  		version = {1.3.0},
+  		version = {2.0.0},
 	}
 
 Project Status

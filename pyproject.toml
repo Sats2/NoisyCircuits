@@ -1,0 +1,66 @@
+[build-system]
+requires = [
+    "setuptools>=77",
+    "wheel",
+    "pybind11>=2.10"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "NoisyCircuits"
+version = "2.0.0"
+description = "A Python package that builds error-modelled quantum gates from IBM QPUs"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Sathyamurthy Hegde", email = "sathyamurthy.hegde@rwth-aachen.de" }
+]
+keywords = ["quantum-computing", "error-modeling"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "joblib",
+    "matplotlib",
+    "numba",
+    "numpy",
+    "openqasm3[parser]",
+    "pandas",
+    "pennylane",
+    "qiskit",
+    "qiskit-aer",
+    "qiskit-ibm-runtime",
+    "pybind11",
+    "ray",
+    "requests",
+    "scipy",
+]
+
+[project.optional-dependencies]
+mpi = ["mpi4py"]
+test = ["pytest", "pytest-cov", "coverage"]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "nbsphinx",
+    "sphinxcontrib-bibtex",
+    "sphinx-copybutton",
+]
+dev = ["check-manifest"]
+
+[project.urls]
+Homepage = "https://github.com/Sats2/NoisyCircuits"
+Source = "https://github.com/Sats2/NoisyCircuits"
+"Bug Reports" = "https://github.com/Sats2/NoisyCircuits/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

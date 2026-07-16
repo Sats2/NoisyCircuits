@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module provides the exact decomposition for several single and two qubit gates using only the gates that are available in the Heron QPU from IBM quantum hardware. The decomposition also considers the swap sequencing required for connecting qubits in the systems while keeping the directionality of qubits in mind. It is implemented with the abtract class `Decomposition` in the background to conform to error handling and skeleton templates. It is selected according to the user specified QPU in the QuantumCircuit class.
 """
@@ -13,14 +17,22 @@ class HeronDecomposition(Decomposition):
     def __init__(self,
                  num_qubits:int,
                  connectivity:dict,
-                 qubit_map:list[tuple]):
+                 qubit_map:list[tuple],
+                 use_fractional:bool = False
+                 ):
         """
         Constructor for the HeronDecomposition class that applies the quantum gates for the IBM Heron QPU Architectures.
 
-        Args:
-            num_qubits (int): The number of qubits in the quantum circuit.
-            connectivity (dict): A dictionary representing the connectivity of the qubits.
-            qubit_map (list[tuple]): A list of tuples representing the mapping of logical qubits to physical qubits.
+        Parameters
+        ----------
+        num_qubits : int
+            The number of qubits in the quantum circuit.
+        connectivity : dict
+            A dictionary representing the connectivity of the qubits.
+        qubit_map : list[tuple]
+            A list of tuples representing the mapping of logical qubits to physical qubits.
+        use_fractional : bool
+            A flag to indicate whether to use fractional gates or not.
         """
         super().__init__(num_qubits=num_qubits)
         self.instruction_list = []
@@ -28,28 +40,37 @@ class HeronDecomposition(Decomposition):
         self.connectivity = connectivity
         self.qubit_map = qubit_map
         self.qubit_coupling = QubitCouplingMap(num_qubits=self.num_qubits, connectivity=self.connectivity)
+        self.use_fractional = use_fractional
 
     def X(self,
           qubit:int):
         if super().X(qubit=qubit):
-            self.instruction_list.append(["x", [qubit], None])
+            self.instruction_list.append(["x", [qubit, qubit], 0])
 
     def SX(self,
            qubit:int):
         if super().SX(qubit=qubit):
-            self.instruction_list.append(["sx", [qubit], None])
+            self.instruction_list.append(["sx", [qubit, qubit], 0])
     
     def RZ(self,
            theta:int|float,
            qubit:int):
         if super().RZ(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rz", [qubit], theta])
+            self.instruction_list.append(["rz", [qubit, qubit], theta])
     
     def RX(self,
            theta:int|float,
            qubit:int):
         if super().RX(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rx", [qubit], theta])
+            if self.use_fractional:
+                self.instruction_list.append(["rx", [qubit, qubit], theta])
+            else:
+                self.RZ(theta=np.pi/2, qubit=qubit)
+                self.SX(qubit=qubit)
+                self.RZ(theta=2*np.pi + theta, qubit=qubit)
+                self.SX(qubit=qubit)
+                self.RZ(theta=5*np.pi/2, qubit=qubit)
+                self.X(qubit=qubit)
     
     def RY(self,
            theta:int|float,
@@ -106,9 +127,9 @@ class HeronDecomposition(Decomposition):
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
             match_qubits = next((t for t in self.qubit_map if phys_control in t and phys_target in t), None)
             if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
-                self.instruction_list.append(["cz", [phys_control, phys_target], None])
+                self.instruction_list.append(["cz", [phys_control, phys_target], 0])
             else:
-                self.instruction_list.append(["cz", [phys_target, phys_control], None])
+                self.instruction_list.append(["cz", [phys_target, phys_control], 0])
             for swap in reverse_swaps:
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
     

@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module provides the exact decomposition for several single and two qubit gates using only the gates that are available in the Eagle QPU from IBM quantum hardware (now deprecated and no hardware is available, however simulations can still be performed using previously stored noise information). The decomposition also considers the swap sequencing required for connecting qubits in the systems while keeping the directionality of qubits in mind. It is implemented with the abtract class `Decomposition` in the background to conform to error handling and skeleton templates. It is selected according to the user specified QPU in the QuantumCircuit class.
 """
@@ -13,14 +17,22 @@ class EagleDecomposition(Decomposition):
     def __init__(self,
                  num_qubits:int,
                  connectivity:dict,
-                 qubit_map:list[tuple]):
+                 qubit_map:list[tuple],
+                 use_fractional:bool=False
+                ):
         """
         Constructor for the EagleDecomposition class that applies the quantum gates for the IBM Eagle QPU Architectures.
 
-        Args:
-            num_qubits (int): The number of qubits in the quantum circuit.
-            connectivity (dict): A dictionary representing the connectivity of the qubits.
-            qubit_map (list[tuple]): A list of tuples representing the mapping of logical qubits to physical qubits.
+        Parameters
+        ----------
+        num_qubits : int
+            The number of qubits in the quantum circuit.
+        connectivity : dict
+            A dictionary representing the connectivity of the qubits.
+        qubit_map : list[tuple]
+            A list of tuples representing the mapping of logical qubits to physical qubits.
+        use_fractional : bool
+            A flag to indicate usage of fractional gates. Unused here as Eagle does not support fractional gates.
         """
         super().__init__(num_qubits=num_qubits)
         self.instruction_list = []
@@ -33,17 +45,17 @@ class EagleDecomposition(Decomposition):
            theta:int|float,
            qubit:int)->None:
         if super().RZ(theta=theta, qubit=qubit):
-            self.instruction_list.append(["rz", [qubit], theta])
+            self.instruction_list.append(["rz", [qubit, qubit], theta])
 
     def SX(self,
            qubit:int)->None:
         if super().SX(qubit=qubit):
-            self.instruction_list.append(["sx", [qubit], None])
+            self.instruction_list.append(["sx", [qubit, qubit], 0])
 
     def X(self,
           qubit:int)->None:
         if super().X(qubit=qubit):
-            self.instruction_list.append(["x", [qubit], None])
+            self.instruction_list.append(["x", [qubit, qubit], 0])
 
     def RY(self,
            theta:int|float,
@@ -95,7 +107,7 @@ class EagleDecomposition(Decomposition):
                 self.apply_swap_decomposition(qubit1=swap[0], qubit2=swap[1])
             match_qubits = next((t for t in self.qubit_map if phys_control in t and phys_target in t), None)
             if phys_control == match_qubits[0] and phys_target == match_qubits[1]:
-                self.instruction_list.append(["ecr", [phys_control, phys_target], None])
+                self.instruction_list.append(["ecr", [phys_control, phys_target], 0])
             else:
                 self.RZ(theta=np.pi/2, qubit=phys_control)
                 self.RZ(theta=-np.pi/2, qubit=phys_target)
@@ -103,7 +115,7 @@ class EagleDecomposition(Decomposition):
                 self.SX(qubit=phys_target)
                 self.RZ(theta=-np.pi/2, qubit=phys_control)
                 self.RZ(theta=np.pi/2, qubit=phys_target)
-                self.instruction_list.append(["ecr", [phys_target, phys_control], None])
+                self.instruction_list.append(["ecr", [phys_target, phys_control], 0])
                 self.RZ(theta=np.pi/2, qubit=phys_control)
                 self.RZ(theta=np.pi/2, qubit=phys_target)
                 self.SX(qubit=phys_control)

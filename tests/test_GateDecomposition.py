@@ -1,4 +1,7 @@
-#TODO: Remove pennylane dependency from this file in future versions. Switch to Qulacs.
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 import pytest
 import os
 import pickle
@@ -13,36 +16,35 @@ circuit_list_double_qubit = []
 for qpu in qpus:
     noise_model_path = Path(__file__).parent.parent / "noise_models" / f"Noise_Model_{qpu.capitalize()}_QPU.pkl"
     noise_model = pickle.load(open(noise_model_path, "rb"))
-    circuit_list_single_qubit.append(
-        QuantumCircuit(
-            num_qubits=1,
-            noise_model=noise_model,
-            backend_qpu_type=qpu,
-            num_trajectories=1,
-            num_cores=1,
-            jsonize=True,
-            verbose=False,
-            threshold=1e-3
+    for fractional in [True, False]:
+        circuit_list_single_qubit.append(
+            QuantumCircuit(
+                num_qubits=1,
+                noise_model=noise_model,
+                backend_qpu_type=qpu,
+                sim_backend="custom",
+                use_fractional=fractional,
+                threshold=1e-6,
+                verbose=False
+            )
         )
-    )
-    circuit_list_double_qubit.append(
-        QuantumCircuit(
-            num_qubits=2,
-            noise_model=noise_model,
-            backend_qpu_type=qpu,
-            num_trajectories=1,
-            num_cores=1,
-            jsonize=True,
-            verbose=False,
-            threshold=1e-3
+        circuit_list_double_qubit.append(
+            QuantumCircuit(
+                num_qubits=2,
+                noise_model=noise_model,
+                backend_qpu_type=qpu,
+                use_fractional=fractional,
+                sim_backend="custom",
+                threshold=1e-6,
+                verbose=False
+            )
         )
-    )
 
 instruction_map = {
-            "x": lambda q: qml.X(q),
-            "sx": lambda q: qml.SX(q),
-            "rz": lambda t, q: qml.RZ(t, q),
-            "rx": lambda t,q: qml.RX(t, q),
+            "x": lambda q: qml.X(q[0]),
+            "sx": lambda q: qml.SX(q[0]),
+            "rz": lambda t, q: qml.RZ(t, q[0]),
+            "rx": lambda t,q: qml.RX(t, q[0]),
             "ecr": lambda q: qml.ECR(q),
             "cz": lambda q: qml.CZ(q),
             "rzz": lambda t,q: qml.IsingZZ(t, q)
@@ -65,11 +67,14 @@ def get_gate_matrix_single(instructions:list)->np.ndarray:
     """
     Helper function to generate the final matrix for decomposed single qubit gates.
 
-    Args:
-        instructions (list): List containing the circuit instructions (gate decomposition)
+    Parameters
+    ----------
+    instructions : list
+        List containing the circuit instructions (gate decomposition)
     
-    Returns:
-        (np.ndarray): Matrix operator for the gate decomposition.
+    Returns
+    np.ndarray
+        Matrix operator for the gate decomposition.
     """
     @qml.qnode(qml.device("default.qubit", wires=1))
     def circuit_builder(instructions):
@@ -89,11 +94,15 @@ def get_gate_matrix_double(instructions:list)->np.ndarray:
     """
     Helper function to generate the final matrix for the decomposed double qubit gates.
 
-    Args:
-        instructions (list): List containing the circuit instructions (gate decomposition)
+    Parameters
+    ----------
+    instructions : list
+        List containing the circuit instructions (gate decomposition)
     
-    Returns:
-        (np.ndarray): Matrix operator for the gate decomposition
+    Returns
+    -------
+    np.ndarray
+        Matrix operator for the gate decomposition
     """
     @qml.qnode(qml.device("default.qubit", wires=2))
     def circuit_builder(instructions):
@@ -109,17 +118,27 @@ def get_gate_matrix_double(instructions:list)->np.ndarray:
     gate_matrix = qml.matrix(circuit_builder)(instructions)
     return gate_matrix
 
-def get_true_matrix_double(gate:str, pair:tuple[int], theta:int|float=None)->np.ndarray:
+def get_true_matrix_double(
+        gate:str, 
+        pair:tuple[int], 
+        theta:int|float=None
+        )->np.ndarray:
     """
     Helper function that generates the matrix for a speicied two qubit gate for a given control-target pair.
 
-    Args:
-        gate (str): Gate being applied.
-        pair (tuple[int]): [control, target] qubit tuple.
-        theta (int|float, optional): Angle of rotation for the Two Qubit Gate (applicable to CRX, CRY, CRZ, RXX, RYY, RZZ gates)
+    Parameters
+    ----------
+    gate : str
+        Gate being applied.
+    pair : tuple[int]
+        [control, target] qubit tuple.
+    theta : int|float, optional
+        Angle of rotation for the Two Qubit Gate (applicable to CRX, CRY, CRZ, RXX, RYY, RZZ gates)
     
-    Returns:   
-        (np.ndarray): Matrix operator for the two qubit gate.
+    Returns
+    -------
+    np.ndarray
+        Matrix operator for the two qubit gate.
     """
     pair = list(pair)
     if theta is None:

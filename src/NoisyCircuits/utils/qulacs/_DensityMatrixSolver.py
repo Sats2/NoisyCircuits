@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module provides the ability for the QuantumCircuit module to perform a density matrix simulation for a specific quantum circuit using qulacs as a quantum circuit simulation backend. Alternatively, the user can opt to use just this method to perform a density matrix simulation using a custom instruction set with a custom noise model for single qubit and two qubit gates, as long as the gates applied belong to the set of gates pre-defined by the QPU basis gates from the IBM Eagle/Heron QPU architectures. The measurement error is not considered in this module and is only applied from within the QuantumCircuit module. For the full application of noise information from the quantum hardware, it is recommended to run all simulations via the QuantumCircuit module. 
 
@@ -7,7 +11,7 @@ Example:
     >>> instruction_list = []
     >>> instruction_list.append(["rx", [0], np.pi])
     >>> instruction_list.append(["ecr", [0, 1], None])
-    >>> solver = DensityMatrixSolver(num_qubits=2, single_qubit_noise=single_qubit_noise, two_qubit_noise=two_qubit_noise, instruction_list=instruction_list)
+    >>> solver = DensityMatrixSolver(num_qubits=2, single_qubit_noise=single_qubit_noise, two_qubit_noise=two_qubit_noise, instruction_list=instruction_list, num_cores=1)
     >>> solver.solve(qubits=[0,1])
     [0.45, 0.45, 0.05, 0.05]
 
@@ -16,30 +20,9 @@ This module contains only one class `DensityMatrixSolver` which has only one cal
 
 from qulacs import QuantumCircuit, DensityMatrix
 from qulacs import gate
+import os
 import numpy as np
 from qulacs.state import partial_trace
-
-
-def convert_matrix_to_little_endian(matrix_list:list[np.ndarray[np.complex128]])->list[np.ndarray[np.complex128]]:
-    """
-    Converts the two-qubit matrices from big endian to little endian format.
-
-    Args:
-        matrix_list (list[np.ndarray[np.complex128]]): The list of input matrices in big endian format.
-
-    Returns:
-        list[np.ndarray[np.complex128]]: The list of output matrices in little endian format.
-    """
-    perm = np.array([0, 2, 1, 3])
-    n = matrix_list[0].shape[0]
-    result_list = []
-    for matrix in matrix_list:
-        result = np.empty((n, n), dtype=np.complex128)
-        for i in range(n):
-            for j in range(n):
-                result[i, j] = matrix[perm[i], perm[j]]
-        result_list.append(result)
-    return result_list
 
 class DensityMatrixSolver:
     """
@@ -49,52 +32,48 @@ class DensityMatrixSolver:
                  num_qubits:int,
                  single_qubit_noise:dict,
                  two_qubit_noise:dict,
-                 instruction_list:list)->None:
+                 instruction_list:list,
+                 num_cores:int
+                )->None:
         """
         Initializes the DensityMatrixSolver with the given parameters.
 
-        Args:
-            num_qubits (int): Number of qubits in the circuit.
-            single_qubit_noise (dict): Noise instructions for single qubit gates for all qubits used.
-            two_qubit_noise (dict): Noise instructions for entangling gates for all qubits used.
-            instruction_list (list): List of instructions to be executed on the circuit.
-
-        Raises:
-            TypeError: If any of the input types are incorrect.
-            ValueError: If num_qubits is less than 1.
-            TypeError: If single_qubit_noise is not a dictionary.
-            TypeError: If two_qubit_noise is not a dictionary.
-            TypeError: If instruction_list is not a list.
+        Parameters
+        ----------
+        num_qubits : int
+            Number of qubits in the circuit.
+        single_qubit_noise :dict
+            Noise instructions for single qubit gates for all qubits used.
+        two_qubit_noise : dict
+            Noise instructions for entangling gates for all qubits used.
+        instruction_list : list
+            List of instructions to be executed on the circuit.
+        num_cores : int
+            Number of CPU cores to be used for the simulation.
         """
-        if not isinstance(num_qubits, int):
-            raise TypeError("num_qubits must be an integer")
-        if not isinstance(single_qubit_noise, dict):
-            raise TypeError("single_qubit_noise must be a dictionary")
-        if not isinstance(two_qubit_noise, dict):
-            raise TypeError("two_qubit_noise must be a dictionary")
-        if not isinstance(instruction_list, list):
-            raise TypeError("instruction_list must be a list")
-        if num_qubits < 1:
-            raise ValueError("num_qubits must be greater than or equal to 1")
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
-        self.two_qubit_noise = two_qubit_noise
         self.instruction_list = instruction_list
-        for two_gate in self.two_qubit_noise:
-            for qubit_pair in self.two_qubit_noise[two_gate]:
-                error_operator_list = convert_matrix_to_little_endian(self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"])
-                self.two_qubit_noise[two_gate][qubit_pair]["qubit_channel"] = error_operator_list
+        self.two_qubit_noise = {
+            gate : {pair : payload for pair, payload in pairs.items()}
+            for gate, pairs in two_qubit_noise.items()
+        }
+        os.environ["QULACS_NUM_THREADS"] = str(num_cores)
 
     def solve(self,
               qubits:list[int])->np.ndarray[np.float64]:
         """
         Solves the quantum circuit using density matrix simulation and returns the probabilities of measuring the specified qubits in the computational basis.
 
-        Args:
-            qubits (list[int]): List of qubits to be measured.
+        Parameters
+        ----------
+        qubits : list[int]
+            List of qubits to be measured.
         
-        Returns:
-            np.ndarray[np.float64]: Probabilities of measuring each qubit in the computational basis.
+        Returns
+        -------
+        np.ndarray[np.float64]
+            Probabilities of measuring each qubit in the computational basis.
         """
         circuit = QuantumCircuit(self.num_qubits)
         state = DensityMatrix(self.num_qubits)
@@ -110,20 +89,20 @@ class DensityMatrixSolver:
             "unitary": lambda q, p: gate.DenseMatrix(q, p) if len(q) > 1 else gate.DenseMatrix(q[0], p)
         }
         noise_handlers = {
-            "x": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
-                                                       self.single_qubit_noise[q[0]]["x"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["x"]["qubit_channel"]))]),
-            "sx": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
-                                                        self.single_qubit_noise[q[0]]["sx"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["sx"]["qubit_channel"]))]),
-            "rz": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
-                                                        self.single_qubit_noise[q[0]]["rz"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["rz"]["qubit_channel"]))]),
-            "rx": lambda q: gate.CPTP([gate.DenseMatrix(q[0], 
-                                                        self.single_qubit_noise[q[0]]["rx"]["qubit_channel"][k]) for k in range(len(self.single_qubit_noise[q[0]]["rx"]["qubit_channel"]))]),
+            "x" : lambda q: gate.CPTP([gate.DenseMatrix(q[0],
+                                                        self.single_qubit_noise[q[0]]["x"][k]) for k in range(len(self.single_qubit_noise[q[0]]["x"]))]),
+            "sx" : lambda q: gate.CPTP([gate.DenseMatrix(q[0],
+                                                        self.single_qubit_noise[q[0]]["sx"][k]) for k in range(len(self.single_qubit_noise[q[0]]["sx"]))]),
+            "rx" : lambda q: gate.CPTP([gate.DenseMatrix(q[0],
+                                                        self.single_qubit_noise[q[0]]["rx"][k]) for k in range(len(self.single_qubit_noise[q[0]]["rx"]))]),
+            "rz" : lambda q: gate.CPTP([gate.DenseMatrix(q[0],
+                                                        self.single_qubit_noise[q[0]]["rz"][k]) for k in range(len(self.single_qubit_noise[q[0]]["rz"]))]),
             "ecr": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]], 
-                                                        self.two_qubit_noise["ecr"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["ecr"][tuple(q)]["qubit_channel"]))]),
+                                                        self.two_qubit_noise["ecr"][tuple(q)][k]) for k in range(len(self.two_qubit_noise["ecr"][tuple(q)]))]),
             "cz": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]], 
-                                                        self.two_qubit_noise["cz"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["cz"][tuple(q)]["qubit_channel"]))]),
+                                                        self.two_qubit_noise["cz"][tuple(q)][k]) for k in range(len(self.two_qubit_noise["cz"][tuple(q)]))]),
             "rzz": lambda q: gate.CPTP([gate.DenseMatrix([q[0], q[1]],
-                                                         self.two_qubit_noise["rzz"][tuple(q)]["qubit_channel"][k]) for k in range(len(self.two_qubit_noise["rzz"][tuple(q)]["qubit_channel"]))]),
+                                                         self.two_qubit_noise["rzz"][tuple(q)][k]) for k in range(len(self.two_qubit_noise["rzz"][tuple(q)]))]),
             "unitary": lambda q: gate.DenseMatrix(list(q), np.eye(2 ** len(q)))
         }
 
@@ -141,4 +120,4 @@ class DensityMatrixSolver:
             trace_qubits = [i for i in range(self.num_qubits) if i not in qubits]
             probs = np.diag(partial_trace(state, trace_qubits).get_matrix()).real
         del state, circuit, instruction_map, noise_handlers, exp
-        return probs
+        return np.asarray(probs.real, order="C")

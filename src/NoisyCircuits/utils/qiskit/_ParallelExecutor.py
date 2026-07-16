@@ -1,3 +1,7 @@
+# This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026
+
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.
+
 """
 This module is responsible for running the MCWF simulations in parallel for noisy quantum circuit simulations using pennylane as a quantum circuit simulator backend. It is not meant to be called independently by a user but instead to be used as a helper module within the QuantumCircuit module to perform MCWF trajectory simulations in a parallel (shared/distributed memory) environment.
 """
@@ -8,86 +12,9 @@ os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 from qiskit import QuantumCircuit
 from qiskit_aer import AerSimulator
-from qiskit_aer.library import SaveStatevector
-from qiskit.quantum_info import partial_trace, Statevector
 import numpy as np
 import ray
-from numba import njit
-import gc
-
-
-@njit(fastmath=False)
-def reverse_bit_order(x:int,
-                      num_qubits:int)->int:
-    """
-    Reverse the bit order of a 32-bit integer for a qubit index mapping.
-
-    Args:
-        x (int): The integer to reverse the bit order of.
-        num_qubits (int): The number of qubits in the system.
-
-    Returns:
-        int: The integer with the bit order reversed.
-    """
-    x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1)
-    x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2)
-    x = ((x >> 4) & 0x0F0F0F0F) | ((x & 0x0F0F0F0F) << 4)
-    x = ((x >> 8) & 0x00FF00FF) | ((x & 0x00FF00FF) << 8)
-    x = ((x >> 16) & 0x0000FFFF) | ((x & 0x0000FFFF) << 16)
-    return x >> (32 - num_qubits)
-
-@njit(fastmath=False)
-def compute_trajectory_probs(sparse_matrix_list:list[tuple[np.ndarray[np.complex128], int, int]],
-                             state:np.ndarray[np.complex128])->np.ndarray[np.float64]:
-    """
-    Computes the probabilities of the given statevector evolving under noise operators.
-
-    Args:
-        sparse_matrix_list (list[tuple[np.ndarray[np.complex128], int, int]]): List of sparse matrices representing the noise operators in CSR format.
-        state (np.ndarray[np.complex128]): Statevector of the quantum system.
-
-    Returns:
-        np.ndarray[np.float64]: Probabilities of the statevector picking a given noise operator.
-    """
-    probs = np.zeros(len(sparse_matrix_list), dtype=np.float64)
-    for k, sparse_matrix in enumerate(sparse_matrix_list):
-        data, indices, indptr = sparse_matrix
-        res = np.zeros_like(state)
-        num_qubit = int(np.log2(state.shape[0]))
-        for i in range(res.shape[0]):
-            row_sum = 0.0 + 0.0j
-            for j in range(indptr[i], indptr[i+1]):
-                row_sum += data[j] * state[reverse_bit_order(indices[j], num_qubit)]
-            little_endian_index = reverse_bit_order(i, num_qubit)
-            res[little_endian_index] = row_sum
-        probs[k] = np.vdot(res, res).real
-    return probs
-
-@njit(fastmath=False)
-def update_statevector(sparse_matrix:tuple[np.ndarray, int, int],
-                       state:np.ndarray[np.complex128],
-                       prob:float)->np.ndarray[np.complex128]:
-    """
-    Perfroms the matrix-vector product for sparse matrices in CSR format and provides the updated statevector under a given noise trajectory.
-
-    Args:
-        sparse_matrix (tuple[np.ndarray]): Sparse matrix in CSR format representing the noise operator.
-        state (np.ndarray[np.complex128]): Current statevector of the quantum system.
-        prob (float): Probability of the state evolving under the given noise operator.
-    
-    Returns:
-        np.ndarray[np.complex128]: Updated statevector after applying the noise operator (after normalization).
-    """
-    data, indices, indptr = sparse_matrix
-    res = np.zeros_like(state)
-    num_qubit = int(np.log2(state.shape[0]))
-    for i in range(res.shape[0]):
-        row_sum = 0.0 + 0.0j
-        for j in range(indptr[i], indptr[i+1]):
-            row_sum += data[j] * state[reverse_bit_order(indices[j], num_qubit)]
-        little_endian_index = reverse_bit_order(i, num_qubit)
-        res[little_endian_index] = row_sum
-    return res / np.sqrt(prob)
+from NoisyCircuits.utils import compute_trajectory_probs_single, compute_trajectory_probs_two_q, update_state_inplace_1q, update_state_inplace_2q
 
 
 @ray.remote
@@ -98,21 +25,26 @@ class RemoteExecutor:
     def __init__(self,
                  num_qubits:int,
                  single_qubit_noise:dict,
-                 two_qubit_noise:dict,
-                 two_qubit_noise_index:dict)->None:
+                 two_qubit_noise:dict
+                )->None:
         """
         Constructor for the Remote Executor class.
 
-        Args:
-            num_qubits (int): Number of qubits in the quantum circuit.
-            single_qubit_noise (dict): Dictionary containing the noise operators for single qubit gates.
-            two_qubit_noise (dict): Dictionary containing the noise operators for two qubit gates.
-            two_qubit_noise_index (dict): Dictionary mapping qubit pairs to their indices in the two qubit noise dictionary.
+        Parameters
+        ----------
+        num_qubits : int
+            Number of qubits in the quantum circuit.
+        single_qubit_noise : dict
+            Dictionary containing the noise operators for single qubit gates.
+        two_qubit_noise : dict
+            Dictionary containing the noise operators for two qubit gates.
         """
         self.num_qubits = num_qubits
         self.single_qubit_noise = single_qubit_noise
         self.two_qubit_noise = two_qubit_noise
-        self.two_qubit_noise_index = two_qubit_noise_index
+        self.two_qubit_noise_index = {}
+        for k in range(len(self.two_qubit_noise)):
+            self.two_qubit_noise_index[self.two_qubit_noise[k][0]] = k
         self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)
         self.circuit = QuantumCircuit(num_qubits)
         self.noise_function_map = {
@@ -145,6 +77,20 @@ class RemoteExecutor:
                         qubit_index:list[int])->np.ndarray[np.complex128]:
         """
         Private method that returns the statevector unchanged when no noise is to be applied.
+
+        Parameters
+        ----------
+        state : np.ndarray[np.complex128]
+            The current state of the qubit system.
+        gate_name : str
+            The name of the gate being applied.
+        qubit_index : list[int]
+            The list of qubits that the gate is being applied to.
+
+        Returns
+        -------
+        np.ndarray[np.complex128]
+            The unchanged statevector when no noise is applied.
         """
         return state
     
@@ -155,19 +101,25 @@ class RemoteExecutor:
         """
         Private method that applies single qubit noise to the given statevector according to the MCWF method.
 
-        Args:
-            state (np.ndarray[np.complex128]): Current statevector of the quantum system.
-            gate_name (str): Name of the gate being applied.
-            qubit_index (list[int]): List containing the index of the qubit being acted upon
+        Parameters
+        ----------
+        state : np.ndarray[np.complex128]
+            Current statevector of the quantum system.
+        gate_name : str
+            Name of the gate being applied.
+        qubit_index : list[int]
+            List containing the index of the qubit being acted upon
         
-        Returns:
-            np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
+        Returns
+        --------
+        np.ndarray[np.complex128]
+            Updated statevector after applying the noise operator.
         """
-        ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]["kraus_operators"]
-        kraus_probs = compute_trajectory_probs(ops, state.copy())
+        ops = self.single_qubit_noise[qubit_index[0]][1][gate_name]
+        kraus_probs = compute_trajectory_probs_single(ops, state, qubit_index[0])
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
-        new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
-        return new_state / np.linalg.norm(new_state)
+        update_state_inplace_1q(ops[chosen_index], state, qubit_index[0])
+        return state / np.sqrt(kraus_probs[chosen_index])
     
     def _apply_two_qubit_noise(self,
                                state:np.ndarray[np.complex128],
@@ -176,20 +128,26 @@ class RemoteExecutor:
         """
         Private method that applies two qubit noise to the given statevector according to the MCWF method.
 
-        Args:
-            state (np.ndarray[np.complex128]): Current statevector of the quantum system.
-            gate_name (str): Name of the gate being applied.
-            qubit_index (list[int]): List containing the index of the qubit being acted upon
+        Parameters
+        ----------
+        state : np.ndarray[np.complex128])
+            Current statevector of the quantum system.
+        gate_name : str
+            Name of the gate being applied.
+        qubit_index : list[int]
+            List containing the index of the qubit being acted upon
         
-        Returns:
-            np.ndarray[np.complex128]: Updated statevector after applying the noise operator.
+        Returns
+        --------
+        np.ndarray[np.complex128]
+            Updated statevector after applying the noise operator.
         """
         qubit_pair = tuple(qubit_index)
-        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]["operators"]
-        kraus_probs = compute_trajectory_probs(ops, state.copy())
+        ops = self.two_qubit_noise[self.two_qubit_noise_index[gate_name]][1][qubit_pair]
+        kraus_probs = compute_trajectory_probs_two_q(ops, state, qubit_index)
         chosen_index = np.random.choice(len(ops), p=kraus_probs)
-        new_state = update_statevector(ops[chosen_index], state, kraus_probs[chosen_index])
-        return new_state / np.linalg.norm(new_state)
+        update_state_inplace_2q(ops[chosen_index], state, qubit_index[0], qubit_index[1])
+        return state / np.sqrt(kraus_probs[chosen_index])
     
     def run(self,
             traj_id:int,
@@ -198,21 +156,28 @@ class RemoteExecutor:
         """
         Main method of the module to execute the MCWF trajectories.
 
-        Args:
-            traj_id (int): Trajectory ID for the simulation.
-            instruction_list (list[list[str, list[int], float|None]]): List of instructions to build the quantum circuit.
+        Parameters
+        ----------
+        traj_id : int
+            Trajectory ID for the simulation.
+        instruction_list : list[list[str, list[int], float|None]]
+            List of instructions to build the quantum circuit.
         """
         self.instruction_list = instruction_list
 
         def compute_trajectory(traj_id:int)->np.ndarray[np.float64]:
-            """
+            """ 
             Method to compute a single MCWF trajectory.
 
-            Args:
-                traj_id (int): Trajectory ID for the simulation.
+            Parameters
+            ----------
+            traj_id : int
+                Trajectory ID for the simulation.
             
-            Returns:
-                np.ndarray[np.float64]: Probabilities after executing the trajectory.
+            Returns
+            -------
+            np.ndarray[np.float64]
+                Probabilities after executing the trajectory.
             """
             np.random.seed(42 + traj_id)
             init_state = np.zeros(2**self.num_qubits, dtype=np.complex128)
@@ -236,25 +201,19 @@ class RemoteExecutor:
         final_state = compute_trajectory(traj_id)
         self.probs_sum += np.abs(final_state)**2
 
-    def get(self,
-            measured_qubits:list[int])->np.ndarray[np.float64]:
+    def get(self)->np.ndarray[np.float64]:
         """
         Method to get the accumulated probabilities after all trajectories have been run.
 
-        Args:
-            measured_qubits (list[int]): List of qubits that were measured.
-
-        Returns:
-            np.ndarray[np.float64]: Accumulated probabilities after all trajectories.
+        Returns
+        -------
+        np.ndarray[np.float64]
+            Accumulated probabilities after all trajectories.
         """
         return self.probs_sum
     
-    def reset(self, 
-              measured_qubits:list[int])->None:
+    def reset(self)->None:
         """
         Method to reset the accumulated probabilities and the measured qubits.
-
-        Args:
-            measured_qubits (list[int]): List of qubits that will be measured.
         """
         self.probs_sum = np.zeros(2**self.num_qubits, dtype=np.float64)

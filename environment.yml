@@ -10,6 +10,7 @@ dependencies:
   - scipy
   - numba
   - matplotlib
+  - pybind11
   - pip:
     - qulacs
     - qiskit
@@ -24,3 +25,5 @@ dependencies:
     - sphinxcontrib-bibtex
     - sphinx-copybutton
     - ipykernel
+    - openqasm3
+    - openqasm3[parser]

@@ -1,696 +1,696 @@
 ====================================================================================================
 Running Circuit with 2 qubits and depth 5
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9999928744555229
-Battacharyya Distance: 7.125569863939411e-06
-Hellinger Distance: 0.0026693715510092064
-Jensen-Shannon Divergence: 7.125048437135803e-06
+Battacharyya Coefficient: 0.9999620911594866
+Battacharyya Distance: 3.790955907161092e-05
+Hellinger Distance: 0.0061570155524599615
+Jensen-Shannon Divergence: 3.7906431202178225e-05
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9999928035677139
-Battacharyya Distance: 7.196458180525966e-06
-Hellinger Distance: 0.00268261668648154
-Jensen-Shannon Divergence: 7.19640576359215e-06
+Battacharyya Coefficient: 0.9999830013802851
+Battacharyya Distance: 1.699876419310972e-05
+Hellinger Distance: 0.004122938238014421
+Jensen-Shannon Divergence: 1.6998545384402464e-05
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9999955341042469
-Battacharyya Distance: 4.465905725233992e-06
-Hellinger Distance: 0.002113266607234832
-Jensen-Shannon Divergence: 4.465704782707315e-06
+Battacharyya Coefficient: 0.9999911867786428
+Battacharyya Distance: 8.813260193814765e-06
+Hellinger Distance: 0.0029687070176476335
+Jensen-Shannon Divergence: 8.81325958179883e-06
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999940516804415
-Battacharyya Distance: 5.9483372497915804e-06
-Hellinger Distance: 0.0024389177023916176
-Jensen-Shannon Divergence: 5.947998135176392e-06
+Battacharyya Coefficient: 0.9999953759845306
+Battacharyya Distance: 4.624026160204644e-06
+Hellinger Distance: 0.0021503524058118745
+Jensen-Shannon Divergence: 4.624087853205215e-06
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999996638281341
-Battacharyya Distance: 3.3617192240584446e-07
-Hellinger Distance: 0.0005798032994715982
-Jensen-Shannon Divergence: 3.362718246363385e-07
+Battacharyya Coefficient: 0.999998597512016
+Battacharyya Distance: 1.4024889674574387e-06
+Hellinger Distance: 0.0011842668550000675
+Jensen-Shannon Divergence: 1.4025863297597663e-06
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 2 qubits and depth 20
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9998572697136394
-Battacharyya Distance: 0.00014274047329723846
-Hellinger Distance: 0.011946978126712872
-Jensen-Shannon Divergence: 0.00014271552571168555
+Battacharyya Coefficient: 0.9997551181493475
+Battacharyya Distance: 0.00024491183910876484
+Hellinger Distance: 0.01564870124493016
+Jensen-Shannon Divergence: 0.00024486406179351455
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9998828308505455
-Battacharyya Distance: 0.00011717601429550577
-Hellinger Distance: 0.010824469938710616
-Jensen-Shannon Divergence: 0.00011715728578977549
+Battacharyya Coefficient: 0.9999081555518295
+Battacharyya Distance: 9.184866613004875e-05
+Hellinger Distance: 0.00958355091660077
+Jensen-Shannon Divergence: 9.183999390795098e-05
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9999865600064836
-Battacharyya Distance: 1.3440083833961869e-05
-Hellinger Distance: 0.003666059671671268
-Jensen-Shannon Divergence: 1.3439990196700213e-05
+Battacharyya Coefficient: 0.9999892736797388
+Battacharyya Distance: 1.0726377788607433e-05
+Hellinger Distance: 0.003275106145106314
+Jensen-Shannon Divergence: 1.0726331248106654e-05
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999925925533788
-Battacharyya Distance: 7.407474056467505e-06
-Hellinger Distance: 0.002721662473681807
-Jensen-Shannon Divergence: 7.407534036682896e-06
+Battacharyya Coefficient: 0.999965149758382
+Battacharyya Distance: 3.485084890175834e-05
+Hellinger Distance: 0.005903409321617017
+Jensen-Shannon Divergence: 3.484973400285545e-05
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999898010126612
-Battacharyya Distance: 1.0199039348808107e-05
-Hellinger Distance: 0.0031935853422520597
-Jensen-Shannon Divergence: 1.0199023619519496e-05
+Battacharyya Coefficient: 0.9999886541653733
+Battacharyya Distance: 1.1345898991165561e-05
+Hellinger Distance: 0.003368357853211474
+Jensen-Shannon Divergence: 1.1345883468864967e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 2 qubits and depth 50
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9867469863010021
-Battacharyya Distance: 0.013341618610551295
-Hellinger Distance: 0.11512173425984991
-Jensen-Shannon Divergence: 0.012391615807529082
+Battacharyya Coefficient: 0.9942216479786196
+Battacharyya Distance: 0.0057951112892388095
+Hellinger Distance: 0.07601547224993879
+Jensen-Shannon Divergence: 0.005620065611025484
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9996391500198698
-Battacharyya Distance: 0.0003609151021509334
-Hellinger Distance: 0.018996051698394724
-Jensen-Shannon Divergence: 0.00036052799542154416
+Battacharyya Coefficient: 0.9999388953084694
+Battacharyya Distance: 6.110655849836215e-05
+Hellinger Distance: 0.007816948991218988
+Jensen-Shannon Divergence: 6.110336440284965e-05
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9996178378065425
-Battacharyya Distance: 0.00038223523603860254
-Hellinger Distance: 0.019548969114894624
-Jensen-Shannon Divergence: 0.00038177132452077336
+Battacharyya Coefficient: 0.9995710638401754
+Battacharyya Distance: 0.0004290281792538281
+Hellinger Distance: 0.02071077400353131
+Jensen-Shannon Divergence: 0.0004285046395231752
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9998485483610656
-Battacharyya Distance: 0.000151463108891953
-Hellinger Distance: 0.01230656893418264
-Jensen-Shannon Divergence: 0.00015139510017067446
+Battacharyya Coefficient: 0.9995824872884522
+Battacharyya Distance: 0.0004175998942473606
+Hellinger Distance: 0.020433127796514638
+Jensen-Shannon Divergence: 0.0004170823050825957
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.999928322475423
-Battacharyya Distance: 7.168009353356379e-05
-Hellinger Distance: 0.00846625800308766
-Jensen-Shannon Divergence: 7.166160208684917e-05
+Battacharyya Coefficient: 0.9999095370548889
+Battacharyya Distance: 9.046703713006335e-05
+Hellinger Distance: 0.009511201034131904
+Jensen-Shannon Divergence: 9.04416263784677e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 2 qubits and depth 100
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9985817793670159
-Battacharyya Distance: 0.0014192272597244886
-Hellinger Distance: 0.03765927021308176
-Jensen-Shannon Divergence: 0.0014160668834939088
+Battacharyya Coefficient: 0.9962769264544636
+Battacharyya Distance: 0.003730021434210459
+Hellinger Distance: 0.061016993907738376
+Jensen-Shannon Divergence: 0.0037120143621374294
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9990734442769056
-Battacharyya Distance: 0.0009269852411838712
-Hellinger Distance: 0.030439377836810506
-Jensen-Shannon Divergence: 0.0009257450809305404
+Battacharyya Coefficient: 0.9985716583211265
+Battacharyya Distance: 0.0014293627312395665
+Hellinger Distance: 0.0377934078758998
+Jensen-Shannon Divergence: 0.001427067057631474
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9999587308791194
-Battacharyya Distance: 4.1269972474248156e-05
-Hellinger Distance: 0.00642410467523872
-Jensen-Shannon Divergence: 4.126882951894443e-05
+Battacharyya Coefficient: 0.9997316328583634
+Battacharyya Distance: 0.0002684031585419181
+Hellinger Distance: 0.016381915078443294
+Jensen-Shannon Divergence: 0.00026828313450247103
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999604545581033
-Battacharyya Distance: 3.954622383826238e-05
-Hellinger Distance: 0.006288516668857231
-Jensen-Shannon Divergence: 3.95449417681579e-05
+Battacharyya Coefficient: 0.9999672594599819
+Battacharyya Distance: 3.274107600129617e-05
+Hellinger Distance: 0.005721934989039985
+Jensen-Shannon Divergence: 3.27404170406005e-05
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999255816098975
-Battacharyya Distance: 7.442115928825e-05
-Hellinger Distance: 0.008626609420876768
-Jensen-Shannon Divergence: 7.441197322705472e-05
+Battacharyya Coefficient: 0.99997228850132
+Battacharyya Distance: 2.7711882650645186e-05
+Hellinger Distance: 0.005264171224483883
+Jensen-Shannon Divergence: 2.7711423786098966e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 3 qubits and depth 5
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9999132364271679
-Battacharyya Distance: 8.676733700862059e-05
-Hellinger Distance: 0.009314696604452015
-Jensen-Shannon Divergence: 8.665909567702246e-05
+Battacharyya Coefficient: 0.9998768328255393
+Battacharyya Distance: 0.00012317476016001472
+Hellinger Distance: 0.011098070753945517
+Jensen-Shannon Divergence: 0.0001231101816197356
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9999562318636704
-Battacharyya Distance: 4.3769094182386276e-05
-Hellinger Distance: 0.006615749113336138
-Jensen-Shannon Divergence: 4.3729992090114366e-05
+Battacharyya Coefficient: 0.99985301806134
+Battacharyya Distance: 0.00014699274156374265
+Hellinger Distance: 0.01212361079292773
+Jensen-Shannon Divergence: 0.00014688270688569354
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9999562318636704
-Battacharyya Distance: 4.3769094182386276e-05
-Hellinger Distance: 0.006615749113336131
-Jensen-Shannon Divergence: 4.372999209009378e-05
+Battacharyya Coefficient: 0.9996402839792421
+Battacharyya Distance: 0.0003597807340851126
+Hellinger Distance: 0.01896618097446916
+Jensen-Shannon Divergence: 0.0003588066271881758
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999336661374318
-Battacharyya Distance: 6.633606275611767e-05
-Hellinger Distance: 0.00814456030543856
-Jensen-Shannon Divergence: 6.626476877636624e-05
+Battacharyya Coefficient: 0.9998829575075558
+Battacharyya Distance: 0.00011704934245117123
+Hellinger Distance: 0.01081861786195663
+Jensen-Shannon Divergence: 0.00011700980970597802
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999890284371433
-Battacharyya Distance: 1.097162304471244e-05
-Hellinger Distance: 0.0033123349555268656
-Jensen-Shannon Divergence: 1.0970510804191734e-05
+Battacharyya Coefficient: 0.9999744242771345
+Battacharyya Distance: 2.5576049929921766e-05
+Hellinger Distance: 0.005057244592099035
+Jensen-Shannon Divergence: 2.557460878399065e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 3 qubits and depth 20
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9997521649078964
-Battacharyya Distance: 0.00024786580829515384
-Hellinger Distance: 0.01574277904643645
-Jensen-Shannon Divergence: 0.00024772580288522365
+Battacharyya Coefficient: 0.9922169572187239
+Battacharyya Distance: 0.007813488736412374
+Hellinger Distance: 0.0882215550830576
+Jensen-Shannon Divergence: 0.007389554030732665
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9997600977417253
-Battacharyya Distance: 0.00023993103942471225
-Hellinger Distance: 0.015488778463006076
-Jensen-Shannon Divergence: 0.0002398202162750263
+Battacharyya Coefficient: 0.9982232312630397
+Battacharyya Distance: 0.0017783490627256658
+Hellinger Distance: 0.04215173468502769
+Jensen-Shannon Divergence: 0.0017518847328480002
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9999032981361846
-Battacharyya Distance: 9.670653974206726e-05
-Hellinger Distance: 0.009833710582308244
-Jensen-Shannon Divergence: 9.668753419009853e-05
+Battacharyya Coefficient: 0.9995157838017256
+Battacharyya Distance: 0.00048433346879548836
+Hellinger Distance: 0.022004913048481695
+Jensen-Shannon Divergence: 0.00048339175400044244
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999552011539655
-Battacharyya Distance: 4.4799849532750756e-05
-Hellinger Distance: 0.006693194008521709
-Jensen-Shannon Divergence: 4.479640384949756e-05
+Battacharyya Coefficient: 0.9996658495540509
+Battacharyya Distance: 0.0003342062866491622
+Hellinger Distance: 0.018279782437047417
+Jensen-Shannon Divergence: 0.0003338962487382461
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999838293258161
-Battacharyya Distance: 1.6170804930674227e-05
-Hellinger Distance: 0.00402127768066795
-Jensen-Shannon Divergence: 1.6169949507779057e-05
+Battacharyya Coefficient: 0.9999083405765572
+Battacharyya Distance: 9.16636244244638e-05
+Hellinger Distance: 0.009573892804889609
+Jensen-Shannon Divergence: 9.164952186457888e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 3 qubits and depth 50
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9810500147094084
-Battacharyya Distance: 0.01913183732249062
-Hellinger Distance: 0.13765894555239264
-Jensen-Shannon Divergence: 0.017155231881240067
+Battacharyya Coefficient: 0.9970293294167822
+Battacharyya Distance: 0.0029750917831982697
+Hellinger Distance: 0.05450385842498587
+Jensen-Shannon Divergence: 0.0029657025733221764
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9984333142721883
-Battacharyya Distance: 0.0015679142632168315
-Hellinger Distance: 0.03958138107514912
-Jensen-Shannon Divergence: 0.0015527960466837146
+Battacharyya Coefficient: 0.9988320125227131
+Battacharyya Distance: 0.0011686701062468934
+Hellinger Distance: 0.034175831771593446
+Jensen-Shannon Divergence: 0.0011619792985598436
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9993016265188405
-Battacharyya Distance: 0.0006986174575168163
-Hellinger Distance: 0.026426756917273135
-Jensen-Shannon Divergence: 0.0006953189632287422
+Battacharyya Coefficient: 0.999723243355326
+Battacharyya Distance: 0.0002767949488616109
+Hellinger Distance: 0.01663600446824046
+Jensen-Shannon Divergence: 0.0002766756562497032
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9994142511581402
-Battacharyya Distance: 0.0005859204597325903
-Hellinger Distance: 0.024202248694391026
-Jensen-Shannon Divergence: 0.0005850386217528433
+Battacharyya Coefficient: 0.9994505824479815
+Battacharyya Distance: 0.0005495685371468906
+Hellinger Distance: 0.023439657676927964
+Jensen-Shannon Divergence: 0.0005491571924013119
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9993492521198273
-Battacharyya Distance: 0.0006509597084773596
-Hellinger Distance: 0.025509760488443223
-Jensen-Shannon Divergence: 0.0006501249949443159
+Battacharyya Coefficient: 0.9996262562915875
+Battacharyya Distance: 0.0003738135679991958
+Hellinger Distance: 0.019332452208798992
+Jensen-Shannon Divergence: 0.0003735556088195229
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 3 qubits and depth 100
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9873677447629521
-Battacharyya Distance: 0.012712720530169468
-Hellinger Distance: 0.11239330601533827
-Jensen-Shannon Divergence: 0.011899991618776357
+Battacharyya Coefficient: 0.995552984761998
+Battacharyya Distance: 0.004456932623028804
+Hellinger Distance: 0.06668594483091984
+Jensen-Shannon Divergence: 0.004434526433101627
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9997803625599793
-Battacharyya Distance: 0.00021966156385566247
-Hellinger Distance: 0.01482017004054391
-Jensen-Shannon Divergence: 0.00021960316863116103
+Battacharyya Coefficient: 0.9981033883795345
+Battacharyya Distance: 0.0018984124656477937
+Hellinger Distance: 0.04355010471234316
+Jensen-Shannon Divergence: 0.0018946891365787667
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9994313598299633
-Battacharyya Distance: 0.0005688019071745456
-Hellinger Distance: 0.023846177262746907
-Jensen-Shannon Divergence: 0.0005683907944206571
+Battacharyya Coefficient: 0.9991462186436618
+Battacharyya Distance: 0.0008541460352258597
+Hellinger Distance: 0.029219537236729716
+Jensen-Shannon Divergence: 0.000853430520657185
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9998112785833404
-Battacharyya Distance: 0.00018873922678695507
-Hellinger Distance: 0.01373759137073197
-Jensen-Shannon Divergence: 0.00018870126544727153
+Battacharyya Coefficient: 0.9990617929053773
+Battacharyya Distance: 0.0009386474863728572
+Hellinger Distance: 0.030630166415044197
+Jensen-Shannon Divergence: 0.0009373129016555742
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.999833742869389
-Battacharyya Distance: 0.00016627095285981733
-Hellinger Distance: 0.012894073468874024
-Jensen-Shannon Divergence: 0.00016619795888770552
+Battacharyya Coefficient: 0.9995991510108317
+Battacharyya Distance: 0.0004009293506002318
+Hellinger Distance: 0.020021213478678874
+Jensen-Shannon Divergence: 0.0004007332213347662
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 4 qubits and depth 5
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9997865742677838
-Battacharyya Distance: 0.0002134485107288234
-Hellinger Distance: 0.014609097583940333
-Jensen-Shannon Divergence: 0.00020962078995161935
+Battacharyya Coefficient: 0.9990713607480406
+Battacharyya Distance: 0.0009290707045194158
+Hellinger Distance: 0.030473582853973443
+Jensen-Shannon Divergence: 0.0009199184311423163
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9998017329476258
-Battacharyya Distance: 0.00019828670988460842
-Hellinger Distance: 0.014080733374909319
-Jensen-Shannon Divergence: 0.00019390744348412431
+Battacharyya Coefficient: 0.9999123835628165
+Battacharyya Distance: 8.762027572771573e-05
+Hellinger Distance: 0.0093603652269589
+Jensen-Shannon Divergence: 8.756540854409065e-05
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9998416054839777
-Battacharyya Distance: 0.00015840706175844092
-Hellinger Distance: 0.012585488310886059
-Jensen-Shannon Divergence: 0.00015594223348834688
+Battacharyya Coefficient: 0.999801620321919
+Battacharyya Distance: 0.000198399357932109
+Hellinger Distance: 0.014084732091155456
+Jensen-Shannon Divergence: 0.00019813517358276326
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999589518350658
-Battacharyya Distance: 4.1049007433198594e-05
-Hellinger Distance: 0.006406884183053673
-Jensen-Shannon Divergence: 4.1042775310662755e-05
+Battacharyya Coefficient: 0.9997140523833878
+Battacharyya Distance: 0.0002859885074271551
+Hellinger Distance: 0.016909985706983512
+Jensen-Shannon Divergence: 0.0002854411393879674
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999806388190398
-Battacharyya Distance: 1.9361368390325643e-05
-Hellinger Distance: 0.004400134198066771
-Jensen-Shannon Divergence: 1.9351039495574236e-05
+Battacharyya Coefficient: 0.9999127071234888
+Battacharyya Distance: 8.72966867560981e-05
+Hellinger Distance: 0.009343065691177816
+Jensen-Shannon Divergence: 8.724338301556198e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 4 qubits and depth 20
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9961501175616296
-Battacharyya Distance: 0.003857312311320443
-Hellinger Distance: 0.06204742088417166
-Jensen-Shannon Divergence: 0.0038021640439567183
+Battacharyya Coefficient: 0.9981548482873198
+Battacharyya Distance: 0.0018468561019955201
+Hellinger Distance: 0.04295522916567206
+Jensen-Shannon Divergence: 0.0018404619848411193
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9994834035657967
-Battacharyya Distance: 0.0005167299161140683
-Hellinger Distance: 0.022728757867746203
-Jensen-Shannon Divergence: 0.0005163393467856576
+Battacharyya Coefficient: 0.9992963850464469
+Battacharyya Distance: 0.0007038626067296536
+Hellinger Distance: 0.02652574133833412
+Jensen-Shannon Divergence: 0.0007014206906828615
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9994184945556249
-Battacharyya Distance: 0.0005816745842396733
-Hellinger Distance: 0.024114423990265865
-Jensen-Shannon Divergence: 0.0005810294130538342
+Battacharyya Coefficient: 0.9998326048778432
+Battacharyya Distance: 0.0001674091342839899
+Hellinger Distance: 0.012938126686354169
+Jensen-Shannon Divergence: 0.0001673611921502544
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9998015009641654
-Battacharyya Distance: 0.00019851873937565555
-Hellinger Distance: 0.014088968586871208
-Jensen-Shannon Divergence: 0.00019839500021776382
+Battacharyya Coefficient: 0.9997937937067356
+Battacharyya Distance: 0.000206227556705244
+Hellinger Distance: 0.01435988486234267
+Jensen-Shannon Divergence: 0.0002060180926583275
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9998431203919209
-Battacharyya Distance: 0.0001568919149719518
-Hellinger Distance: 0.0125251590044395
-Jensen-Shannon Divergence: 0.00015678325739594312
+Battacharyya Coefficient: 0.9999107378059144
+Battacharyya Distance: 8.926617819229479e-05
+Hellinger Distance: 0.009447867171001099
+Jensen-Shannon Divergence: 8.923872788696198e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 4 qubits and depth 50
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9830235541687331
-Battacharyya Distance: 0.01712219760756375
-Hellinger Distance: 0.13029369068102836
-Jensen-Shannon Divergence: 0.016598552361146518
+Battacharyya Coefficient: 0.9906840101661136
+Battacharyya Distance: 0.009359655068687167
+Hellinger Distance: 0.09651937543247867
+Jensen-Shannon Divergence: 0.00924238941340411
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9965771787243649
-Battacharyya Distance: 0.0034286925297082275
-Hellinger Distance: 0.05850488249412706
-Jensen-Shannon Divergence: 0.0034078453562115954
+Battacharyya Coefficient: 0.9981092843921512
+Battacharyya Distance: 0.001892505266783535
+Hellinger Distance: 0.04348235973171395
+Jensen-Shannon Divergence: 0.001887561295624647
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9994120334247945
-Battacharyya Distance: 0.0005881394953364848
-Hellinger Distance: 0.02424802208886645
-Jensen-Shannon Divergence: 0.0005877846936472892
+Battacharyya Coefficient: 0.9989243649708239
+Battacharyya Distance: 0.0010762139397022575
+Hellinger Distance: 0.03279687529575721
+Jensen-Shannon Divergence: 0.0010750376125832546
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.999316875006286
-Battacharyya Distance: 0.0006833584299093405
-Hellinger Distance: 0.026136659957432133
-Jensen-Shannon Divergence: 0.0006827944243498479
+Battacharyya Coefficient: 0.999391742533391
+Battacharyya Distance: 0.000608442530229842
+Hellinger Distance: 0.024662876283968124
+Jensen-Shannon Divergence: 0.0006079730217446754
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9997899253453342
-Battacharyya Distance: 0.000210096723436873
-Hellinger Distance: 0.0144939523485583
-Jensen-Shannon Divergence: 0.0002100444393917876
+Battacharyya Coefficient: 0.9998172903421565
+Battacharyya Distance: 0.00018272635128643944
+Hellinger Distance: 0.013517013643292287
+Jensen-Shannon Divergence: 0.0001826732974779528
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 4 qubits and depth 100
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9902752916755664
-Battacharyya Distance: 0.009772302108903385
-Hellinger Distance: 0.09861393575183995
-Jensen-Shannon Divergence: 0.0096395901052846
+Battacharyya Coefficient: 0.9878106222781211
+Battacharyya Distance: 0.012264277462970008
+Hellinger Distance: 0.11040551490687822
+Jensen-Shannon Divergence: 0.012064189321765603
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9977914541508918
-Battacharyya Distance: 0.0022109882833066174
-Hellinger Distance: 0.046995168359551066
-Jensen-Shannon Divergence: 0.0022053212689325244
+Battacharyya Coefficient: 0.9991787312216195
+Battacharyya Distance: 0.0008216062043412711
+Hellinger Distance: 0.028657787394608333
+Jensen-Shannon Divergence: 0.0008208125567028399
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9988712328441226
-Battacharyya Distance: 0.001129404693322865
-Hellinger Distance: 0.03359713017374818
-Jensen-Shannon Divergence: 0.0011278426000525233
+Battacharyya Coefficient: 0.9990598999746304
+Battacharyya Distance: 0.000940542196543587
+Hellinger Distance: 0.030661050623609985
+Jensen-Shannon Divergence: 0.0009395491585024461
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9997171234950297
-Battacharyya Distance: 0.00028291652207558456
-Hellinger Distance: 0.016818932932996657
-Jensen-Shannon Divergence: 0.0002828424329817744
+Battacharyya Coefficient: 0.9996486941798298
+Battacharyya Distance: 0.00035136754251585684
+Hellinger Distance: 0.01874315395402128
+Jensen-Shannon Divergence: 0.00035122918075264635
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9997609088133252
-Battacharyya Distance: 0.00023911977352919603
-Hellinger Distance: 0.015462573741422665
-Jensen-Shannon Divergence: 0.0002390750899929145
+Battacharyya Coefficient: 0.9997894589987042
+Battacharyya Distance: 0.00021056316816382963
+Hellinger Distance: 0.014510031056815913
+Jensen-Shannon Divergence: 0.00021049437036204754
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 5 qubits and depth 5
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9912789164065419
-Battacharyya Distance: 0.008759334800009653
-Hellinger Distance: 0.09338674206471702
-Jensen-Shannon Divergence: 0.007440388702781303
+Battacharyya Coefficient: 0.9984511796766904
+Battacharyya Distance: 0.0015500209854066044
+Hellinger Distance: 0.03935505460942707
+Jensen-Shannon Divergence: 0.0015238875767248665
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9979645527198227
-Battacharyya Distance: 0.0020375216182743996
-Hellinger Distance: 0.04511593155616831
-Jensen-Shannon Divergence: 0.0020051618992014907
+Battacharyya Coefficient: 0.9985509108755317
+Battacharyya Distance: 0.0014501400695116618
+Hellinger Distance: 0.038066903268716416
+Jensen-Shannon Divergence: 0.0014268477787877942
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9990589815117987
-Battacharyya Distance: 0.0009414615240572684
-Hellinger Distance: 0.030676024648006207
-Jensen-Shannon Divergence: 0.0009335057944415284
+Battacharyya Coefficient: 0.9986720864865002
+Battacharyya Distance: 0.0013287959719549955
+Hellinger Distance: 0.03644054765644339
+Jensen-Shannon Divergence: 0.001312195268662925
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9995136168486697
-Battacharyya Distance: 0.00048650147398358407
-Hellinger Distance: 0.022054096021695016
-Jensen-Shannon Divergence: 0.0004831610529098159
+Battacharyya Coefficient: 0.9999328102534886
+Battacharyya Distance: 6.719200384356303e-05
+Hellinger Distance: 0.008196935190237672
+Jensen-Shannon Divergence: 6.717607638930274e-05
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9997609711689575
-Battacharyya Distance: 0.00023905740298668033
-Hellinger Distance: 0.015460557268298768
-Jensen-Shannon Divergence: 0.00023810431801655173
+Battacharyya Coefficient: 0.9999793840217952
+Battacharyya Distance: 2.061619071699599e-05
+Hellinger Distance: 0.004540482155705139
+Jensen-Shannon Divergence: 2.0604144404980874e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 5 qubits and depth 20
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9871722748363885
-Battacharyya Distance: 0.012910710872489102
-Hellinger Distance: 0.11325954778129907
-Jensen-Shannon Divergence: 0.01241590115616167
+Battacharyya Coefficient: 0.9936672025549158
+Battacharyya Distance: 0.006352934668480596
+Hellinger Distance: 0.07957887562091613
+Jensen-Shannon Divergence: 0.006268443842070001
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9980335391367756
-Battacharyya Distance: 0.0019683968858792236
-Hellinger Distance: 0.04434479522150581
-Jensen-Shannon Divergence: 0.001963922724400377
+Battacharyya Coefficient: 0.9990568540408151
+Battacharyya Distance: 0.0009435910011834194
+Hellinger Distance: 0.030710681516206616
+Jensen-Shannon Divergence: 0.0009425862201154092
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9992163712101464
-Battacharyya Distance: 0.000783935987390125
-Hellinger Distance: 0.027993370462782087
-Jensen-Shannon Divergence: 0.0007832722439391088
+Battacharyya Coefficient: 0.9998107348375274
+Battacharyya Distance: 0.00018928307538373237
+Hellinger Distance: 0.013757367570786152
+Jensen-Shannon Divergence: 0.0001892452738925394
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9998134100365459
-Battacharyya Distance: 0.0001866073735270702
-Hellinger Distance: 0.01365979368317867
-Jensen-Shannon Divergence: 0.0001865349347742015
+Battacharyya Coefficient: 0.9998808418389392
+Battacharyya Distance: 0.00011916526095847038
+Hellinger Distance: 0.010915959008072646
+Jensen-Shannon Divergence: 0.00011913232798639431
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.999890359202822
-Battacharyya Distance: 0.00010964680816958576
-Hellinger Distance: 0.010470950157027774
-Jensen-Shannon Divergence: 0.00010961954332303978
+Battacharyya Coefficient: 0.9999690499178757
+Battacharyya Distance: 3.095056108795583e-05
+Hellinger Distance: 0.005563279799669455
+Jensen-Shannon Divergence: 3.0948497159669494e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 5 qubits and depth 50
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9709230505161338
-Battacharyya Distance: 0.029508061497259916
-Hellinger Distance: 0.17051964544854428
-Jensen-Shannon Divergence: 0.028264071884106193
+Battacharyya Coefficient: 0.9795550611328663
+Battacharyya Distance: 0.020656829667644205
+Hellinger Distance: 0.14298579952971
+Jensen-Shannon Divergence: 0.020082231278533792
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9979001833534984
-Battacharyya Distance: 0.002102024352536057
-Hellinger Distance: 0.04582375635554867
-Jensen-Shannon Divergence: 0.0020972008534281585
+Battacharyya Coefficient: 0.9984251767624023
+Battacharyya Distance: 0.0015760645751418784
+Hellinger Distance: 0.03968404260674868
+Jensen-Shannon Divergence: 0.0015730710464436893
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9990896193443924
-Battacharyya Distance: 0.0009107953037541446
-Hellinger Distance: 0.03017251490410745
-Jensen-Shannon Divergence: 0.0009099032307316225
+Battacharyya Coefficient: 0.9991334371505298
+Battacharyya Distance: 0.0008669385321069746
+Hellinger Distance: 0.02943743958782422
+Jensen-Shannon Divergence: 0.0008659741868016749
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9995521706574937
-Battacharyya Distance: 0.00044792964801393414
-Hellinger Distance: 0.02116197870090064
-Jensen-Shannon Divergence: 0.000447643749151962
+Battacharyya Coefficient: 0.9996695561561065
+Battacharyya Distance: 0.00033049845249083346
+Hellinger Distance: 0.018178114421195362
+Jensen-Shannon Divergence: 0.0003303769487433553
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9998044714110461
-Battacharyya Distance: 0.00019554770716057979
-Hellinger Distance: 0.013983153756751788
-Jensen-Shannon Divergence: 0.00019549747879851005
+Battacharyya Coefficient: 0.9997530864350772
+Battacharyya Distance: 0.00024694405309579417
+Hellinger Distance: 0.015713483539284232
+Jensen-Shannon Divergence: 0.00024684952466338256
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 5 qubits and depth 100
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9566601024013478
-Battacharyya Distance: 0.04430712052149945
-Hellinger Distance: 0.20818236620500624
-Jensen-Shannon Divergence: 0.042302310457750784
+Battacharyya Coefficient: 0.981210224670989
+Battacharyya Distance: 0.01896854607424408
+Hellinger Distance: 0.13707580139849854
+Jensen-Shannon Divergence: 0.01864714672235863
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9958935089835999
-Battacharyya Distance: 0.004114945804914337
-Hellinger Distance: 0.06408190865184464
-Jensen-Shannon Divergence: 0.004097208639194445
+Battacharyya Coefficient: 0.9982449143984768
+Battacharyya Distance: 0.0017566275687112204
+Hellinger Distance: 0.04189374179460345
+Jensen-Shannon Divergence: 0.0017536376196883637
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9969082160912665
-Battacharyya Distance: 0.003096573347089354
-Hellinger Distance: 0.05560381199878961
-Jensen-Shannon Divergence: 0.0030885142814256507
+Battacharyya Coefficient: 0.9982522195591693
+Battacharyya Distance: 0.0017493095910710284
+Hellinger Distance: 0.04180646410377598
+Jensen-Shannon Divergence: 0.0017467013822324612
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9993016075810133
-Battacharyya Distance: 0.0006986364085791104
-Hellinger Distance: 0.026427115223759734
-Jensen-Shannon Divergence: 0.0006981354459809414
+Battacharyya Coefficient: 0.9988010266761056
+Battacharyya Distance: 0.0011996926674500837
+Hellinger Distance: 0.03462619418769757
+Jensen-Shannon Divergence: 0.001198517512394867
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9996228774950281
-Battacharyya Distance: 0.00037719363354713636
-Hellinger Distance: 0.019419642247865604
-Jensen-Shannon Divergence: 0.0003770428704340539
+Battacharyya Coefficient: 0.9995947695883235
+Battacharyya Distance: 0.00040531253970771196
+Hellinger Distance: 0.020130335608385293
+Jensen-Shannon Divergence: 0.00040515927167848764
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 6 qubits and depth 5
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9964809729528489
-Battacharyya Distance: 0.0035252333872941386
-Hellinger Distance: 0.05932138777163232
-Jensen-Shannon Divergence: 0.003411343057636102
+Battacharyya Coefficient: 0.9993836517486636
+Battacharyya Distance: 0.0006165382720031298
+Hellinger Distance: 0.02482636202380412
+Jensen-Shannon Divergence: 0.000611990931977246
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9983593799355569
-Battacharyya Distance: 0.0016419673553376524
-Hellinger Distance: 0.04050456843918162
-Jensen-Shannon Divergence: 0.0016202545949082208
+Battacharyya Coefficient: 0.9999393075090608
+Battacharyya Distance: 6.069433280296048e-05
+Hellinger Distance: 0.0077905385526173
+Jensen-Shannon Divergence: 6.0670241823220215e-05
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9995523222187398
-Battacharyya Distance: 0.0004477780188753383
-Hellinger Distance: 0.021158397417137577
-Jensen-Shannon Divergence: 0.00044701554722518177
+Battacharyya Coefficient: 0.9999578081707792
+Battacharyya Distance: 4.2192719321091093e-05
+Hellinger Distance: 0.006495523783454372
+Jensen-Shannon Divergence: 4.218665345193778e-05
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9999464846110463
-Battacharyya Distance: 5.3516820953223554e-05
-Hellinger Distance: 0.007315421310824837
-Jensen-Shannon Divergence: 5.350055749304927e-05
+Battacharyya Coefficient: 0.9999335677123202
+Battacharyya Distance: 6.64344944019295e-05
+Hellinger Distance: 0.00815060044907132
+Jensen-Shannon Divergence: 6.641071267018024e-05
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.99995160397733
-Battacharyya Distance: 4.839719379532911e-05
-Hellinger Distance: 0.0069567249961005615
-Jensen-Shannon Divergence: 4.838201733983749e-05
+Battacharyya Coefficient: 0.9999678849162932
+Battacharyya Distance: 3.2115599407160435e-05
+Hellinger Distance: 0.00566701717902227
+Jensen-Shannon Divergence: 3.211281208317327e-05
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 6 qubits and depth 20
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9881970894191757
-Battacharyya Distance: 0.011873117910611481
-Hellinger Distance: 0.10864120112015008
-Jensen-Shannon Divergence: 0.011705359767544329
+Battacharyya Coefficient: 0.987448756905046
+Battacharyya Distance: 0.012630675295008732
+Hellinger Distance: 0.1120323305789731
+Jensen-Shannon Divergence: 0.012211140305853192
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9985194058029164
-Battacharyya Distance: 0.0014816913597739928
-Hellinger Distance: 0.03847849005728093
-Jensen-Shannon Divergence: 0.0014775615574615462
+Battacharyya Coefficient: 0.9983083567232246
+Battacharyya Distance: 0.0016930757209476365
+Hellinger Distance: 0.041129591254688604
+Jensen-Shannon Divergence: 0.0016872774370512871
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9991274197540089
-Battacharyya Distance: 0.0008729611657387935
-Hellinger Distance: 0.02953946929102961
-Jensen-Shannon Divergence: 0.0008716413160133023
+Battacharyya Coefficient: 0.9993175476000951
+Battacharyya Distance: 0.00068268537654702
+Hellinger Distance: 0.02612378992235474
+Jensen-Shannon Divergence: 0.0006819297261263086
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9995553039220806
-Battacharyya Distance: 0.00044479498454361925
-Hellinger Distance: 0.021087818235275058
-Jensen-Shannon Divergence: 0.00044445382798953884
+Battacharyya Coefficient: 0.9997385117102804
+Battacharyya Distance: 0.0002615224837434649
+Hellinger Distance: 0.01617059954738564
+Jensen-Shannon Divergence: 0.00026125433062730677
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9998093436581232
-Battacharyya Distance: 0.0001906745191075489
-Hellinger Distance: 0.013807836249069061
-Jensen-Shannon Divergence: 0.00019059755134167786
+Battacharyya Coefficient: 0.9998745346883213
+Battacharyya Distance: 0.00012547318310929267
+Hellinger Distance: 0.011201129928762814
+Jensen-Shannon Divergence: 0.00012543242883553124
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 6 qubits and depth 50
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9759520372467172
-Battacharyya Distance: 0.024341835941809102
-Hellinger Distance: 0.15507405570661115
-Jensen-Shannon Divergence: 0.023590611085943135
+Battacharyya Coefficient: 0.9789736108150013
+Battacharyya Distance: 0.021250592060072564
+Hellinger Distance: 0.14500479021399845
+Jensen-Shannon Divergence: 0.020844349856357698
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9970879804809047
-Battacharyya Distance: 0.002916267697124389
-Hellinger Distance: 0.05396313110920697
-Jensen-Shannon Divergence: 0.0029064407837730384
+Battacharyya Coefficient: 0.996553461218749
+Battacharyya Distance: 0.003452491778128505
+Hellinger Distance: 0.05870722937814485
+Jensen-Shannon Divergence: 0.0034367536412215965
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9986783767116587
-Battacharyya Distance: 0.0013224974026508668
-Hellinger Distance: 0.03635413715597514
-Jensen-Shannon Divergence: 0.001320379117696547
+Battacharyya Coefficient: 0.9984372544489886
+Battacharyya Distance: 0.001563967911498297
+Hellinger Distance: 0.03953157663208511
+Jensen-Shannon Divergence: 0.0015608561998829715
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9996708655206898
-Battacharyya Distance: 0.0003291886559508176
-Hellinger Distance: 0.018142063811053093
-Jensen-Shannon Divergence: 0.00032906856237102005
+Battacharyya Coefficient: 0.9994766740828591
+Battacharyya Distance: 0.0005234628999418425
+Hellinger Distance: 0.022876317823196254
+Jensen-Shannon Divergence: 0.00052313398276754
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9998403152688424
-Battacharyya Distance: 0.00015969748212169555
-Hellinger Distance: 0.012636642401037769
-Jensen-Shannon Divergence: 0.00015966714919923554
+Battacharyya Coefficient: 0.9997672535833686
+Battacharyya Distance: 0.00023277350628205694
+Hellinger Distance: 0.015256028862010433
+Jensen-Shannon Divergence: 0.00023271516084459137
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 6 qubits and depth 100
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9734416606456124
-Battacharyya Distance: 0.026917383396920402
-Hellinger Distance: 0.16296729535220708
-Jensen-Shannon Divergence: 0.026270491767328066
+Battacharyya Coefficient: 0.9787543436779065
+Battacharyya Distance: 0.021474593701882386
+Hellinger Distance: 0.14575889791743063
+Jensen-Shannon Divergence: 0.020985608972255026
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9977358770718643
-Battacharyya Distance: 0.0022666899298561492
-Hellinger Distance: 0.047582800759954774
-Jensen-Shannon Divergence: 0.002261060453668806
+Battacharyya Coefficient: 0.9975601131423536
+Battacharyya Distance: 0.002442868232050242
+Hellinger Distance: 0.049395210877743616
+Jensen-Shannon Divergence: 0.002435814885480307
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9984685811361038
-Battacharyya Distance: 0.0015325926843247604
-Hellinger Distance: 0.039133347210814184
-Jensen-Shannon Divergence: 0.0015299466051487708
+Battacharyya Coefficient: 0.998975222865955
+Battacharyya Distance: 0.001025302577137644
+Hellinger Distance: 0.032012140416653685
+Jensen-Shannon Divergence: 0.0010241310289711048
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9993157950692263
-Battacharyya Distance: 0.0006844391057892422
-Hellinger Distance: 0.02615731123031372
-Jensen-Shannon Divergence: 0.0006839289477680095
+Battacharyya Coefficient: 0.9994133754495186
+Battacharyya Distance: 0.0005867966819840341
+Hellinger Distance: 0.02422033341000689
+Jensen-Shannon Divergence: 0.0005864746401432086
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9995752831457047
-Battacharyya Distance: 0.00042480707204407955
-Hellinger Distance: 0.020608659692498237
-Jensen-Shannon Divergence: 0.0004246349501957825
+Battacharyya Coefficient: 0.9997988165268876
+Battacharyya Distance: 0.00020120371322199893
+Hellinger Distance: 0.01418391600097959
+Jensen-Shannon Divergence: 0.0002011630834183034
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 7 qubits and depth 5
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9939992117095855
-Battacharyya Distance: 0.006018865374584225
-Hellinger Distance: 0.07746475514978662
-Jensen-Shannon Divergence: 0.005983800386345019
+Battacharyya Coefficient: 0.9971583423909776
+Battacharyya Distance: 0.0028457027831566067
+Hellinger Distance: 0.05330720034875343
+Jensen-Shannon Divergence: 0.0027507879543556685
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9997732314483878
-Battacharyya Distance: 0.00022679426748796355
-Hellinger Distance: 0.015058836330023065
-Jensen-Shannon Divergence: 0.00022670025759713374
+Battacharyya Coefficient: 0.9976927005927265
+Battacharyya Distance: 0.0023099653240524517
+Hellinger Distance: 0.04803435653022926
+Jensen-Shannon Divergence: 0.0022535928022971385
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9997922542788275
-Battacharyya Distance: 0.00020776730330399567
-Hellinger Distance: 0.014413386873818237
-Jensen-Shannon Divergence: 0.00020771947887750257
+Battacharyya Coefficient: 0.997102825074222
+Battacharyya Distance: 0.002901379860638367
+Hellinger Distance: 0.05382541152446323
+Jensen-Shannon Divergence: 0.002842652426465954
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.999960298845609
-Battacharyya Distance: 3.970194250269243e-05
-Hellinger Distance: 0.006300885207098915
-Jensen-Shannon Divergence: 3.9696004491539804e-05
+Battacharyya Coefficient: 0.9990044968576182
+Battacharyya Distance: 0.0009959989847374796
+Hellinger Distance: 0.03155159492611568
+Jensen-Shannon Divergence: 0.0009794853253761921
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9999708108397362
-Battacharyya Distance: 2.91895862756712e-05
-Hellinger Distance: 0.0054026993499514345
-Jensen-Shannon Divergence: 2.9186626987889736e-05
+Battacharyya Coefficient: 0.9997060453409461
+Battacharyya Distance: 0.00029399787219337405
+Hellinger Distance: 0.017145105979658987
+Jensen-Shannon Divergence: 0.0002924059842851005
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 7 qubits and depth 20
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9876274619254002
-Battacharyya Distance: 0.012449715168874758
-Hellinger Distance: 0.11123191122427487
-Jensen-Shannon Divergence: 0.012192005195111617
+Battacharyya Coefficient: 0.993157306111298
+Battacharyya Distance: 0.006866212466885237
+Hellinger Distance: 0.08272057717823252
+Jensen-Shannon Divergence: 0.006745237437109055
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9989704537642619
-Battacharyya Distance: 0.0010300765825061648
-Hellinger Distance: 0.03208654290732366
-Jensen-Shannon Divergence: 0.001028267340563225
+Battacharyya Coefficient: 0.9982258930335429
+Battacharyya Distance: 0.0017756825580090268
+Hellinger Distance: 0.04212014917418053
+Jensen-Shannon Divergence: 0.0017705589298056064
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9994281255153147
-Battacharyya Distance: 0.0005720380672672128
-Hellinger Distance: 0.02391389731287147
-Jensen-Shannon Divergence: 0.0005715103241779236
+Battacharyya Coefficient: 0.9987578722735011
+Battacharyya Distance: 0.0012428998065576221
+Hellinger Distance: 0.03524383246040268
+Jensen-Shannon Divergence: 0.0012403727271223218
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9996801711867128
-Battacharyya Distance: 0.0003198799694298492
-Hellinger Distance: 0.01788375836597476
-Jensen-Shannon Divergence: 0.0003197029844193272
+Battacharyya Coefficient: 0.9995247839379569
+Battacharyya Distance: 0.000475329012981445
+Hellinger Distance: 0.02179945095733053
+Jensen-Shannon Divergence: 0.0004750340972546026
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9997975444087317
-Battacharyya Distance: 0.0002024760881680416
-Hellinger Distance: 0.01422868902160143
-Jensen-Shannon Divergence: 0.00020240761142729008
+Battacharyya Coefficient: 0.999844791517802
+Battacharyya Distance: 0.0001552205282808914
+Hellinger Distance: 0.012458269630890922
+Jensen-Shannon Divergence: 0.00015518578720837397
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 7 qubits and depth 50
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9695421474537377
-Battacharyya Distance: 0.030931331852171312
-Hellinger Distance: 0.17452178244068442
-Jensen-Shannon Divergence: 0.029745688910719097
+Battacharyya Coefficient: 0.9811135616895604
+Battacharyya Distance: 0.019067064965141264
+Hellinger Distance: 0.13742793860941896
+Jensen-Shannon Divergence: 0.018670431374187557
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9940536969582148
-Battacharyya Distance: 0.005964052699926155
-Hellinger Distance: 0.07711227555841263
-Jensen-Shannon Divergence: 0.0059297015573773655
+Battacharyya Coefficient: 0.9980751708249951
+Battacharyya Distance: 0.0019266840392614644
+Hellinger Distance: 0.043872875162218355
+Jensen-Shannon Divergence: 0.00192249599252886
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.997021364874639
-Battacharyya Distance: 0.002983080087774567
-Hellinger Distance: 0.05457687353973674
-Jensen-Shannon Divergence: 0.002974926952563359
+Battacharyya Coefficient: 0.9988287587734297
+Battacharyya Distance: 0.001171927665618539
+Hellinger Distance: 0.03422340173864996
+Jensen-Shannon Divergence: 0.0011703188710026555
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9992070764976335
-Battacharyya Distance: 0.0007932380324833241
-Hellinger Distance: 0.0281588973927907
-Jensen-Shannon Divergence: 0.0007923827255245455
+Battacharyya Coefficient: 0.9993621940456613
+Battacharyya Distance: 0.000638009439083527
+Hellinger Distance: 0.02525482041776097
+Jensen-Shannon Divergence: 0.000637552338520758
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.9995597035412505
-Battacharyya Distance: 0.0004403934176968373
-Hellinger Distance: 0.020983242331939274
-Jensen-Shannon Divergence: 0.00044003425623916173
+Battacharyya Coefficient: 0.9997636392123737
+Battacharyya Distance: 0.00023638872523963197
+Hellinger Distance: 0.015374029648110176
+Jensen-Shannon Divergence: 0.00023630722200348564
 ====================================================================================================
 
 ====================================================================================================
 Running Circuit with 7 qubits and depth 100
 Metrics for MCWF with 10 trajectories:
-Battacharyya Coefficient: 0.9648725239482798
-Battacharyya Distance: 0.03575928590452455
-Hellinger Distance: 0.18742325376469327
-Jensen-Shannon Divergence: 0.03456895132471945
+Battacharyya Coefficient: 0.9553453466269373
+Battacharyya Distance: 0.04568238436533496
+Hellinger Distance: 0.21131647681392574
+Jensen-Shannon Divergence: 0.043702562702655025
 Metrics for MCWF with 100 trajectories:
-Battacharyya Coefficient: 0.9955630671610605
-Battacharyya Distance: 0.004446805238386644
-Hellinger Distance: 0.06661030580145973
-Jensen-Shannon Divergence: 0.0044257084140769
+Battacharyya Coefficient: 0.9961477356186984
+Battacharyya Distance: 0.0038597034627513675
+Hellinger Distance: 0.06206661245218152
+Jensen-Shannon Divergence: 0.0038443908542301402
 Metrics for MCWF with 200 trajectories:
-Battacharyya Coefficient: 0.9977744252898545
-Battacharyya Distance: 0.002228054982244622
-Hellinger Distance: 0.04717599718257052
-Jensen-Shannon Divergence: 0.0022225596681899225
+Battacharyya Coefficient: 0.9981510734708541
+Battacharyya Distance: 0.00185063790359677
+Hellinger Distance: 0.042999145679113705
+Jensen-Shannon Divergence: 0.00184719921773043
 Metrics for MCWF with 500 trajectories:
-Battacharyya Coefficient: 0.9992173970422433
-Battacharyya Distance: 0.0007829093513181856
-Hellinger Distance: 0.02797504169400266
-Jensen-Shannon Divergence: 0.0007823096653234173
+Battacharyya Coefficient: 0.9993245939697828
+Battacharyya Distance: 0.0006756342196228194
+Hellinger Distance: 0.025988574993732964
+Jensen-Shannon Divergence: 0.0006751371078148428
 Metrics for MCWF with 1000 trajectories:
-Battacharyya Coefficient: 0.999531897542216
-Battacharyya Distance: 0.00046821205194163683
-Hellinger Distance: 0.0216356755801256
-Jensen-Shannon Divergence: 0.00046801195964875787
+Battacharyya Coefficient: 0.9996224083364549
+Battacharyya Distance: 0.0003776629692274933
+Hellinger Distance: 0.019431717976875748
+Jensen-Shannon Divergence: 0.00037751117871727825
 ====================================================================================================
 
