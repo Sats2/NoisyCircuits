@@ -50,13 +50,7 @@ Steps
 
 		conda activate NoisyCircuits
 
-5. Compile the code
-
-	.. code-block:: bash
-
-		python3 setup.py build_ext --inplace
-
-5. Install the package:
+5. Install the package
 
 	.. code-block:: bash
 
