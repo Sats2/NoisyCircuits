@@ -2,6 +2,22 @@
 
 All notable changes to this project is documentated here based on the format by [Keep a Changelog](http://keepachangelog.com/). This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v2.0.0] - 2026-07-16
+
+### Added Functionality
+
+- Now capable of running in an MPI environment with a distributed memory architecture of HPCs which is handy for large qubit simulations.
+- Added feature to read-in quantum circuits from OpenQasm files and user input of basis gates. This allows users to utilize custom gate decompositions (user written, read via OpenQasm) for different quantum hardware and noise model generation using calibration data from CSV files.
+- Additional simulator backend called `custom` that is written in C++ and wrapped to python for fast runtime. This simulator uses methods to apply quantum gates as local operators instead of global operators.
+
+### Updates
+
+- Several Bug fixes.
+- Memory optimization across all quantum simulators (with a total memory usage of approx. 490MB for a 16 qubit noise-aware simulation with the MCWF method.
+- Fixing Little/Big Endian issues.
+- Additional feature improvements to the main QuantumCircuit classes.
+- Added new unit tests and modified existing ones to reflect changes.
+
 ## [v1.3.0] - 2026-03-10
 
 ### Added Functionlity
