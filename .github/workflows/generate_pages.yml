@@ -50,14 +50,6 @@ jobs:
           make clean
           make html
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Deploy Documentation to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
