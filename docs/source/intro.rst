@@ -66,8 +66,8 @@ If you use NoisyCircuits in your research, please cite the software as follows:
 
 .. code-block:: text
 	
-	@software{NoisyCircuits2025,
-  		author = {Hegde, Sathyamurthy},
+	@software{NoisyCircuits,
+  		author = {Sathyamurthy Hegde and Julia Kowalski},
   		title = {NoisyCircuits},
   		year = {2026},
   		url = {https://github.com/Sats2/NoisyCircuits},
@@ -87,5 +87,5 @@ Getting Help
 Links
 -----
 
-- `Issues <https://github.com/Sats2/NoisyCircuits/issues>`_
-- `Discussions <https://github.com/Sats2/NoisyCircuits/discussions>`_
+- `Issues <https://github.com/mbd-rwth/NoisyCircuits/issues>`_
+- `Discussions <https://github.com/mbd-rwth/NoisyCircuits/discussions>`_

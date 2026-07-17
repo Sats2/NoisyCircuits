@@ -1,0 +1,33 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: NoisyCircuits
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Sathyamurthy
+    family-names: Hegde
+    email: hegde@mbd.rwth-aachen.de
+    affiliation: 'MBD, RWH Aachen University'
+    orcid: 'https://orcid.org/0009-0001-3585-6015'
+  - given-names: Julia
+    family-names: Kowalski
+    affiliation: 'MBD, RWTH Aachen University'
+    orcid: 'https://orcid.org/0000-0003-4123-5896'
+repository-code: 'https://github.com/mbd-rwth/NoisyCircuits.git'
+url: 'https://mbd-rwth.github.io/NoisyCircuits/'
+abstract: >-
+  A Python package for creating and simulating noisy quantum
+  circuits using error models from IBM (Heron RX / Eagle RX)
+  quantum hardware calibration data. The package implements
+  the Monte-Carlo Wave Function (MCWF) method for efficient
+  statevector simulation of noisy quantum systems.
+keywords:
+  - quantum-computing
+  - error-modelling
+license: Apache-2.0
+version: 2.0.0
+date-released: '2026-07-17'

@@ -3,12 +3,12 @@
 [![License: Apache 2.0](https://shields.io/badge/license-Apache%202-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 ![coverage](./coverage.svg)
-![GitHub Tag](https://img.shields.io/github/v/tag/Sats2/NoisyCircuits)
-[![Run Tests](https://github.com/Sats2/NoisyCircuits/actions/workflows/run_test.yml/badge.svg)](https://github.com/Sats2/NoisyCircuits/actions/workflows/run_test.yml)
+![GitHub Tag](https://img.shields.io/github/v/tag/mbd-rwth/NoisyCircuits)
+[![Run Tests](https://github.com/mbd-rwth/NoisyCircuits/actions/workflows/run_test.yml/badge.svg)](https://github.com/mbd-rwth/NoisyCircuits/actions/workflows/run_test.yml)
 
 A Python package for creating and simulating noisy quantum circuits using error models from IBM (Heron RX / Eagle RX) quantum hardware calibration data. The package implements the Monte-Carlo Wave Function (MCWF) method for efficient statevector simulation of noisy quantum systems.
 
-The documentation for the package can be found [here](https://sats2.github.io/NoisyCircuits/).
+The documentation for the package can be found [here](https://mbd-rwth.github.io/NoisyCircuits/).
 
 ## Overview
 
@@ -173,11 +173,11 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 If you use NoisyCircuits in your research, please cite the software as follows:
 ```
-@software{NoisyCircuits2025,
-   author = {Hegde, Sathyamurthy},
+@software{NoisyCircuits,
+   author = {Sathyamurthy Hegde and Julia Kowalski},
    title = {NoisyCircuits},
    year = {2026},
-   url = {https://github.com/Sats2/NoisyCircuits},
+   url = {https://github.com/mbd-rwth/NoisyCircuits},
    version = {2.0.0},
 }
 ```
