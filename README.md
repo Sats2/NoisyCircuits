@@ -173,12 +173,14 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 If you use NoisyCircuits in your research, please cite the software as follows:
 ```
-@software{NoisyCircuits,
-   author = {Sathyamurthy Hegde and Julia Kowalski},
-   title = {NoisyCircuits},
-   year = {2026},
-   url = {https://github.com/mbd-rwth/NoisyCircuits},
-   version = {2.0.0},
+@software{Hegde_NoisyCircuits_2026,
+author = {Hegde, Sathyamurthy and Kowalski, Julia},
+license = {Apache-2.0},
+month = jul,
+title = {{NoisyCircuits}},
+url = {https://github.com/mbd-rwth/NoisyCircuits.git},
+version = {2.0.0},
+year = {2026}
 }
 ```
 
