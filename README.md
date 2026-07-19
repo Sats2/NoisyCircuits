@@ -48,7 +48,7 @@ The supported gated are fully decomposed into the hardware basis gates and this 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Sats2/NoisyCircuits.git
+   git clone https://github.com/mbd-rwth/NoisyCircuits.git
    cd NoisyCircuits
    ```
 

@@ -30,7 +30,7 @@ Steps
 
 	.. code-block:: bash
 
-		git clone https://github.com/Sats2/NoisyCircuits.git
+		git clone https://github.com/mbd-rwth/NoisyCircuits.git
 
 2. Change into the project directory:
 
