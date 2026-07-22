@@ -1,0 +1,491 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoisyCircuits.QuantumCircuitMPI &mdash; NoisyCircuits 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">NoisyCircuits.QuantumCircuitMPI</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for NoisyCircuits.QuantumCircuitMPI</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This code is part of NoisyCircuits, (C) Sathyamurthy Hegde 2025, 2026</span>
+
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 or at the root directory of this repository.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module allows users to create and simulate quantum circuits with noise models based on quantum machine calibration data in a distributed memory environment using MPI. It provides methods for adding gates, executing the circuit with Monte-Carlo simulations, and visualizing the circuit. It considers both single and two-qubit gate errors as well as measurement errors. The functionality is similar to the `QuantumCircuit` module.\n</span>
+
+<span class="sd">Example:\n</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simulator_mpi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">measurement_error_applicator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BuildModel</span><span class="p">,</span> <span class="n">Parser</span><span class="p">,</span> <span class="n">compute_marginal_probs</span><span class="p">,</span> <span class="n">convert_matrix_to_little_endian</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.EagleDecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">EagleDecomposition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">NoisyCircuits.utils.HeronDecomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">HeronDecomposition</span>
+
+
+<div class="viewcode-block" id="QuantumCircuitMPI">
+<a class="viewcode-back" href="../../NoisyCircuits.html#NoisyCircuits.QuantumCircuitMPI.QuantumCircuitMPI">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuantumCircuitMPI</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class allows a user to create a quantum circuit with error model from IBM machines (or an available CSV data file with the machine calibration data) where selected gates (both parameterized and non-parameterized) are implemented as methods. The gate decomposition uses the basis gates of the IBM Eagle (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)` and :math:`ECR`) / Heron (:math:`\sqrt{X}`, :math:`X`, :math:`R_Z(\theta)`, :math:`R_X(\theta)`, :math:`CZ` and :math:`RZZ(\theta)`) QPUs. Users can use custom gate decompositions/basis gates by utilizing the OpenQasm 3.0 data format to read-in quantum circuits.</span>
+
+<span class="sd">    Currently, it is only possible to apply a limited selection of single and two-qubit gates to the circuit simulation. For a full list of supported gates (except when imported via OpenQasm), please refer to the Decomposition :func:`NoisyCircuits.utils.Decomposition` class documentation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    num_qubits : int</span>
+<span class="sd">        The number of qubits in the quantum circuit.</span>
+<span class="sd">    noise_model : dict</span>
+<span class="sd">        A dictionary containing the raw noise model for the quantum circuit.</span>
+<span class="sd">    use_fractional : bool</span>
+<span class="sd">        A flag to determine whether to use fractional gates or not. Applicable to QPUs which allow fractional gates (Defaults to True)</span>
+<span class="sd">    backend_qpu_type : str</span>
+<span class="sd">        The QPU architecture to use. Supported options are eagle and heron. (Defaults to heron)</span>
+<span class="sd">    basis_gates : list[list[str]]</span>
+<span class="sd">        A list of list of basis gates given in the format [[single qubit gates], [two qubit gates]]. (Defaults to the basis gates of the Heron QPU)</span>
+<span class="sd">    num_nodes : int</span>
+<span class="sd">        The total number of nodes in the HPC that can be used for the computation. (Defaults to 1)</span>
+<span class="sd">    cores_per_node : int</span>
+<span class="sd">        The total number of cores available for computation within a single node. (Defaults to 1)</span>
+<span class="sd">    cores_per_trajectory : int</span>
+<span class="sd">        The total number of cores that can be used by a single trajectory at any given time. (Defaults to 1)</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        The threshold for pruning errors in the noise model. (Defaults to 1e-6)</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Whether to print verbose output during the noise model construction. (Defaults to False)</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError : </span>
+<span class="sd">        - num_qubits must be an integer.</span>
+<span class="sd">        - noise_model must be a dictionary.</span>
+<span class="sd">        - use_fractional must be a boolean.</span>
+<span class="sd">        - backend_qpu_type must be a string.</span>
+<span class="sd">        - basis_gates must be a list of list of strings.</span>
+<span class="sd">        - num_nodes must be an integer.</span>
+<span class="sd">        - num_nodes must be an integer.</span>
+<span class="sd">        - cores_per_node must be an integer.</span>
+<span class="sd">        - cores_per_trajectory must be an integer.</span>
+<span class="sd">        - threshold must be a float.</span>
+<span class="sd">        - verbose must be a boolean.</span>
+<span class="sd">    ValueError :</span>
+<span class="sd">        - num_qubits must be a positive integer.</span>
+<span class="sd">        - backend_qpu_type must be one of the supported QPU architectures.</span>
+<span class="sd">        - num_nodes must be :math:`\geq 1`</span>
+<span class="sd">        - cores_per_node must be :math:`\geq 1`</span>
+<span class="sd">        - cores_per_trajectory must be :math:`\geq 1`</span>
+<span class="sd">        - threshold must be between 0 and 1 (exclusive).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Using the default values of the arguements `num_nodes`, `core_per_node` and `cores_per_trajectory` results in a fully serial execution.</span>
+<span class="sd">    - Users need to be aware of the MPI environment of the HPC they have access to and build necessary dependencies themselves as a pre-compiled pip package install or conda install may result in dependency clashes. (See HPC Installation guidelines for more information)</span>
+<span class="sd">    - For using a different backend QPU, write in the basis gate set of the QPU in the arguement and leave the `backend_qpu_type` empty to let it default to &quot;heron&quot; but the customized basis gate set is given priority.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">basis_gate_set</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;eagle&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;basis_gates&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;ecr&quot;</span><span class="p">]],</span>
+            <span class="s2">&quot;gate_decomposition&quot;</span> <span class="p">:</span> <span class="n">EagleDecomposition</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;heron&quot;</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;basis_gates&quot;</span> <span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;rzz&quot;</span><span class="p">,</span> <span class="s2">&quot;cz&quot;</span><span class="p">]],</span>
+            <span class="s2">&quot;gate_decomposition&quot;</span> <span class="p">:</span> <span class="n">HeronDecomposition</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">num_qubits</span> <span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                <span class="n">noise_model</span> <span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+                <span class="n">use_fractional</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">backend_qpu_type</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;heron&quot;</span><span class="p">,</span>
+                <span class="n">basis_gates</span> <span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;sx&quot;</span><span class="p">,</span> <span class="s2">&quot;rz&quot;</span><span class="p">,</span> <span class="s2">&quot;rx&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;rzz&quot;</span><span class="p">,</span> <span class="s2">&quot;cz&quot;</span><span class="p">]],</span>
+                <span class="n">num_nodes</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">cores_per_node</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">cores_per_trajectory</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">threshold</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+                <span class="n">verbose</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_qubits</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;num_qubits must be of type int&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_qubits</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;num_qubits must be greater than or equal to 1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noise_model</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;noise_model must be of type dict&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">backend_qpu_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;backend_qpu_type must be of type string&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend_qpu_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;backend_qpu_type must in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;num_nodes must be of type int&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_nodes</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;num_nodes must be greater than or equal to 1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cores_per_node</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;cores_per_node must be of type int&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cores_per_node</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cores_per_node must be greater than or equal to 1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cores_per_trajectory</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;cores_per_trajectory must be of type int&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cores_per_trajectory</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cores_per_trajectory must be greater than or equal to 1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;threshold must be of type float&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;threshold must be between [0, 1]&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;verbose must be of type boolean&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cores_per_trajectory</span> <span class="o">&gt;</span> <span class="n">cores_per_node</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cores_per_trajectory must be lesser than or equal to cores_per_node&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis_gates</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gate_set</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">for</span> <span class="n">gate_set</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="p">[</span><span class="s2">&quot;heron&quot;</span><span class="p">][</span><span class="s2">&quot;basis_gates&quot;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">gate</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">gate_set</span><span class="p">)</span> <span class="k">for</span> <span class="n">gate_set</span> <span class="ow">in</span> <span class="n">basis_gates</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;basis_gates must be a list of list of strings. For example, the default value for basis_gates is defined as </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="p">[</span><span class="s2">&quot;heron&quot;</span><span class="p">][</span><span class="s2">&quot;basis_gates&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span> <span class="o">=</span> <span class="n">num_qubits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">=</span> <span class="n">num_nodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_node</span> <span class="o">=</span> <span class="n">cores_per_node</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_trajectory</span> <span class="o">=</span> <span class="n">cores_per_trajectory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_import_mpi</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span> <span class="o">=</span> <span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="p">[</span><span class="n">backend_qpu_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()][</span><span class="s2">&quot;basis_gates&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_gates</span>
+        <span class="n">modeller</span> <span class="o">=</span> <span class="n">BuildModel</span><span class="p">(</span>
+            <span class="n">noise_model</span> <span class="o">=</span> <span class="n">noise_model</span><span class="p">,</span>
+            <span class="n">num_qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+            <span class="n">num_cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_node</span><span class="p">,</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span><span class="p">,</span>
+            <span class="n">basis_gates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span><span class="p">,</span>
+            <span class="n">verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qpu</span> <span class="o">=</span> <span class="n">backend_qpu_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">single_error</span><span class="p">,</span> <span class="n">multi_error</span><span class="p">,</span> <span class="n">measurement_error</span><span class="p">,</span> <span class="n">connectivity</span> <span class="o">=</span> <span class="n">modeller</span><span class="o">.</span><span class="n">build_qubit_gate_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_error</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">q</span> <span class="p">:</span> <span class="p">{</span><span class="n">gate</span> <span class="p">:</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;qubit_channel&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">gate</span><span class="p">,</span> <span class="n">payload</span> <span class="ow">in</span> <span class="n">gates</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">q</span><span class="p">,</span> <span class="n">gates</span> <span class="ow">in</span> <span class="n">single_error</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_error</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">gate</span> <span class="p">:</span> <span class="p">{</span><span class="n">pair</span> <span class="p">:</span> <span class="n">convert_matrix_to_little_endian</span><span class="p">(</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;qubit_channel&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">pair</span><span class="p">,</span> <span class="n">payload</span> <span class="ow">in</span> <span class="n">pairs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">gate</span><span class="p">,</span> <span class="n">pairs</span> <span class="ow">in</span> <span class="n">multi_error</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error</span> <span class="o">=</span> <span class="n">measurement_error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connectivity</span> <span class="o">=</span> <span class="n">connectivity</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span> <span class="o">==</span> <span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">qpu</span><span class="p">][</span><span class="s2">&quot;basis_gates&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span> <span class="o">=</span> <span class="n">QuantumCircuitMPI</span><span class="o">.</span><span class="n">basis_gate_set</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">qpu</span><span class="p">][</span><span class="s2">&quot;gate_decomposition&quot;</span><span class="p">](</span>
+                <span class="n">num_qubits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+                <span class="n">connectivity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connectivity</span><span class="p">,</span>
+                <span class="n">qubit_map</span> <span class="o">=</span> <span class="n">modeller</span><span class="o">.</span><span class="n">qubit_coupling_map</span><span class="p">,</span>
+                <span class="n">use_fractional</span> <span class="o">=</span> <span class="n">use_fractional</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: A decomposition for the given basis gates does not exist. In-built circuit building methods are not available. Please use the OpenQasm Parser to generate the circuit.&quot;</span><span class="p">)</span>        
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span> <span class="p">:</span> <span class="nb">str</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delegate unknown attributes/methods to the selected methods class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Callable</span>
+<span class="sd">            The method corresponding to the gate name if it exists in the gate decomposer, otherwise raises an AttributeError.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="QuantumCircuitMPI.refresh">
+<a class="viewcode-back" href="../../NoisyCircuits.html#NoisyCircuits.QuantumCircuitMPI.QuantumCircuitMPI.refresh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the quantum circuit by clearing the instruction list and qubit-to-instruction mapping.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_import_mpi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Imports the MPI wrapper for python.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ImportError : mpi4py (the MPI wrapper for Python) is not found in the environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">global</span> <span class="n">MPI</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;mpi4py is required for MPI execution but is not installed. Please install mpi4py.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_gates_in_noise_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private helper method to check if the gates used in the quantum circuit are supported by the noise model. Raises a ValueError if any unsupported gates are found.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If any gates used in the quantum circuit are not supported by the noise model.k</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">single_qubit_gates_in_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_error</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">two_qubit_gates_in_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_error</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">gate_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">gate</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="p">[</span><span class="n">single_qubit_gates_in_model</span><span class="p">,</span> <span class="n">two_qubit_gates_in_model</span><span class="p">]</span> <span class="k">for</span> <span class="n">gate</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+        <span class="n">unsupported_gates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">instruction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gate_list</span> <span class="ow">and</span> <span class="n">instruction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;unitary&quot;</span><span class="p">:</span>
+                <span class="n">unsupported_gates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instruction</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">unsupported_gates</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The following gates are supported by the noise model : </span><span class="si">{</span><span class="n">unsupported_gates</span><span class="si">}</span><span class="s2">. </span><span class="se">\n</span><span class="s2">Supported gates are </span><span class="si">{</span><span class="n">gate_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="QuantumCircuitMPI.read_openqasm">
+<a class="viewcode-back" href="../../NoisyCircuits.html#NoisyCircuits.QuantumCircuitMPI.QuantumCircuitMPI.read_openqasm">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_openqasm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">file_path</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">append_to_circuit</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads an OpenQASM 3.0 file and adds the required instructions to build the quantum circuit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_path : str</span>
+<span class="sd">            The path to the OpenQASM 3.0 file.</span>
+<span class="sd">        append_to_circuit : bool, optional</span>
+<span class="sd">            A flag to determine whether to add the parser</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span>
+                    <span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="p">,</span>
+                    <span class="n">instruction_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">,</span>
+                    <span class="n">append_to_circuit</span> <span class="o">=</span> <span class="n">append_to_circuit</span><span class="p">,</span>
+                    <span class="n">basis_gates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gate_decomposer</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">Parser</span><span class="p">(</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="p">,</span>
+                <span class="n">instruction_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span><span class="p">,</span>
+                <span class="n">append_to_circuit</span> <span class="o">=</span> <span class="n">append_to_circuit</span><span class="p">,</span>
+                <span class="n">basis_gates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_gates</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">()</span>   
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_gates_in_noise_model</span><span class="p">()</span>     </div>
+
+
+<div class="viewcode-block" id="QuantumCircuitMPI.execute">
+<a class="viewcode-back" href="../../NoisyCircuits.html#NoisyCircuits.QuantumCircuitMPI.QuantumCircuitMPI.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">qubits</span> <span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">num_trajectories</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes the quantum circuit simulation using the Monte-Carlo Wavefunction method on a HPC cluster in a distributed memory environment.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        qubits : list[int], optional</span>
+<span class="sd">            List of qubits to be measured. If None, all qubits will be measured.</span>
+<span class="sd">        num_trajectories : int</span>
+<span class="sd">            The total number of trajectories to run. Defaults to 100.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray[np.float64]</span>
+<span class="sd">            An array containing the probabilities of the executed quantum circuit.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            - Raised when qubits is not a list of integers.</span>
+<span class="sd">            - Raised when num_trajectories is not an integer.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            - Raised when qubits contains invalid qubit indices.</span>
+<span class="sd">            - Raised when there are no instructions in the circuit to execute.</span>
+<span class="sd">            - Raised when num_trajectories is not a positive integer.</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            - Raised when the total estimated MPI ranks does not equal the total number of available MPI ranks (See Notes for more information)</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The module first estimates the total number of ranks required to safely run the simulation based on the user input data of `num_nodes` (mathematically denoted as :math:`n_N`), `cores_per_node` (mathematically denoted as :math:`c_N`) and `cores_per_trajectory` (mathematically denoted as :math:`c_T`). The total number of ranks (mathematically denoted as :math:`n_R`) required is estimated by using the following formula:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            n_R = n_N \cdot \lfloor\frac{c_N}{c_T}\rfloor</span>
+
+<span class="sd">        The above estimate provides the minimum number of MPI ranks to safely perform the simulation. If this estimate does not match the available number of MPI ranks set by the MPI execution environment (e.g., SLURM/mpiexec), then a RuntimeError is raised in order to avoid any potential issues. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">qubits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">qubits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">qubits</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Qubits must be a list of integers&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">((</span><span class="n">qubit</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span>  <span class="n">qubit</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">for</span> <span class="n">qubit</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One or more of the qubits are out of range. The valid range is from 0 to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_trajectories</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;num_trajectories must be of type int&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_trajectories</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;num_trajectories must be a positive integer&quot;</span><span class="p">)</span>
+        <span class="n">expected_ranks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_node</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_trajectory</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">expected_ranks</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;QuantumCircuitMPI expects </span><span class="si">{</span><span class="n">expected_ranks</span><span class="si">}</span><span class="s2"> MPI ranks &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(num_nodes=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="si">}</span><span class="s2"> x cores_per_node=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_node</span><span class="si">}</span><span class="s2"> // &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;cores_per_trajectory=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_trajectory</span><span class="si">}</span><span class="s2">) but was launched with &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">. Launch with: srun -N </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;--ntasks-per-node=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_node</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_trajectory</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;--cpus-per-task=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cores_per_trajectory</span><span class="si">}</span><span class="s2"> python3 &lt;script&gt;.py&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_seed</span> <span class="o">=</span> <span class="mi">42</span>
+        <span class="n">instruction_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instruction_list</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">instruction_list</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No instructions in the circuit to execute&quot;</span><span class="p">)</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">num_trajectories</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">remainder</span> <span class="o">=</span> <span class="n">num_trajectories</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">local_count</span> <span class="o">=</span> <span class="n">base</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&lt;</span> <span class="n">remainder</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">local_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">*</span> <span class="n">base</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span>
+
+        <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span>
+        <span class="n">local_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">trajectory_buffer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting Simulations: </span><span class="si">{</span><span class="n">num_trajectories</span><span class="si">}</span><span class="s2"> trajectories across </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> ranks&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">local_count</span><span class="p">):</span>
+            <span class="n">trajectory_buffer</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">simulator_mpi</span><span class="o">.</span><span class="n">run_trajectory</span><span class="p">(</span>
+                <span class="n">instruction_list</span><span class="p">,</span>
+                <span class="n">trajectory_buffer</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">single_qubit_error</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">two_qubit_error</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_base_seed</span> <span class="o">+</span> <span class="n">local_start</span> <span class="o">+</span> <span class="n">trajectory</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_trajectory</span>
+            <span class="p">)</span>
+            <span class="n">local_sum</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">trajectory_buffer</span><span class="p">)</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Reduce</span><span class="p">(</span><span class="n">local_sum</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Completed all trajectories&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="p">(</span><span class="n">total</span> <span class="o">/</span> <span class="n">num_trajectories</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="s2">&quot;C&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">:</span>
+                <span class="n">total</span> <span class="o">=</span> <span class="n">compute_marginal_probs</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="p">[</span><span class="n">q</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_qubits</span><span class="p">)</span> <span class="k">if</span> <span class="n">q</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">qubits</span><span class="p">])</span>
+            <span class="n">measurement_error_applicator</span><span class="o">.</span><span class="n">apply_measurement_error</span><span class="p">(</span>
+                <span class="n">total</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">measurement_error</span><span class="p">,</span>
+                <span class="n">qubits</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cores_per_node</span>
+            <span class="p">)</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qubits</span><span class="p">)))[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="n">root</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

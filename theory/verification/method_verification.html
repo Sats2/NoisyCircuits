@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Method Verification &mdash; NoisyCircuits 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Hardware Considerations" href="../hardware.html" />
+    <link rel="prev" title="Method Comparisons" href="../comparison.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            NoisyCircuits
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">NoisyCircuits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../NoisyCircuits.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../quantum_computing.html">Quantum Computing 101</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quantum_noise.html">Quantum Noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mcwf_method.html">Monte-Carlo Wave Function (MCWF) Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quantum_simulator.html">Quantum Circuit Simulators</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../comparison.html">Method Comparisons</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#metrics">Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#setup">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#noise-filtering">Noise Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#mcwf-vs-density-matrix-simulation">MCWF Vs Density Matrix Simulation</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../comparison.html#reproducibility">Reproducibility</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Method Verification</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../comparison.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../hardware.html">Hardware Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">NoisyCircuits</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../theory.html">Theory</a></li>
+          <li class="breadcrumb-item"><a href="../comparison.html">Method Comparisons</a></li>
+      <li class="breadcrumb-item active">Method Verification</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/Sats2/NoisyCircuits/blob/maintheory/verification/method_verification.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Method-Verification">
+<h1>Method Verification<a class="headerlink" href="#Method-Verification" title="Link to this heading"></a></h1>
+<p>In this script, the probabilities from the MCWF method is compared against the probabilities from a density matrix simulation to validate the MCWF method as a valid implementation for noisy statevector simulations.</p>
+<section id="Import-Libraries">
+<h2>Import Libraries<a class="headerlink" href="#Import-Libraries" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from NoisyCircuits import QuantumCircuit as QC
+from NoisyCircuits.utils.CreateNoiseModel import GetNoiseModel, CreateNoiseModel
+import numpy as np
+import matplotlib.pyplot as plt
+import pickle
+import os
+import json
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+2026-03-10 14:54:22,220 INFO util.py:154 -- Missing packages: [&#39;ipywidgets&#39;]. Run `pip install -U ipywidgets`, then restart the notebook server for rich notebook output.
+</pre></div></div>
+</div>
+</section>
+<section id="Initialize-the-Noise-Model">
+<h2>Initialize the Noise Model<a class="headerlink" href="#Initialize-the-Noise-Model" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>api_json = json.load(open(os.path.join(os.path.expanduser(&quot;~&quot;), &quot;ibm_api.json&quot;), &quot;r&quot;))
+token = api_json[&quot;apikey&quot;] # Replace with your Token
+service_crn = api_json[&quot;service-crn&quot;] # Replace with your Service CRN
+backend_name = &quot;ibm_marrakesh&quot;
+qpu_type = &quot;heron&quot;
+verbose = False
+</pre></div>
+</div>
+</div>
+<p>Run the code below to use the latest noise model from IBM hardware calibration data</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>noise_model = GetNoiseModel(
+    backend_name=backend_name,
+    token=token,
+    service_crn=service_crn,
+).get_noise_model()
+</pre></div>
+</div>
+</div>
+<p>Run the code below in case API access is not feasible, and use the sample noise model provided with the software</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>if qpu_type == &quot;eagle&quot;:
+    file_path = &quot;https://raw.githubusercontent.com/Sats2/NoisyCircuits/main/noise_models/Noise_Model_Eagle_QPU.pkl&quot;
+    noise_model = pickle.load(open(file_path, &quot;rb&quot;))
+elif qpu_type == &quot;heron&quot;:
+    file_path = &quot;https://raw.githubusercontent.com/Sats2/NoisyCircuits/main/noise_models/Sample_Noise_Model_Heron_QPU.csv&quot;
+    noise_model = CreateNoiseModel(calibration_data_file=file_path,
+                                   basis_gates=[[&quot;x&quot;, &quot;sx&quot;, &quot;rz&quot;, &quot;rx&quot;], [&quot;cz&quot;, &quot;rzz&quot;]]).create_noise_model()
+else:
+    raise ValueError(&quot;Invalid qpu_type. Choose either &#39;heron&#39; or &#39;eagle&#39;.&quot;)
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-the-Randomized-Circuit">
+<h2>Define the Randomized Circuit<a class="headerlink" href="#Define-the-Randomized-Circuit" title="Link to this heading"></a></h2>
+<p>Define the function that can generate a randomized circuit that can be executed using density matrix simulation and as an MCWF execution.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def build_random_circuit(circuit, depth, num_qubits):
+    circuit.refresh()
+    if qpu_type == &quot;eagle&quot;:
+        gate = {
+            &quot;X&quot; : circuit.X,
+            &quot;SX&quot;: circuit.SX,
+        }
+        two_qubit_gate = circuit.ECR
+    elif qpu_type == &quot;heron&quot;:
+        gate = {
+            &quot;X&quot; : lambda q: circuit.X(q),
+            &quot;SX&quot;: lambda q: circuit.SX(q),
+            &quot;RX&quot;: lambda q: circuit.RX(np.random.uniform(-2*np.pi, 2*np.pi), q)
+        }
+        two_qubit_gate = circuit.CZ
+    else:
+        raise ValueError(&quot;Unsupported QPU type. Supported types are &#39;heron&#39; and &#39;eagle&#39;.&quot;)
+    for _ in range(depth):
+        for i in range(num_qubits):
+            choice = np.random.choice(list(gate.keys()))
+            gate[choice](i)
+        for i in range(num_qubits-1):
+            two_qubit_gate(i, i+1)
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-the-Metrics">
+<h2>Define the Metrics<a class="headerlink" href="#Define-the-Metrics" title="Link to this heading"></a></h2>
+<p>Define the function that can compute the desired validation metrics between the reference probability distribution (from the density matrix) and the probability distribution from the MCWF method. The chosen metrics are:</p>
+<ol class="arabic simple">
+<li><p><strong>Battacharyya Coefficient:</strong> Defines the overlap between two probability distributions and is bounded between <span class="math notranslate nohighlight">\([0,1]\)</span>, where a value of <span class="math notranslate nohighlight">\(1\)</span> indicates a similar distributions. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+BC(p,q) = \sum_{i=1}^{N} \sqrt{p_iq_i}
+\end{equation*}</span> Interpretation: The closer the two distributions are in similarity, the closer value of the Battacharyya Coefficient is to <span class="math notranslate nohighlight">\(1\)</span>.</p></li>
+<li><p><strong>Battacharyya Distance:</strong> Provides a distance measure that indicates the dissimilarity between two probability distributions and lies between <span class="math notranslate nohighlight">\([0, \infty]\)</span>, where a value of <span class="math notranslate nohighlight">\(0\)</span> indicates a similar distribution and higher the value, the greater the dissimilarity between the two distributions. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+BD(p,q) = -\text{log}(BC(p,q))
+\end{equation*}</span></p></li>
+<li><p><strong>Hellinger Distance:</strong> Provides a measure of the geometric difference between two probability distributions and is bounded between <span class="math notranslate nohighlight">\([0,1]\)</span>, where a value of <span class="math notranslate nohighlight">\(0\)</span> indicates a similar distribution. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+HD(p,q) = \frac{1}{\sqrt{2}} \sqrt{\sum_{i=1}^{N}(\sqrt{p_i} - \sqrt{q_i})^2}
+\end{equation*}</span></p></li>
+<li><p><strong>Jenson-Shannon (JS) Divergence:</strong> It is the smoothed, symmetric version of the KL divergence, measuring the average information divergence between the two distributions and is bounded between <span class="math notranslate nohighlight">\([0, \text{log}(2)]\)</span> where lower the value the lesser the information loss. The value for two discrete distributions can be computed using the equation below. <span class="math">\begin{equation*}
+JSD(p||q) = \frac{1}{2}(KL(p||m) + KL(q||m)) \text{ with } m = \frac{p+q}{2}
+\end{equation*}</span></p></li>
+</ol>
+<p><span class="math">\begin{equation*}
+KL(a||b) = \sum_{i=1}^{N}a_i\text{log}(\frac{a_i}{b_i})
+\end{equation*}</span></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def compute_metrics(pd_1, pd_2):
+    battacharyya_coefficient = np.sum(np.sqrt(pd_1 * pd_2))
+    battacharyya_distance = -np.log(battacharyya_coefficient)
+    hellinger_distance = np.sqrt(np.sum((np.sqrt(pd_1) - np.sqrt(pd_2))**2)) / np.sqrt(2)
+    m = 0.5 * (pd_1 + pd_2)
+    js = 0.5 * np.sum(pd_1 * np.log(1e-10 + pd_1 / m) + pd_2 * np.log(1e-10 + pd_2 / m))
+    return (battacharyya_coefficient, battacharyya_distance, hellinger_distance, js)
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def plot(data, metric_name, depth):
+    metric_list = [&quot;Battacharyya Coefficient&quot;, &quot;Battacharyya Distance&quot;, &quot;Hellinger Distance&quot;, &quot;Jensen-Shannon Divergence&quot;]
+    trajectory_list = [10, 100, 200, 500, 1000]
+    metric_index = metric_list.index(metric_name)
+    solvers = [&quot;pennylane&quot;, &quot;qiskit&quot;, &quot;qulacs&quot;]
+
+    qubit_list_plot = sorted(set(q for (q, d) in data[solvers[0]].keys()))
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
+    fig.suptitle(f&quot;{metric_name}  |  depth = {depth}&quot;, fontsize=14)
+
+    for ax, solver in zip(axes, solvers):
+        for traj_idx, n_traj in enumerate(trajectory_list):
+            values = [
+                data[solver][(q, depth)][traj_idx][metric_index]
+                for q in qubit_list_plot
+                if (q, depth) in data[solver]
+            ]
+            qubits_available = [q for q in qubit_list_plot if (q, depth) in data[solver]]
+            ax.plot(qubits_available, values, marker=&quot;o&quot;, label=f&quot;{n_traj} trajectories&quot;)
+
+        ax.set_title(solver)
+        ax.set_xlabel(&quot;Number of Qubits&quot;)
+        ax.set_xticks(qubit_list_plot)
+        ax.legend(fontsize=8)
+        ax.grid(True, linestyle=&quot;--&quot;, alpha=0.5)
+
+    axes[0].set_ylabel(metric_name)
+    plt.tight_layout()
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def run_experiment(circuit, qubits, depth, log):
+    metrics_identifiers = [&quot;Battacharyya Coefficient&quot;, &quot;Battacharyya Distance&quot;, &quot;Hellinger Distance&quot;, &quot;Jensen-Shannon Divergence&quot;]
+    log.write(&quot;=====&quot;*20 + &quot;\n&quot;)
+    log.write(f&quot;Running Circuit with {qubits} qubits and depth {depth}\n&quot;)
+    p_ref = circuit.run_with_density_matrix(list(range(qubits)))
+    p_10t = circuit.execute(qubits=list(range(qubits)), num_trajectories=10)
+    p_100t = circuit.execute(qubits=list(range(qubits)), num_trajectories=100)
+    p_200t = circuit.execute(qubits=list(range(qubits)), num_trajectories=200)
+    p_500t = circuit.execute(qubits=list(range(qubits)), num_trajectories=500)
+    p_1000t = circuit.execute(qubits=list(range(qubits)), num_trajectories=1000)
+    metrics_10t = compute_metrics(p_ref, p_10t)
+    metrics_100t = compute_metrics(p_ref, p_100t)
+    metrics_200t = compute_metrics(p_ref, p_200t)
+    metrics_500t = compute_metrics(p_ref, p_500t)
+    metrics_1000t = compute_metrics(p_ref, p_1000t)
+    traj_list = [10, 100, 200, 500, 1000]
+    for traj, metric in enumerate([metrics_10t, metrics_100t, metrics_200t, metrics_500t, metrics_1000t]):
+        log.write(f&quot;Metrics for MCWF with {traj_list[traj]} trajectories:\n&quot;)
+        for identifier, value in zip(metrics_identifiers, metric):
+            log.write(f&quot;{identifier}: {value}\n&quot;)
+    log.write(&quot;=====&quot;*20 + &quot;\n\n&quot;)
+    log.flush()
+    return metrics_10t, metrics_100t, metrics_200t, metrics_500t, metrics_1000t
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Define-Randomized-Test-Parameters">
+<h2>Define Randomized Test Parameters<a class="headerlink" href="#Define-Randomized-Test-Parameters" title="Link to this heading"></a></h2>
+<p>Define the range for the number of qubits to use and the total number of single qubit gates per qubit. Note that an entanglement gate is applied to after each single qubit gate (recommended to start with 2 qubits).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>qubit_list = [2, 3, 4, 5, 6, 7]
+depth_list = [5, 20, 50, 100]
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>log_qulacs = open(&quot;Results_Log_File_qulacs.log&quot;, &quot;w&quot;)
+log_qiskit = open(&quot;Results_Log_File_qiskit.log&quot;, &quot;w&quot;)
+log_pennylane = open(&quot;Results_Log_File_pennylane.log&quot;, &quot;w&quot;)
+data = {
+    &quot;pennylane&quot; : {},
+    &quot;qulacs&quot; : {},
+    &quot;qiskit&quot; : {}
+}
+log_files = {
+    &quot;pennylane&quot;: log_pennylane,
+    &quot;qulacs&quot;: log_qulacs,
+    &quot;qiskit&quot;: log_qiskit
+}
+for qubits in qubit_list:
+    for depth in depth_list:
+        circuit_list = None
+        for solver in [&quot;pennylane&quot;, &quot;qiskit&quot;, &quot;qulacs&quot;]:
+            circuit = QC(
+                num_qubits=qubits,
+                noise_model=noise_model,
+                backend_qpu_type=qpu_type,
+                num_trajectories=1,
+                num_cores=60,
+                sim_backend=solver,
+                jsonize=True,
+                verbose=False,
+                threshold=1e-4
+            )
+            if circuit_list is None:
+                build_random_circuit(circuit, depth, qubits)
+                circuit_list = circuit.instruction_list
+            else:
+                circuit.instruction_list = circuit_list
+            metrics = run_experiment(circuit=circuit, qubits=qubits, depth=depth, log=log_files[solver])
+            circuit.shutdown()
+            data[solver][(qubits, depth)] = metrics
+for solver in [&quot;pennylane&quot;, &quot;qiskit&quot;, &quot;qulacs&quot;]:
+    log_files[solver].close()
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>plot(data, &quot;Hellinger Distance&quot;, depth=100)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/theory_verification_method_verification_18_0.png" src="../../_images/theory_verification_method_verification_18_0.png" />
+</div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<p><strong>Download this Notebook</strong> - <a class="reference download internal" download="" href="../../_downloads/ceebe044c4197fff5b7c1928ccb79ba1/method_verification.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">/theory/verification/method_verification.ipynb</span></code></a></p>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../comparison.html" class="btn btn-neutral float-left" title="Method Comparisons" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../hardware.html" class="btn btn-neutral float-right" title="Hardware Considerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Sathyamurthy Hegde.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
