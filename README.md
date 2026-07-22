@@ -3,6 +3,7 @@
 [![License: Apache 2.0](https://shields.io/badge/license-Apache%202-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 ![coverage](./coverage.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21496368.svg)](https://doi.org/10.5281/zenodo.21496368)
 ![GitHub Tag](https://img.shields.io/github/v/tag/mbd-rwth/NoisyCircuits)
 [![Run Tests](https://github.com/mbd-rwth/NoisyCircuits/actions/workflows/run_test.yml/badge.svg)](https://github.com/mbd-rwth/NoisyCircuits/actions/workflows/run_test.yml)
 
@@ -48,7 +49,7 @@ The supported gated are fully decomposed into the hardware basis gates and this 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/mbd-rwth/NoisyCircuits.git
+   git clone https://github.com/Sats2/NoisyCircuits.git
    cd NoisyCircuits
    ```
 
@@ -178,6 +179,7 @@ author = {Hegde, Sathyamurthy and Kowalski, Julia},
 license = {Apache-2.0},
 month = jul,
 title = {{NoisyCircuits}},
+doi = {10.5281/zenodo.21496368},
 url = {https://github.com/mbd-rwth/NoisyCircuits.git},
 version = {2.0.0},
 year = {2026}

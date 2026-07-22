@@ -8,15 +8,19 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - given-names: Sathyamurthy
+  - given-names: Sathyamurthy Hegde
     family-names: Hegde
     email: hegde@mbd.rwth-aachen.de
-    affiliation: 'MBD, RWH Aachen University'
+    affiliation: 'MBD, RWTH Aachen University'
     orcid: 'https://orcid.org/0009-0001-3585-6015'
   - given-names: Julia
     family-names: Kowalski
+    email: kowalski@mbd.rwth-aachen.de
     affiliation: 'MBD, RWTH Aachen University'
     orcid: 'https://orcid.org/0000-0003-4123-5896'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.21496368
 repository-code: 'https://github.com/mbd-rwth/NoisyCircuits.git'
 url: 'https://mbd-rwth.github.io/NoisyCircuits/'
 abstract: >-
@@ -29,5 +33,5 @@ keywords:
   - quantum-computing
   - error-modelling
 license: Apache-2.0
-version: 2.0.0
-date-released: '2026-07-17'
+version: v2.0.0
+date-released: '2026-07-22'
